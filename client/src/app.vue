@@ -4,7 +4,11 @@
             <login-view></login-view>
         </div>
         <div id="graphView">
-            <GraphView/>
+<!--            <GraphView/>-->
+            <graph-view></graph-view>
+        </div>
+        <div id="tsneView">
+            <tsneView/>
         </div>
     </div>
 </template>
@@ -12,15 +16,17 @@
 <script>
     import 'bootstrap/dist/css/bootstrap.min.css';
     import loginView from './components/login/loginView';
-    import GraphView from './components/graph/graphView';
+    import graphView from './components/graph/graphView';
+    import tsneView from './components/tsne/tsneView';
     // import DataService from './services/data-service';
     // import PipeService from './services/pipe-service';
 
     export default {
         name: 'App',
         components: {
-            GraphView,
+            graphView,
             loginView,
+            tsneView,
         },
         data() {
             return {

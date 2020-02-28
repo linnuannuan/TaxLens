@@ -31,7 +31,6 @@ export default {
     methods: {
         login() {
         },
-
         /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
         onEnter(event) {
             console.log('onEnter: ', event);
