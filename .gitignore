@@ -7,9 +7,23 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.DS_Store
+node_modules/
+/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.xml
+
 .Python
 env/
-build/
 develop-eggs/
 dist/
 downloads/
@@ -24,6 +38,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+data/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -99,3 +114,16 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+
+# Mac pycharm xml
+codestyles/
+inspection/
+_mac/
+vcs.xml
+github.xml
+colors.scheme.xml
+debugger.xml
+filetypes.xml
+ide.general.xml
+web-types-registry.xml
