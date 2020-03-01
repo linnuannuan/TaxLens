@@ -1,29 +1,20 @@
+import Vue from 'vue';
 
-const dataServerUrl = "http://127.0.0.1:9950";
+let DataService = new Vue({
+  data:{
+    dataServerUrl: 'http://127.0.0.1:9950',
+  },
 
-let instance = null;
-class Service {
-    constructor() {
-        if (!instance) {
-            instance = this;
-        }
-
-        return instance;
+  methods:{
+    loadAffiliatedParty(callback){
+      this.axios.get(`${this.dataServerUrl}/APIRN_all`)
+        .then(response => {
+          callback(response.data)
+        }, errResponse => {
+          console.log(errResponse)
+        })
     }
+  }
+});
 
-    getServerVideoUrl() {
-        return this.serverVideoUrl;
-    }
-
-    setUserId(data) {
-        this.userId = data;
-    }
-
-    getUserId() {
-        return this.userId;
-    }
-
-}
-
-const DataService = new Service();
 export default DataService;
