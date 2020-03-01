@@ -1,55 +1,36 @@
 <template>
-    <div>
-        <div id="loginView">
-            <login-view></login-view>
-        </div>
-        <div id="graphView">
-<!--            <GraphView/>-->
-            <graph-view></graph-view>
-        </div>
-        <div id="tsneView">
-            <tsneView/>
-        </div>
-    </div>
+  <div id="app">
+    <graph-view></graph-view>
+  </div>
 </template>
 
 <script>
-    import 'bootstrap/dist/css/bootstrap.min.css';
-    import loginView from './components/login/loginView';
-    import graphView from './components/graph/graphView';
-    import tsneView from './components/tsne/tsneView';
-    // import DataService from './services/data-service';
-    // import PipeService from './services/pipe-service';
-
-    export default {
-        name: 'App',
-        components: {
-            graphView,
-            loginView,
-            tsneView,
-        },
-        data() {
-            return {
-                mainViewMode: ['DashBoard', 'KidsList', 'Upload', 'KidDetails', 'VideoLabeling'],
-                defaultViewMode: 0, // default is 0
-                curViewMode: 0, // default is 0
-                isLogin: true, // make sure it is true first.
-            };
-        },
-        mounted() {
-            this.$nextTick(function foo() {
-                this.initialize();
-            });
-        },
-        methods: {
-            initialize() {
-                console.log('hello world');
-            },
-        },
-    };
+  import graphView from './components/graphView.vue';
+  // import tsneView from './components/tsneView.vue';
+  
+export default {
+  name: 'app',
+  components: {
+    graphView,
+    // tsneView,
+  },
+  data() {
+    return {
+      APIRN: null,
+    }
+  },
+  mounted () {
+  }
+}
 </script>
 
-<style scoped>
-
+<style>
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+}
 </style>
-

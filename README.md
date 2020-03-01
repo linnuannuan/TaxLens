@@ -1,9 +1,23 @@
 # TaxLens
 VIS2020
 
-# How to use it?
-Step 1: go the folder "client" and typing in command "npm install" to install the front end dependencies.
+## Backend
+```python run.py```
 
-Step 2: run the backend by typing in the command "python run.py"
 
-Step 3: run the frontend by typing in the command "npm run dev"
+## Frontend
+The frontend folder is located at ```\client```
+
+### Project setup
+```
+npm install
+```
+### Compiles and hot-reloads for development
+```
+npm run serve
+```
+
+### Compiles and minifies for production
+```
+npm run build
+```

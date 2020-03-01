@@ -1,13 +1,5 @@
-click
 Flask
 Flask-Cors
-gevent
-greenlet
-itsdangerous
-Jinja2
-MarkupSafe
 pymongo
-six
-Werkzeug
-futures
 networkx
+simplejson

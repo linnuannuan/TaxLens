@@ -1,4 +1,5 @@
-// import GlobalConfig from './global-config';
+
+const dataServerUrl = "http://127.0.0.1:9950";
 
 let instance = null;
 class Service {

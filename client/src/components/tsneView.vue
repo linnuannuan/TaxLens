@@ -1,4 +1,3 @@
-import * as d3 from "d3";
 <template>
     <div class="container">
         <div id="tsne_view"></div>
@@ -6,20 +5,15 @@ import * as d3 from "d3";
 </template>
 
 <script>
-    // import NetService from '../../services/net-service';
-    // import DataService from '../../services/data-service';
-    // eslint-disable-next-line import/newline-after-import,import/no-extraneous-dependencies
     export default {
         name: 'graphView',
         data() {
             return {};
         },
         mounted() {
-            this.initialize();
         },
         methods: {
         },
-
     };
 </script>
 

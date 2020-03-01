@@ -6,12 +6,12 @@ let width = 960,
     scalepop = d3.scaleSqrt().domain([0, 100000]).range([0.2, 24]),
     scalecountry = d3.scaleOrdinal(d3.schemeCategory10),
     centerx = d3.scaleLinear()
-        .range([width / 2 - height / 2 + margin, width / 2 + height / 2 - margin])
+        .range([width / 2 - height / 2 + margin, width / 2 + height / 2 - margin]);
 var centery = d3.scaleLinear()
     .range([margin, height - margin]);
 
 var cities =  $.getJSON('/test_tsne',function (cities){
-    console.log(cities)
+    console.log(cities);
     const data = cities
         .sort((a, b) => d3.descending(+a[2015], +b[2015]))
         .map((d, i) => [+d.Longitude, + d.Latitude, d['Urban Agglomeration'], +d[2015], +d['Country Code']])
@@ -81,4 +81,4 @@ var cities =  $.getJSON('/test_tsne',function (cities){
             context.fill();
         }
     }
-})
+});
