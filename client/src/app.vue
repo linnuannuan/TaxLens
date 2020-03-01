@@ -1,17 +1,16 @@
 <template>
   <div id="app" class="MainView">
-    <el-row :gutter="10" class="top">
-      <el-col :span="8" class="left">
+    <el-row :gutter="5" class="MainView">
+      <el-col :span="8" class="MainView">
         <div style="width: 100%; height: 100%; ">
-          <suspicious-group-list
-              :data-affiliated-party="dataAffiliatedParty"
-              style="width: 100%; height: 100%; ">
+          <suspicious-group-list class="grid-list"
+              :data-affiliated-party="dataAffiliatedParty">
           </suspicious-group-list>
         </div>
       </el-col>
-      <el-col :span="16" class="right">
+      <el-col :span="16" class="MainView">
         <div style="width: 100%; height: 100%; ">
-          <graph-view
+          <graph-view class="grid-content"
               :data-affiliated-party="dataAffiliatedParty"
               style="width: 100%; height: 100%; ">
           </graph-view>
@@ -57,37 +56,19 @@
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: #2c3e50;
-    height: calc(100vh - 16px);
-    margin: 4px;
+    height: calc(100vh - 14px);
+    margin: 2px;
   }
   .MainView{
-    /*background: #efedf2;*/
     height: 100%;
   }
-  .top{
-    height: 100%;
-  }
-  .left{
-    height: 100%;
-  }
-  .right{
-    height: 100%;
-  }
-  .bg-purple-dark {
-    background: #99a9bf;
-  }
-  .bg-purple {
-    background: #d3dce6;
-  }
-  .bg-purple-light {
+  .grid-list {
     background: #e5e9f2;
+    height: 100%;
   }
   .grid-content {
-    border-radius: 4px;
+    border: 1px solid slategrey;
+    border-radius: 5px;
     height: 100%;
-  }
-  .row-bg {
-    padding: 10px 0;
-    background-color: #f9fafc;
   }
 </style>

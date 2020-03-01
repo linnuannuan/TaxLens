@@ -2,7 +2,7 @@
   <el-table
       :data="listAffiliatedParty.filter((data) => !search_id || data.id.includes(search_id))"
       :default-sort = "{prop: 'num_ap_txn', order: 'descending'}"
-      style="width: 100%"
+      class="grid-content"
       max-height="800">
     <el-table-column
         label="Group id"
@@ -25,7 +25,7 @@
         <el-input
             v-model="search_id"
             size="mini"
-            placeholder="search for group ID"/>
+            placeholder="TODO: BUG, default:1581"/>
       </template>
       <template slot-scope="scope">
         <el-button
@@ -57,9 +57,7 @@
         this.listAffiliatedParty = [];
         for(let id in newData) {
           this.listAffiliatedParty.push(
-            object.extend({'id': id},
-              newData[id]['graph']
-            )
+            object.extend({'id': id}, newData[id]['graph'])
           )
         }
       }
@@ -73,5 +71,9 @@
 </script>
 
 <style scoped>
-
+  .grid-content {
+    border: 1px solid slategrey;
+    border-radius: 5px;
+    height: 100%;
+  }
 </style>
