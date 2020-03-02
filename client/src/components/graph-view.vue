@@ -13,7 +13,7 @@
     },
     data() {
       return {
-        suspiciousGroupSelected: '1581',
+        suspiciousGroupSelected: '1595',
         svg: null,
       }
     },
@@ -37,10 +37,26 @@
       initGraph() {
         let width = this.$el.clientWidth;
         let height = this.$el.clientHeight;
+        //config the node width and link width
+        this.cfg={
+            node:{
+                'min_r':4,
+                'max_r':10
+            },
+            link:{
+                'min_width':1,
+                'max_width':2
+            }
+        }
         this.svg = d3.select('#relation_structure')
           .append("svg")
           .attr("viewBox", [-width / 2, -height / 2, width, height])
           .style("font", "12px sans-serif");
+        this.tooltip = d3.select("#relation_structure")
+                              .append("div")
+                                .style("position", "absolute")
+                                .style("visibility", "hidden")
+                                .text("I'm tootip!");
       },
       renderGraph() {
         function drag(simulation) {
@@ -79,7 +95,7 @@
           let data = this.dataAffiliatedParty[this.suspiciousGroupSelected];
           const links = data.links.map(link => {
             link.type = link.in_ratio? 'invest' : 'txn';
-            link.value = link.in_ratio? link.in_ratio: 0.5;
+            link.value = link.in_ratio? (reverse_ratio-link.in_ratio): 0.5;
             return Object.create(link)
           });
           const nodes = data.nodes.map(node => {
@@ -87,8 +103,20 @@
             return Object.create(node)
           });
 
+          console.log(d3.max(data.nodes, function(d){ return d['capital']; }))
+          console.log(d3.min(data.nodes, function(d){ return d['capital']; }))
+
           let types = Array.from(new Set(links.map(d => d.type)));
+          // schemeCategory10: 1f77b4,ff7f0e ,2ca02c,d62728,9467bd,8c564b,e377c2,7f7f7f,bcbd22,17becf
           let color = d3.scaleOrdinal(types, d3.schemeCategory10);
+
+          // node capital encoding
+          let rScale = d3.scaleLinear().domain([d3.min(nodes, function(d){ return d['capital']; }), d3.max(data.nodes, function(d){ return d['capital']; })]).range([this.cfg.node.min_r, this.cfg.node.max_r])
+          // link stength encoding
+          let lScale = d3.scaleLinear().domain([0,1]).range([this.cfg.link.min_width, this.cfg.link.max_width])
+
+          // reverse the strength of link
+          const reverse_ratio = 1.1
 
           const simulation = d3.forceSimulation(nodes)
             .force("link", d3.forceLink(links).id(d => d.id))
@@ -116,12 +144,13 @@
 
           const link = this.svg.append("g")
             .attr("fill", "none")
-            .attr("stroke-width", 1.5)
             .selectAll("path")
             .data(links)
             .enter()
             .append('path')
             .attr("stroke", d => color(d.type))
+            .attr("stroke-width", d => lScale(d.value))
+            .attr('opacity', d => reverse_ratio - d.value)
             .attr("marker-end", d => `url(${new URL(`#arrow-${d.type}`, location)})`);
 
           const node = this.svg.append("g")
@@ -135,9 +164,18 @@
             .call(drag(simulation));
 
           node.append("circle")
-            .attr("stroke", "white")
+            .attr("stroke", function (d) {
+                if(d['in']) return '#ff7f0e '
+                else return "white"
+            })
             .attr("stroke-width", 1.5)
-            .attr("r", 4);
+            .attr("r", d => d['in'] ? this.cfg.node.min_r : rScale(d['capital']))
+            .on('click',function (d) {
+                    console.log('click :',d)
+             })
+            .on("mouseover", function(){return this.tooltip.style("visibility", "visible");})
+            .on("mousemove", function(){return this.tooltip.style("top", (event.pageY-800)+"px").style("left",(event.pageX-800)+"px");})
+            .on("mouseout", function(){return this.tooltip.style("visibility", "hidden");});
 
           node.append("text")
             .attr("x", 8)
@@ -149,6 +187,7 @@
             .attr("fill", "none")
             .attr("stroke", "white")
             .attr("stroke-width", 3);
+
 
           simulation.on("tick", () => {
             link.attr("d", linkArc);

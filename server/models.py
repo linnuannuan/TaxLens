@@ -10,9 +10,9 @@ PATH_APIRN_ALL = './server/data/APIRN_data_all.json'
 
 class Model:
     def __init__(self):
-        with open(PATH_APIRN, "r") as file:
+        with open(PATH_APIRN, "r", encoding='utf-8') as file:
             self.APIRN = json.load(file)
-        with open(PATH_APIRN_ALL, "r") as file:
+        with open(PATH_APIRN_ALL, "r", encoding='utf-8') as file:
             self.APIRN_all = json.load(file)
 
     def algorithm(self):
