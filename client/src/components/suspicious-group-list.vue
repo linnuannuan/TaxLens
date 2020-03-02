@@ -1,17 +1,12 @@
 <template>
   <el-table
-      :data="listAffiliatedParty.filter((data) => !search_id || data.id.includes(search_id))"
+      :data="affiliatedPartyList"
       :default-sort = "{prop: 'num_ap_txn', order: 'descending'}"
       class="grid-content"
       max-height="800">
     <el-table-column
-        label="Group id"
-        prop="id"
-        sortable>
-    </el-table-column>
-    <el-table-column
-        label="Taxpayer"
-        prop="num_tp"
+        label="Nodes"
+        prop="num_nodes"
         sortable>
     </el-table-column>
     <el-table-column
@@ -21,12 +16,6 @@
     </el-table-column>
     <el-table-column
         align="right">
-      <template slot="header">
-        <el-input
-            v-model="search_id"
-            size="mini"
-            placeholder="TODO: BUG, default:1581"/>
-      </template>
       <template slot-scope="scope">
         <el-button
             size="mini"
@@ -39,32 +28,15 @@
 
 <script>
   import EventService from "../utils/event-service";
-  let object = require('lodash/fp/object');
 
   export default {
     name: "SuspiciousGroupList",
     props:{
-      dataAffiliatedParty: Object,
-    },
-    data() {
-      return {
-        listAffiliatedParty: [],
-        search_id: "",
-      }
-    },
-    watch:{
-      dataAffiliatedParty:function (newData) {
-        this.listAffiliatedParty = [];
-        for(let id in newData) {
-          this.listAffiliatedParty.push(
-            object.extend({'id': id}, newData[id]['graph'])
-          )
-        }
-      }
+      affiliatedPartyList: Array,
     },
     methods: {
       handleView(index, row) {
-        EventService.emitSuspiciousGroupSelected(row.id);
+        EventService.emitSuspiciousGroupSelected(row['ap_id']);
       }
     },
   }
