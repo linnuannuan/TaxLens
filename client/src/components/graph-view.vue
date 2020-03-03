@@ -31,13 +31,17 @@
         this.cfg={
           node:{
             'min_r':4,
-            'max_r':10
+            'max_r':10,
+            'color':{
+                'tp':'#1f77b4',
+                'in':'#ff7f0e'
+            }
           },
           link:{
-            'min_width':1,
-            'max_width':2,
+            'min_width':1.5,
+            'max_width':1.5,
             'color':{
-                'trade':'#1f77b4',
+                'txn':'#1f77b4',
                 'invest':'#ff7f0e',
             }
           }
@@ -87,22 +91,32 @@
 
         if (this.affiliatedPartyDetail !== null) {
           let data = this.affiliatedPartyDetail;
+          let link_by_src = {}
+          let link_by_dst = {}
+
+          //
+          data.nodes.forEach(node => {
+            link_by_src[node['id']]={'children':[]}
+            link_by_dst[node['id']]={'parent':[]}
+          });
+
           const links = data.links.map(link => {
             link.type = link.in_ratio? 'invest' : 'txn';
-            link.value = link.in_ratio? (reverse_ratio-link.in_ratio): 0.5;
+            link.value = link.in_ratio? (1/link.in_ratio): 0.5;
+            link_by_src[link.source]['children'].push(link)
+            link_by_dst[link.target]['parent'].push(link)
             return Object.create(link)
           });
+
           const nodes = data.nodes.map(node => {
             node.type = node.in ? 'investor' : 'taxpayer';
+            // node.value = link_by_src[node['id']]['children'].filter(d=>d['ap_txn'])
             return Object.create(node)
           });
 
-          console.log(d3.max(data.nodes, function(d){ return d['capital']; }));
-          console.log(d3.min(data.nodes, function(d){ return d['capital']; }));
-
           let types = Array.from(new Set(links.map(d => d.type)));
           // schemeCategory10: 1f77b4,ff7f0e ,2ca02c,d62728,9467bd,8c564b,e377c2,7f7f7f,bcbd22,17becf
-          let color = d3.scaleOrdinal(types, d3.schemeCategory10);
+          // let color = d3.scaleOrdinal(types, d3.schemeCategory10);
 
           // node capital encoding
           let rScale = d3.scaleLinear()
@@ -111,8 +125,6 @@
           // link stength encoding
           let lScale = d3.scaleLinear().domain([0,1]).range([this.cfg.link.min_width, this.cfg.link.max_width]);
 
-          // reverse the strength of link
-          const reverse_ratio = 1.1;
 
           const simulation = d3.forceSimulation(nodes)
             .force("link", d3.forceLink(links).id(d => d.id))
@@ -135,7 +147,7 @@
             .attr("markerHeight", 6)
             .attr("orient", "auto")
             .append("path")
-            .attr("fill", color)
+            .attr("fill", d=> this.cfg.link.color[d])
             .attr("d", "M0,-5L10,0L0,5");
 
           const link = this.svg.append("g")
@@ -144,9 +156,9 @@
             .data(links)
             .enter()
             .append('path')
-            .attr("stroke", d => d.type == 'invest'? this.cfg.link.color.invest:this.cfg.link.color.trade)
+            .attr("stroke", d => d.type == 'invest'? this.cfg.link.color.invest:this.cfg.link.color.txn)
             .attr("stroke-width", d => lScale(d.value))
-            .attr('opacity', d => reverse_ratio - d.value)
+            .attr('opacity', d => d.type == 'invest'? 1/d.value:1)
             // link 线段终止坐标待计算
             .attr("marker-end", d => `url(${new URL(`#arrow-${d.type}`, location)})`);
 
@@ -161,9 +173,8 @@
             .call(drag(simulation));
 
           node.append("circle")
-            .attr("stroke", function (d) {
-              return d['in']? '#ff7f0e': 'white';
-            })
+            .attr("stroke", 'white')
+            .attr("fill", d=>d['in']? this.cfg.node.color.in:this.cfg.node.color.tp)
             .attr("stroke-width", 1.5)
             .attr("r", d => d['in'] ? this.cfg.node.min_r : rScale(d['capital']))
             .on('click',function (d) {
@@ -172,6 +183,9 @@
             // .on("mouseover", function(){return this.tooltip.style("visibility", "visible");})
             // .on("mousemove", function(){return this.tooltip.style("top", (event.pageY-800)+"px").style("left",(event.pageX-800)+"px");})
             // .on("mouseout", function(){return this.tooltip.style("visibility", "hidden");});
+
+
+
 
           node.append("text")
             .attr("x", 8)

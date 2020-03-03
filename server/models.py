@@ -125,10 +125,10 @@ class Model:
         """
         # extract the requested sub-graph
         ap_graph = self.TPIIN.subgraph(self.AP_list[ap_id]).copy()
-
         # retrieve taxpayer information
         tp_list = [n for n, tp in list(ap_graph.nodes(data='tp')) if tp]
         tp_df = self.TPIIN_taxpayer.query('tp_id in @tp_list').set_index('tp_id', drop=True)
+
         for n in tp_list:
             ap_graph.add_node(n, **dict(tp_df.loc[n]))
 
@@ -137,7 +137,20 @@ class Model:
         in_df = self.TPIIN_investor.query('in_id in @in_list').set_index('in_id', drop=True)
         for n in in_list:
             ap_graph.add_node(n, **dict(in_df.loc[n]))
-
+            # 根据每个invester，求她到关联交易的距离
+            # 首先要得到一个关联交易的节点list self.bad_nodes
+            # node的嫌疑值 = 路径数量 + 路径上的比例的相乘
+            # suspect_value = 0
+            # for node in self.AP_list[ap_id]:
+            #     paths = nx.all_simple_paths(ap_graph, source=node, target=n)
+            #     print(node, ' to ', n, ' : ', list(paths))
+            #     suspect_value += len(list(paths))
+            #     # print(len(list(paths)))
+            #     for path in list(paths):
+            #         print(path)
+            #         nx.get_edge_data(path[0], path[1])
+            #         print('edge', nx.get_edge_data(path[0], path[1]))
+            #     ap_graph.add_node(n, suspect_value=suspect_value)
         return nx.node_link_data(ap_graph)
 
     def get_detail_by_tp_id(self, tp_id):

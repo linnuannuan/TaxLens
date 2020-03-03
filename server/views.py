@@ -22,6 +22,7 @@ def get_ap_by_id():
         ap_data = TPIIN.get_detail_by_ap_id(post_data['ap_id'])
     else:
         ap_data = TPIIN.get_detail_by_tp_id('610198671502546')  # default case
+        # print('ap_data:',ap_data)
     return simplejson.dumps(ap_data, ensure_ascii=False, ignore_nan=True)
 
 
@@ -34,3 +35,5 @@ def retrieve_all_networks():
 # @app.route('TPIIN.get_TPIIN())
 # get_TPIIN(self, max_transaction_length=5, max_control_length=5)
 # TPIIN.get_affiliated_party_list()')
+
+
