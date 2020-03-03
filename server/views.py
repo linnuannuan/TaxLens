@@ -6,7 +6,6 @@ import simplejson
 # initialize the model
 TPIIN = Model()
 TPIIN.get_TPIIN()
-TPIIN.get_affiliated_party_list()
 
 
 @app.route('/ap_list')
@@ -25,15 +24,16 @@ def get_ap_by_id():
         # print('ap_data:',ap_data)
     return simplejson.dumps(ap_data, ensure_ascii=False, ignore_nan=True)
 
-
 # legacy
 @app.route('/APIRN_all')
 def retrieve_all_networks():
     return simplejson.dumps(TPIIN.APIRN_all, ensure_ascii=False, ignore_nan=True)
 
-#
-# @app.route('TPIIN.get_TPIIN())
-# get_TPIIN(self, max_transaction_length=5, max_control_length=5)
-# TPIIN.get_affiliated_party_list()')
-
+@app.route('/load_model', methods=['POST'])
+def set_model_parameter():
+    post_data = request.data.decode()
+    if post_data != "":
+        post_data = simplejson.loads(request.data.decode())
+        TPIIN.get_TPIIN(post_data['max_transaction_length'], post_data['max_control_length'])
+    return simplejson.dumps(TPIIN.get_affiliated_party_list(), ensure_ascii=False, ignore_nan=True)
 

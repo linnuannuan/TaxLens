@@ -1,7 +1,9 @@
 import json
 import pyarrow
 import pandas as pd
+import numpy as np
 import networkx as nx
+from functools import reduce
 
 PATH_TPIIN = './server/data/TPIIN.gpickle'
 PATH_TPIIN_AP_TXN = './server/data/TPIIN_ap_txn.ftr'
@@ -95,6 +97,8 @@ class Model:
 
         # augment the TPIIN with affiliated transactions
         self.TPIIN.add_edges_from(list(apirn.edges()), ap_txn=True)
+        # assign an id for each affiliated party
+        self.AP_list = sorted(list(nx.connected_components(tpiin_undirected)), key=lambda _ap: len(_ap))
 
     def get_affiliated_party_list(self):
         """
@@ -104,7 +108,6 @@ class Model:
         :return: json-ready list of affiliated parties
         """
         tpiin_undirected = self.TPIIN.to_undirected(as_view=True)
-        self.AP_list = sorted(list(nx.connected_components(tpiin_undirected)), key=lambda _ap: len(_ap))
         ap_list_json = []
 
         ap_id = 0
@@ -137,20 +140,34 @@ class Model:
         in_df = self.TPIIN_investor.query('in_id in @in_list').set_index('in_id', drop=True)
         for n in in_list:
             ap_graph.add_node(n, **dict(in_df.loc[n]))
-            # 根据每个invester，求她到关联交易的距离
-            # 首先要得到一个关联交易的节点list self.bad_nodes
-            # node的嫌疑值 = 路径数量 + 路径上的比例的相乘
-            # suspect_value = 0
-            # for node in self.AP_list[ap_id]:
-            #     paths = nx.all_simple_paths(ap_graph, source=node, target=n)
-            #     print(node, ' to ', n, ' : ', list(paths))
-            #     suspect_value += len(list(paths))
-            #     # print(len(list(paths)))
-            #     for path in list(paths):
-            #         print(path)
-            #         nx.get_edge_data(path[0], path[1])
-            #         print('edge', nx.get_edge_data(path[0], path[1]))
-            #     ap_graph.add_node(n, suspect_value=suspect_value)
+        for n in in_list:
+            # 根据每个invester，求她到关联交易的距离和路径数
+            # node的嫌疑值 = 多条路径上的比例的相乘 的加和
+            node_suspect_value = 0
+            for node in self.AP_list[ap_id]:
+                paths = list(nx.all_simple_paths(ap_graph, source=n, target=node))
+                for path in list(paths):
+                    # 获取每一个path的invest ratio ,如果是多步就invest ratio相乘
+                    weight = 1
+                    for i in range(len(path)):
+                        if i+1 >= len(path): break;
+                        else:
+                            curr_edge_data = ap_graph.get_edge_data(path[i], path[i+1])
+                            if 'in_ratio' in curr_edge_data:
+                                weight = weight*curr_edge_data['in_ratio']
+            node_suspect_value += weight
+            ap_graph.add_node(n, suspect_value=node_suspect_value)
+
+
+
+        # retrieve invoice information
+        # narrow down search space
+        ap_invoice = self.TPIIN_invoice.query('seller_id in @tp_list').query('buyer_id in @tp_list')
+        for u, v, data in list(ap_graph.edges(data=True)):
+            if 'ap_txn' in data:
+                txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn']
+                ap_graph.add_edge(u, v, ap_txn_amount=np.sum(txn), ap_txn_count=len(txn))
+
         return nx.node_link_data(ap_graph)
 
     def get_detail_by_tp_id(self, tp_id):
@@ -160,10 +177,9 @@ class Model:
         :return: the sub-graph json
         """
         # extract the requested sub-graph
-        ap_id = 0
-        for ap in self.AP_list:
-            if tp_id in ap:
-                break
-            ap_id += 1
+        ap_id = -1
+        for ap in range(len(self.AP_list)):
+            if tp_id in self.AP_list[ap]:
+                ap_id = ap
 
-        return self.get_detail_by_ap_id(ap_id)
+        return self.get_detail_by_ap_id(ap_id) if ap_id != -1 else "{}"

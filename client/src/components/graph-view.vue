@@ -122,6 +122,13 @@
           let rScale = d3.scaleLinear()
             .domain([d3.min(nodes, function(d){ return d['capital']; }), d3.max(data.nodes, function(d){ return d['capital']; })])
             .range([this.cfg.node.min_r, this.cfg.node.max_r]);
+
+          // invest node suspect value encoding
+          let irScale = d3.scaleLinear()
+            .domain([d3.min(nodes, function(d){ return d['suspect_value']; }), d3.max(data.nodes, function(d){ return d['suspect_value']; })])
+            .range([this.cfg.node.min_r, this.cfg.node.max_r]);
+
+
           // link stength encoding
           let lScale = d3.scaleLinear().domain([0,1]).range([this.cfg.link.min_width, this.cfg.link.max_width]);
 
@@ -176,7 +183,7 @@
             .attr("stroke", 'white')
             .attr("fill", d=>d['in']? this.cfg.node.color.in:this.cfg.node.color.tp)
             .attr("stroke-width", 1.5)
-            .attr("r", d => d['in'] ? this.cfg.node.min_r : rScale(d['capital']))
+            .attr("r", d => d['in'] ? irScale(d['suspect_value']): rScale(d['capital']))
             .on('click',function (d) {
               console.log('click :',d)
             })
