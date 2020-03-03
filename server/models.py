@@ -1,6 +1,7 @@
 import json
 import pyarrow
 import pandas as pd
+import numpy as np
 import networkx as nx
 
 PATH_TPIIN = './server/data/TPIIN.gpickle'
@@ -95,6 +96,8 @@ class Model:
 
         # augment the TPIIN with affiliated transactions
         self.TPIIN.add_edges_from(list(apirn.edges()), ap_txn=True)
+        # assign an id for each affiliated party
+        self.AP_list = sorted(list(nx.connected_components(tpiin_undirected)), key=lambda _ap: len(_ap))
 
     def get_affiliated_party_list(self):
         """
@@ -104,7 +107,6 @@ class Model:
         :return: json-ready list of affiliated parties
         """
         tpiin_undirected = self.TPIIN.to_undirected(as_view=True)
-        self.AP_list = sorted(list(nx.connected_components(tpiin_undirected)), key=lambda _ap: len(_ap))
         ap_list_json = []
 
         ap_id = 0
@@ -138,6 +140,14 @@ class Model:
         for n in in_list:
             ap_graph.add_node(n, **dict(in_df.loc[n]))
 
+        # retrieve invoice information
+        # narrow down search space
+        ap_invoice = self.TPIIN_invoice.query('seller_id in @tp_list').query('buyer_id in @tp_list')
+        for u, v, data in list(ap_graph.edges(data=True)):
+            if 'ap_txn' in data:
+                txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn']
+                ap_graph.add_edge(u, v, ap_txn_amount=np.sum(txn), ap_txn_count=len(txn))
+
         return nx.node_link_data(ap_graph)
 
     def get_detail_by_tp_id(self, tp_id):
@@ -147,10 +157,9 @@ class Model:
         :return: the sub-graph json
         """
         # extract the requested sub-graph
-        ap_id = 0
-        for ap in self.AP_list:
-            if tp_id in ap:
-                break
-            ap_id += 1
+        ap_id = -1
+        for ap in range(len(self.AP_list)):
+            if tp_id in self.AP_list[ap]:
+                ap_id = ap
 
-        return self.get_detail_by_ap_id(ap_id)
+        return self.get_detail_by_ap_id(ap_id) if ap_id != -1 else "{}"
