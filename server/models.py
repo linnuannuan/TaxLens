@@ -40,7 +40,7 @@ class Model:
         self.AP_list = []
 
         # legacy data
-        with open(PATH_APIRN_ALL, "r") as file:
+        with open(PATH_APIRN_ALL, "r", encoding='utf-8') as file:
             self.APIRN_all = json.load(file)
 
     def get_TPIIN(self, max_transaction_length=5, max_control_length=5):

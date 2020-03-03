@@ -29,3 +29,8 @@ def get_ap_by_id():
 @app.route('/APIRN_all')
 def retrieve_all_networks():
     return simplejson.dumps(TPIIN.APIRN_all, ensure_ascii=False, ignore_nan=True)
+
+#
+# @app.route('TPIIN.get_TPIIN())
+# get_TPIIN(self, max_transaction_length=5, max_control_length=5)
+# TPIIN.get_affiliated_party_list()')

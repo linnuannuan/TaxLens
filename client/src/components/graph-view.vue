@@ -35,18 +35,22 @@
           },
           link:{
             'min_width':1,
-            'max_width':2
+            'max_width':2,
+            'color':{
+                'trade':'#1f77b4',
+                'invest':'#ff7f0e',
+            }
           }
         };
         this.svg = d3.select('#relation_structure')
           .append("svg")
           .attr("viewBox", [-width / 2, -height / 2, width, height])
           .style("font", "12px sans-serif");
-        this.tooltip = d3.select("#relation_structure")
-          .append("div")
-          .style("position", "absolute")
-          .style("visibility", "hidden")
-          .text("I'm tootip!");
+        // this.tooltip = d3.select("#relation_structure")
+        //   .append("div")
+        //   .style("position", "absolute")
+        //   .style("visibility", "hidden")
+        //   .text("I'm tootip!");
       },
       renderGraph() {
         function drag(simulation) {
@@ -140,9 +144,10 @@
             .data(links)
             .enter()
             .append('path')
-            .attr("stroke", d => color(d.type))
+            .attr("stroke", d => d.type == 'invest'? this.cfg.link.color.invest:this.cfg.link.color.trade)
             .attr("stroke-width", d => lScale(d.value))
             .attr('opacity', d => reverse_ratio - d.value)
+            // link 线段终止坐标待计算
             .attr("marker-end", d => `url(${new URL(`#arrow-${d.type}`, location)})`);
 
           const node = this.svg.append("g")
@@ -164,9 +169,9 @@
             .on('click',function (d) {
               console.log('click :',d)
             })
-            .on("mouseover", function(){return this.tooltip.style("visibility", "visible");})
-            .on("mousemove", function(){return this.tooltip.style("top", (event.pageY-800)+"px").style("left",(event.pageX-800)+"px");})
-            .on("mouseout", function(){return this.tooltip.style("visibility", "hidden");});
+            // .on("mouseover", function(){return this.tooltip.style("visibility", "visible");})
+            // .on("mousemove", function(){return this.tooltip.style("top", (event.pageY-800)+"px").style("left",(event.pageX-800)+"px");})
+            // .on("mouseout", function(){return this.tooltip.style("visibility", "hidden");});
 
           node.append("text")
             .attr("x", 8)
