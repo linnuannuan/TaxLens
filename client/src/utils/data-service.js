@@ -14,7 +14,7 @@ let DataService = new Vue({
           console.log(errResponse)
         })
     },
-    loadAffiliatedPartyDetail(param, callback){
+    loadAffiliatedPartyDetailByAP(param, callback){
       this.axios.post(`${this.dataServerUrl}/ap_detail`, param)
         .then(response => {
           callback(response.data)
@@ -22,15 +22,22 @@ let DataService = new Vue({
           console.log(errResponse)
         })
     },
-    // legacy
-    loadAffiliatedParty(callback){
-      this.axios.get(`${this.dataServerUrl}/APIRN_all`)
+    loadAffiliatedPartyDetailByTP(param, callback){
+      this.axios.post(`${this.dataServerUrl}/tp_detail`, param)
         .then(response => {
           callback(response.data)
         }, errResponse => {
           console.log(errResponse)
         })
-    }
+    },
+    setAffiliatedPartySetting(param, callback){
+      this.axios.post(`${this.dataServerUrl}/set_model`, param)
+        .then(response => {
+          callback(response.data)
+        }, errResponse => {
+          console.log(errResponse)
+        })
+    },
   }
 });
 

@@ -1,18 +1,13 @@
-import json
 import pyarrow
 import pandas as pd
 import numpy as np
 import networkx as nx
-from functools import reduce
 
 PATH_TPIIN = './server/data/TPIIN.gpickle'
 PATH_TPIIN_AP_TXN = './server/data/TPIIN_ap_txn.ftr'
 PATH_TPIIN_INVOICE = './server/data/TPIIN_invoice.ftr'
 PATH_TPIIN_INVESTOR = './server/data/TPIIN_investor.ftr'
 PATH_TPIIN_TAXPAYER = './server/data/TPIIN_taxpayer.ftr'
-
-# legacy path
-PATH_APIRN_ALL = './server/data/APIRN_data_all.json'
 
 
 def get_ap_df(undirected_graph):
@@ -40,10 +35,6 @@ class Model:
         self.TPIIN_taxpayer = pd.read_feather(PATH_TPIIN_TAXPAYER)
         # declare class variables
         self.AP_list = []
-
-        # legacy data
-        with open(PATH_APIRN_ALL, "r", encoding='utf-8') as file:
-            self.APIRN_all = json.load(file)
 
     def get_TPIIN(self, max_transaction_length=5, max_control_length=5):
         """
@@ -141,7 +132,7 @@ class Model:
         for n in in_list:
             ap_graph.add_node(n, **dict(in_df.loc[n]))
         for n in in_list:
-            # 根据每个invester，求她到关联交易的距离和路径数
+            # 根据每个investor，求她到关联交易的距离和路径数
             # node的嫌疑值 = 多条路径上的比例的相乘 的加和
             node_suspect_value = 0
             for node in self.AP_list[ap_id]:
@@ -157,8 +148,6 @@ class Model:
                                 weight = weight*curr_edge_data['in_ratio']
             node_suspect_value += weight
             ap_graph.add_node(n, suspect_value=node_suspect_value)
-
-
 
         # retrieve invoice information
         # narrow down search space
