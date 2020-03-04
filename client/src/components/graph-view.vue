@@ -94,7 +94,6 @@
           let link_by_src = {}
           let link_by_dst = {}
 
-          //
           data.nodes.forEach(node => {
             link_by_src[node['id']]={'children':[]}
             link_by_dst[node['id']]={'parent':[]}
@@ -115,6 +114,12 @@
           });
 
           let types = Array.from(new Set(links.map(d => d.type)));
+
+          let industrys =  Array.from(new Set(nodes.filter(d=>!d.in).map( d => d['industry'])));
+          // console.log(industrys)
+          let color = d3.scaleOrdinal(industrys, d3.schemeSet3);
+          // console.log(color,industrys,color('其他未列明批发业'))
+
           // schemeCategory10: 1f77b4,ff7f0e ,2ca02c,d62728,9467bd,8c564b,e377c2,7f7f7f,bcbd22,17becf
           // let color = d3.scaleOrdinal(types, d3.schemeCategory10);
 
@@ -122,6 +127,11 @@
           let rScale = d3.scaleLinear()
             .domain([d3.min(nodes, function(d){ return d['capital']; }), d3.max(data.nodes, function(d){ return d['capital']; })])
             .range([this.cfg.node.min_r, this.cfg.node.max_r]);
+
+          // node suspect value encoding
+          // let rScale = d3.scaleLinear()
+          //   .domain([d3.min(nodes, function(d){ return d['ap_txn_amount']; }), d3.max(data.nodes, function(d){ return d['ap_txn_amount']; })])
+          //   .range([this.cfg.node.min_r, this.cfg.node.max_r]);
 
           // invest node suspect value encoding
           let irScale = d3.scaleLinear()
@@ -131,6 +141,11 @@
 
           // link stength encoding
           let lScale = d3.scaleLinear().domain([0,1]).range([this.cfg.link.min_width, this.cfg.link.max_width]);
+
+          // trade link strength encoding
+          let oScale = d3.scaleLinear()
+              .domain([d3.min(nodes, function(d){ return d['ap_txn_amount']; }),d3.max(nodes, function(d){ return d['ap_txn_amount']; })])
+              .range([0,1]);
 
 
           const simulation = d3.forceSimulation(nodes)
@@ -165,11 +180,11 @@
             .append('path')
             .attr("stroke", d => d.type == 'invest'? this.cfg.link.color.invest:this.cfg.link.color.txn)
             .attr("stroke-width", d => lScale(d.value))
-            .attr('opacity', d => d.type == 'invest'? 1/d.value:1)
+            .attr('opacity', d => d.type == 'invest'? 1/d.value:oScale(d['ap_txn_amount']))
             // link 线段终止坐标待计算
             .attr("marker-end", d => `url(${new URL(`#arrow-${d.type}`, location)})`);
 
-          const node = this.svg.append("g")
+           const node = this.svg.append("g")
             .attr("fill", "currentColor")
             .attr("stroke-linecap", "round")
             .attr("stroke-linejoin", "round")
@@ -179,19 +194,61 @@
             .append('g')
             .call(drag(simulation));
 
-          node.append("circle")
-            .attr("stroke", 'white')
+          // const in_node = this.svg.append("g")
+          //   .attr("fill", "currentColor")
+          //   .attr("stroke-linecap", "round")
+          //   .attr("stroke-linejoin", "round")
+          //   .selectAll("g")
+          //   .data(nodes.filter(d=>!d.tp))
+          //   .enter()
+          //   .append('g')
+          //   .call(drag(simulation));
+          //
+          // const tp_node = this.svg.append("g")
+          //   .attr("fill", "currentColor")
+          //   .attr("stroke-linecap", "round")
+          //   .attr("stroke-linejoin", "round")
+          //   .selectAll("g")
+          //   .data(nodes.filter(d=>d.tp))
+          //   .enter()
+          //   .append('g')
+          //   .call(drag(simulation));
+
+            node.append("circle")
+            .attr("stroke", d=>d['in']?'white':color(d['industry']))
+            // .attr("fill", d=>color(d['industry']))
             .attr("fill", d=>d['in']? this.cfg.node.color.in:this.cfg.node.color.tp)
             .attr("stroke-width", 1.5)
             .attr("r", d => d['in'] ? irScale(d['suspect_value']): rScale(d['capital']))
             .on('click',function (d) {
               console.log('click :',d)
             })
-            // .on("mouseover", function(){return this.tooltip.style("visibility", "visible");})
-            // .on("mousemove", function(){return this.tooltip.style("top", (event.pageY-800)+"px").style("left",(event.pageX-800)+"px");})
-            // .on("mouseout", function(){return this.tooltip.style("visibility", "hidden");});
 
-
+          // transfer node into circle and rectangle
+          // in_node.append("circle")
+          //   .attr("stroke", d=>d['in']?'white':color(d['industry']))
+          //   // .attr("fill", d=>color(d['industry']))
+          //   .attr("fill", d=>d['in']? this.cfg.node.color.in:this.cfg.node.color.tp)
+          //   .attr("stroke-width", 1.5)
+          //   .attr("r", d => d['in'] ? irScale(d['suspect_value']): rScale(d['capital']))
+          //   .on('click',function (d) {
+          //     console.log('click :',d)
+          //   })
+          //   // .on("mouseover", function(){return this.tooltip.style("visibility", "visible");})
+          //   // .on("mousemove", function(){return this.tooltip.style("top", (event.pageY-800)+"px").style("left",(event.pageX-800)+"px");})
+          //   // .on("mouseout", function(){return this.tooltip.style("visibility", "hidden");});
+          //
+          //  tp_node.append("rect")
+          //   .attr("stroke", d=>color(d['industry']))
+          //   .attr("fill", d=>color(d['industry']))
+          //   // .attr("fill", this.cfg.node.color.tp)
+          //   .attr("stroke-width", 1.5)
+          //   .attr("width", d=>rScale(d['capital']))
+          //   .attr("height", d=>rScale(d['capital']))
+          //   // .attr("x", d=>rScale(d['capital']))
+          //   .on('click',function (d) {
+          //     console.log('click :',d)
+          //   })
 
 
           node.append("text")
@@ -209,6 +266,7 @@
           simulation.on("tick", () => {
             link.attr("d", linkArc);
             node.attr("transform", d => `translate(${d.x},${d.y})`);
+            // tp_node.attr("transform", d => `translate(${d.x-3},${d.y-3})`);
           });
         }
       }
