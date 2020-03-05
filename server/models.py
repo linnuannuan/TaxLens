@@ -8,6 +8,7 @@ PATH_TPIIN_AP_TXN = './server/data/TPIIN_ap_txn.ftr'
 PATH_TPIIN_INVOICE = './server/data/TPIIN_invoice.ftr'
 PATH_TPIIN_INVESTOR = './server/data/TPIIN_investor.ftr'
 PATH_TPIIN_TAXPAYER = './server/data/TPIIN_taxpayer.ftr'
+PATH_TPIIN_TAX_EVADER = './server/data/TPIIN_tax_evader.ftr'
 
 
 def get_ap_df(undirected_graph):
@@ -33,8 +34,10 @@ class Model:
         self.TPIIN_invoice = pd.read_feather(PATH_TPIIN_INVOICE)
         self.TPIIN_investor = pd.read_feather(PATH_TPIIN_INVESTOR)
         self.TPIIN_taxpayer = pd.read_feather(PATH_TPIIN_TAXPAYER)
+        self.TPIIN_tax_evader = pd.read_feather(PATH_TPIIN_TAX_EVADER)
         # declare class variables
         self.AP_list = []
+        self.APIRN = nx.DiGraph()
 
     def get_TPIIN(self, max_transaction_length=5, max_control_length=5):
         """
@@ -49,22 +52,22 @@ class Model:
         tpiin_ap = get_ap_df(tpiin_undirected)
 
         # build the APIRN with invoice data
-        apirn = nx.DiGraph()
+        self.APIRN = nx.DiGraph()
         # validate edges by requiring buyer to reach seller within an arbitrary steps in the TPIIN
         for src, tar in zip(self.TPIIN_ap_txn['seller_id'], self.TPIIN_ap_txn['buyer_id']):
             if nx.has_path(tpiin_undirected, src, tar):
                 if nx.shortest_path_length(tpiin_undirected, src, tar) <= max_transaction_length:
-                    apirn.add_edge(src, tar)
+                    self.APIRN.add_edge(src, tar)
         # remove isolated nodes
-        apirn.remove_nodes_from(list(nx.isolates(apirn)))
+        self.APIRN.remove_nodes_from(list(nx.isolates(self.APIRN)))
         # remove affiliated parties that have not involved in any invoices
-        apirn_node = list(apirn.nodes())
+        apirn_node = list(self.APIRN.nodes())
         apirn_ap = tpiin_ap.query('tp_id in @apirn_node')['ap_id'].drop_duplicates()
         self.TPIIN.remove_nodes_from(tpiin_ap.query('ap_id not in @apirn_ap')['tp_id'])
 
         # obtain the control chain using BFS
         control_chain = set()
-        for node in apirn.nodes():
+        for node in self.APIRN.nodes():
             control_chain.add(node)
             control_chain |= {v for _, v in nx.bfs_edges(tpiin_undirected, source=node, depth_limit=max_control_length)}
 
@@ -73,21 +76,21 @@ class Model:
         tpiin_ap = get_ap_df(tpiin_undirected)
 
         # build the APIRN once again to index AP because a large AP might break into smaller ones
-        apirn = nx.DiGraph()
+        self.APIRN = nx.DiGraph()
         # validate edges by requiring buyer to reach seller within an arbitrary steps in the TPIIN
         for src, tar in zip(self.TPIIN_ap_txn['seller_id'], self.TPIIN_ap_txn['buyer_id']):
             if src in self.TPIIN and tar in self.TPIIN and nx.has_path(tpiin_undirected, src, tar):
                 if nx.shortest_path_length(tpiin_undirected, src, tar) <= max_transaction_length:
-                    apirn.add_edge(src, tar)
+                    self.APIRN.add_edge(src, tar)
         # remove isolated nodes
-        apirn.remove_nodes_from(list(nx.isolates(apirn)))
+        self.APIRN.remove_nodes_from(list(nx.isolates(self.APIRN)))
         # remove affiliated parties that have not involved in any invoices
-        apirn_node = list(apirn.nodes())
+        apirn_node = list(self.APIRN.nodes())
         apirn_ap = tpiin_ap.query('tp_id in @apirn_node')['ap_id'].drop_duplicates()
         self.TPIIN.remove_nodes_from(tpiin_ap.query('ap_id not in @apirn_ap')['tp_id'])
 
         # augment the TPIIN with affiliated transactions
-        self.TPIIN.add_edges_from(list(apirn.edges()), ap_txn=True)
+        self.TPIIN.add_edges_from(list(self.APIRN.edges()), ap_txn=True)
         # assign an id for each affiliated party
         self.AP_list = sorted(list(nx.connected_components(tpiin_undirected)), key=lambda _ap: len(_ap))
 
@@ -98,7 +101,6 @@ class Model:
         based on the TPIIN parameter settings.
         :return: json-ready list of affiliated parties
         """
-        tpiin_undirected = self.TPIIN.to_undirected(as_view=True)
         ap_list_json = []
 
         ap_id = 0
@@ -122,32 +124,38 @@ class Model:
         # retrieve taxpayer information
         tp_list = [n for n, tp in list(ap_graph.nodes(data='tp')) if tp]
         tp_df = self.TPIIN_taxpayer.query('tp_id in @tp_list').set_index('tp_id', drop=True)
-
         for n in tp_list:
             ap_graph.add_node(n, **dict(tp_df.loc[n]))
+            tax_evader = self.TPIIN_tax_evader.query('tp_id == @n')
+            if not tax_evader.empty:
+                ap_graph.add_node(n, tax_evader=True)  # will be fix to the actual rule number later
 
         # retrieve investor information
         in_list = [n for n, inv in list(ap_graph.nodes(data='in')) if inv]
         in_df = self.TPIIN_investor.query('in_id in @in_list').set_index('in_id', drop=True)
         for n in in_list:
             ap_graph.add_node(n, **dict(in_df.loc[n]))
-        for n in in_list:
+
+        # Calculate suspicious value
+        for in_node in in_list:
             # 根据每个investor，求她到关联交易的距离和路径数
             # node的嫌疑值 = 多条路径上的比例的相乘 的加和
+            # check if ap_node conducted affiliated party transactions
             node_suspect_value = 0
-            for node in self.AP_list[ap_id]:
-                paths = list(nx.all_simple_paths(ap_graph, source=n, target=node))
-                for path in list(paths):
-                    # 获取每一个path的invest ratio ,如果是多步就invest ratio相乘
+            for ap_node in tp_list:  # every taxpayer
+                weight = 0
+                if ap_node in self.APIRN:  # if taxpayer conducted related party transaction
                     weight = 1
-                    for i in range(len(path)):
-                        if i+1 >= len(path): break;
-                        else:
-                            curr_edge_data = ap_graph.get_edge_data(path[i], path[i+1])
-                            if 'in_ratio' in curr_edge_data:
-                                weight = weight*curr_edge_data['in_ratio']
-            node_suspect_value += weight
-            ap_graph.add_node(n, suspect_value=node_suspect_value)
+                    paths = list(nx.all_simple_paths(ap_graph, source=in_node, target=ap_node))
+
+                    # 获取每一个path的invest ratio ,如果是多步就invest ratio相乘
+                    for path in paths:
+                        for i in range(len(path)-1):
+                            e_dict = ap_graph.get_edge_data(path[i], path[i+1], default=None)
+                            if (e_dict is not None) & ('in_ratio' in e_dict):
+                                weight *= e_dict['in_ratio']
+                node_suspect_value += weight
+            ap_graph.add_node(in_node, suspect_value=node_suspect_value)
 
         # retrieve invoice information
         # narrow down search space

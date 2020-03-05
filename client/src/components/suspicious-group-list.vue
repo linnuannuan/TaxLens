@@ -2,6 +2,7 @@
   <el-table
       :data="affiliatedPartyList"
       :default-sort = "{prop: 'num_ap_txn', order: 'descending'}"
+      v-loading="loadingList"
       size="mini"
       class="grid-content"
       max-height="400">
@@ -23,6 +24,7 @@
     name: "SuspiciousGroupList",
     props:{
       affiliatedPartyList: Array,
+      loadingList: Boolean
     },
     computed: {
       affiliatedPartyNum: function () {
