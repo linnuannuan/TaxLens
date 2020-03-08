@@ -57,6 +57,7 @@
         //   .text("I'm tootip!");
       },
       renderGraph() {
+
         function drag(simulation) {
           function dragStarted(d) {
             if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -116,9 +117,7 @@
           let types = Array.from(new Set(links.map(d => d.type)));
 
           let industrys =  Array.from(new Set(nodes.filter(d=>!d.in).map( d => d['industry'])));
-          // console.log(industrys)
           let color = d3.scaleOrdinal(industrys, d3.schemeSet3);
-          // console.log(color,industrys,color('其他未列明批发业'))
 
           // schemeCategory10: 1f77b4,ff7f0e ,2ca02c,d62728,9467bd,8c564b,e377c2,7f7f7f,bcbd22,17becf
           // let color = d3.scaleOrdinal(types, d3.schemeCategory10);

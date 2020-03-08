@@ -3,7 +3,6 @@ import Vue from 'vue';
 let EventService = new Vue({
   data:{
     SuspiciousGroupSelected: 'suspicious_group_selected',
-
     TimeRangeSelected: 'time_range_selected',
     TimeRangeBrushed: 'time_range_brushed',
   },

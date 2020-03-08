@@ -27,13 +27,24 @@
         </el-row>
       </el-col>
       <el-col :span="18" class="MainView">
-        <div style="width: 100%; height: 100%; ">
-          <graph-view
-              class="grid-content"
-              :affiliated-party-detail="affiliatedPartyDetail"
-              style="width: 100%; height: 100%; ">
-          </graph-view>
-        </div>
+          <el-row style="height: 50%">
+            <div style="width: 100%; height: 100%; ">
+              <graph-view
+                  class="grid-content"
+                  :affiliated-party-detail="affiliatedPartyDetail"
+                  style="width: 100%; height: 100%; ">
+              </graph-view>
+            </div>
+          </el-row>
+          <el-row style="height: 50%">
+            <div style="width: 100%; height: 100%; ">
+              <detail-view
+                  class="grid-content"
+                  :affiliated-party-detail="affiliatedPartyDetail"
+                  style="width: 100%; height: 100%; ">
+              </detail-view>
+            </div>
+          </el-row>
       </el-col>
     </el-row>
   </div>
@@ -45,6 +56,8 @@
 <script>
   import SuspiciousGroupList from './components/suspicious-group-list'
   import GraphView from './components/graph-view.vue';
+  import DetailView from './components/detail-view.vue';
+
 
   import DataService from './utils/data-service'
   import EventService from "./utils/event-service";
@@ -54,6 +67,7 @@
     components: {
       SuspiciousGroupList,
       GraphView,
+      DetailView,
       // TSNEView,
     },
     data() {

@@ -21,6 +21,7 @@ def get_ap_by_ap_id():
         ap_data = TPIIN.get_detail_by_ap_id(post_data['ap_id'])
     else:
         ap_data = TPIIN.get_detail_by_tp_id('610198671502546')  # default case
+        # ap_data = TPIIN.get_detail_by_tp_id('610402196912020326')
     return simplejson.dumps(ap_data, ensure_ascii=False, ignore_nan=True)
 
 
@@ -32,6 +33,7 @@ def get_ap_by_tp_id():
         ap_data = TPIIN.get_detail_by_tp_id(post_data['tp_id'])
     else:
         ap_data = TPIIN.get_detail_by_tp_id('610198671502546')  # default case
+        # ap_data = TPIIN.get_detail_by_tp_id('610402196912020326')
     return simplejson.dumps(ap_data, ensure_ascii=False, ignore_nan=True)
 
 

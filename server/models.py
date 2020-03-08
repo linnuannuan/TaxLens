@@ -9,6 +9,7 @@ PATH_TPIIN_INVOICE = './server/data/TPIIN_invoice.ftr'
 PATH_TPIIN_INVESTOR = './server/data/TPIIN_investor.ftr'
 PATH_TPIIN_TAXPAYER = './server/data/TPIIN_taxpayer.ftr'
 
+# PATH_TPIIN_TAXINDEX = './server/data/tax_index.csv'
 
 def get_ap_df(undirected_graph):
     """
@@ -33,6 +34,8 @@ class Model:
         self.TPIIN_invoice = pd.read_feather(PATH_TPIIN_INVOICE)
         self.TPIIN_investor = pd.read_feather(PATH_TPIIN_INVESTOR)
         self.TPIIN_taxpayer = pd.read_feather(PATH_TPIIN_TAXPAYER)
+        # self.TPIIN_tax_index = pd.read_csv(PATH_TPIIN_TAXINDEX)
+
         # declare class variables
         self.AP_list = []
 
@@ -111,6 +114,8 @@ class Model:
 
         return ap_list_json
 
+
+
     def get_detail_by_ap_id(self, ap_id):
         """
         Prepare the affiliated party sub-graph with additional node information
@@ -122,6 +127,10 @@ class Model:
         # retrieve taxpayer information
         tp_list = [n for n, tp in list(ap_graph.nodes(data='tp')) if tp]
         tp_df = self.TPIIN_taxpayer.query('tp_id in @tp_list').set_index('tp_id', drop=True)
+
+        # retrieve taxpayer index info (12 months as 12 dimension)
+        # ti_df =  self.TPIIN_tax_index.query('tp_id in @tp_list').set_index('tp_id', drop=True)
+
 
         for n in tp_list:
             ap_graph.add_node(n, **dict(tp_df.loc[n]))
