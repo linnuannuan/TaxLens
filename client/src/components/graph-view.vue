@@ -1,6 +1,6 @@
 /* eslint-disable */
 <template>
-  <div id="relation_structure"></div>
+  <div id="relation_structure" v-loading="loadingGraph"></div>
 </template>
 <script>
   import * as d3 from "d3";
@@ -9,6 +9,7 @@
     name: 'GraphView',
     props:{
       affiliatedPartyDetail: Object,
+      loadingGraph: Boolean
     },
     data() {
       return {

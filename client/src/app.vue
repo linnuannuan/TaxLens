@@ -22,18 +22,20 @@
         <el-row style="height: 400px">
           <suspicious-group-list
               class="grid-list"
-              :affiliated-party-list="affiliatedPartyList">
+              :affiliated-party-list="affiliatedPartyList"
+              :loading-list="loadingList">
           </suspicious-group-list>
         </el-row>
       </el-col>
       <el-col :span="18" class="MainView">
           <el-row style="height: 50%">
             <div style="width: 100%; height: 100%; ">
-              <graph-view
-                  class="grid-content"
-                  :affiliated-party-detail="affiliatedPartyDetail"
-                  style="width: 100%; height: 100%; ">
-              </graph-view>
+                  <graph-view
+                      class="grid-content"
+                      :affiliated-party-detail="affiliatedPartyDetail"
+                      :loading-graph="loadingGraph"
+                      style="width: 100%; height: 100%; ">
+                  </graph-view>
             </div>
           </el-row>
           <el-row style="height: 50%">
@@ -78,38 +80,49 @@
         max_transaction_length: 5,
         max_control_length: 5,
         search_id: '610198671502546',
+
+        loadingList: true,
+        loadingGraph: true,
       }
     },
     mounted () {
       DataService.loadAffiliatedPartyList((data)=>{
         this.affiliatedPartyList = data;
+        this.loadingList = false;
       });
 
       DataService.loadAffiliatedPartyDetailByAP(null, data=>{
         this.affiliatedPartyDetail = data;
+        this.loadingGraph = false;
       });
 
       EventService.onSuspiciousGroupSelected(ap_id=>{
+        this.loadingGraph = true;
         let para = {'ap_id': ap_id};
         DataService.loadAffiliatedPartyDetailByAP(para, data=>{
           this.affiliatedPartyDetail = data;
+          this.loadingGraph = false;
         });
       });
     },
     methods: {
       setModelSetting: function() {
+        this.loadingList = true;
         let para = {
           'max_transaction_length': this.max_transaction_length,
           'max_control_length': this.max_control_length
         };
         DataService.setAffiliatedPartySetting(para, data=>{
-          this.affiliatedPartyList = data
+          this.affiliatedPartyList = data;
+          this.loadingList = false;
         })
       },
       searchID: function() {
+        this.loadingGraph = true;
         let para = {'tp_id': this.search_id};
         DataService.loadAffiliatedPartyDetailByTP(para, data=>{
-          this.affiliatedPartyDetail = data
+          this.affiliatedPartyDetail = data;
+          this.loadingGraph = false;
         })
       },
     }
