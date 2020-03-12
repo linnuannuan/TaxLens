@@ -1,6 +1,6 @@
 /* eslint-disable */
 <template>
-  <div id="detail_view">
+  <div id="detail_view" v-loading="loadingDetailGraph">
 
     <div id="d3Tooltip"></div>
   </div>
@@ -13,10 +13,13 @@
         // sankeyLinkVertical
     } from 'd3-sankey'
 
+
+
   export default {
       name: 'DetailView',
       props: {
-          affiliatedPartyDetail: Object,
+          affiliatedTransactionDetail:Object,
+          loadingDetailGraph:Boolean,
       },
       data() {
           return {
@@ -24,7 +27,7 @@
           }
       },
       watch: {
-          affiliatedPartyDetail: function () {
+          affiliatedTransactionDetail: function () {
               this.renderGraph();
           },
       },
@@ -77,9 +80,7 @@
           },
           renderGraph: function () {
               /*绘制双向桑基图*/
-              // if (this.affiliatedPartyDetail === null) {
-                console.log(this.affiliatedPartyDetail)
-                const chart = ({
+              let chart = ({
                     // container,
                     data,
                     // margin,
@@ -92,7 +93,7 @@
                     // select(container).select('svg').remove()
                     this.svg.selectAll("g").remove()
                     const svg = this.svg
-                    console.log(data, data.nodes, data.links)
+                    // console.log(data, data.nodes, data.links)
 
                     // config the sankey for transaction
                     const { nodes, links } = d3Sankey()
@@ -105,13 +106,14 @@
                             // set the default value of ap_txn as 0.5
                             links: data.links.filter(d=>d.ap_txn).map(d => { d.value = 0.5 ; return Object.assign({}, d)})
                         })
-                    console.log('nodes,links:',nodes,links)
+
                     nodes.map((d)=>{
                         d.cy = (d.y0 + d.y1) / 2
                         d.cx = (d.x0 < width / 2 ? d.x1 : d.x0)
                         d.r =  (d.y1-d.y0)/2
                         return d
                     })
+                    console.log('calculate position of nodes, links:', nodes, links)
 
                     const color = d => {return d.tp ? this.cfg.node.color.tp: this.cfg.node.color.in}
                     // const format = d => `$${d3Format(',.0f')(d)}`
@@ -119,7 +121,7 @@
 
                     // get invest node height*0.5
                     let i_nodes = data.nodes.filter(d=>d.in)
-                    let i_links = data.links.filter(d=>!d.ap_txn).map(d=>{d.value = d.in_ratio; return d})
+                    let i_links = data.links.filter(d=>!d.ap_txn).map(d=>{d.value = d.in_ratio; return Object.assign({}, d)})
 
                     console.log('i_nodes,i_links:',i_nodes,i_links)
 
@@ -128,11 +130,11 @@
                     i_nodes.map(
                         function(d){
                             //find all investor start from a investor
-                            let related_link = i_links.filter(link=>link.source == d['id'])
+                            let related_link = i_links.filter(link=>link.source == d['id'] )
 
                             // calculate the x position of node based the x position of related taxpayers
                             let position_x = related_link.reduce((acc, cur) => acc+nodes[nodes.findIndex(element =>element['id'] == cur.target)].x0,0) /related_link.length
-                            // console.log('id:',d['id'],'related_link:',related_link,'position_x',position_x)
+                            console.log('id:',d['id'],'related_link:',related_link,'position_x',position_x)
                             d.x = position_x
                             d.y = i_base
 
@@ -147,8 +149,8 @@
                             d.r = 30
                             return d
                     })
-
-                    i_links = i_links.map(d=>{d.source = i_nodes.find(elements => elements.id == d.source), d.target = nodes.find(elements => elements.id == d.target); return d})
+                    console.log('get invest nodes position: ',i_nodes)
+                    i_links = i_links.map(d=>{d.source = i_nodes.find(elements => elements.id == d.source), d.target = nodes.find(elements => elements.id == d.target); return Object.assign({}, d)})
                     console.log('get invest source target: ', i_links)
 
                     // draw investor node
@@ -355,85 +357,7 @@
                 }
                 chart({
                     container:'#detail_view',
-                    data:{
-                        "directed": true,
-                        "multigraph": false,
-                        "graph": {
-                          "num_ap_txn": 1,
-                          "num_tp": 3,
-                          "num_in": 2
-                        },
-                        "nodes": [
-                          {
-                            "in": false,
-                            "tp": true,
-                            "tp_name": "西安亚欣航空机械制造有限公司",
-                            "lr_name": "罗湖平",
-                            "pc": "710089",
-                            "business": "许可经营项目：（上述经营范围涉及许可经营项目的，凭许可证明文件或批准证书在有效期内经营，未经许可不得经营）一般经营项目：机械零部件、非标设备的设计、生产、安装、销售；航材销售***（以上经营范围不含国家规定的专控及前置许可项目、禁止项目）",
-                            "capital": 1000000.0,
-                            "employee": 8.0,
-                            "industry": "机械零部件加工",
-                            "id": "610114091651625"
-                          },
-                          {
-                            "in": false,
-                            "tp": true,
-                            "tp_name": "西安弗莱航空机械制造有限公司",
-                            "lr_name": "张晓庆",
-                            "pc": "710089",
-                            "business": "机械零组件及非标设备的设计、生产、销售；航材销售**（以上经营范围凡涉及国家有专项专营规定的从其规定）",
-                            "capital": 500000.0,
-                            "employee": 12.0,
-                            "industry": "其他通用设备制造业",
-                            "id": "610181698600875"
-                          },
-                          {
-                            "tp": true,
-                            "in": true,
-                            "tp_name": "西安市阎良区弗航机械加工厂",
-                            "lr_name": "张晓庆",
-                            "pc": "710089",
-                            "business": "一般经营项目：机械零部件加工***（未取得专项许可的项目除外）",
-                            "capital": NaN,
-                            "employee": NaN,
-                            "industry": "机械零部件加工",
-                            "in_name": "张晓庆",
-                            "in_entity": "510",
-                            "id": "610114198406243541"
-                          },
-                          {
-                            "tp": false,
-                            "in": true,
-                            "in_name": "罗湖平",
-                            "in_entity": "510",
-                            "id": "610114197501230015"
-                          }
-                        ],
-                        "links": [
-                          {
-                            "ap_txn": true,
-                            "source": "610114091651625",
-                            "target": "610181698600875"
-                          },
-                          {
-                            "in_ratio": 0.8,
-                            "source": "610114198406243541",
-                            "target": "610181698600875"
-                          },
-                          {
-                            "in_ratio": 1.0,
-                            "source": "610114197501230015",
-                            "target": "610114091651625"
-                          },
-                          {
-                            "in_ratio": 0.2,
-                            "source": "610114197501230015",
-                            "target": "610181698600875"
-                          }
-                        ]
-                      },
-                    // data: (this.affiliatedPartyDetail !== null)? this.affiliatedPartyDetail:{
+                    // data:{
                     //     "directed": true,
                     //     "multigraph": false,
                     //     "graph": {
@@ -511,6 +435,86 @@
                     //       }
                     //     ]
                     //   },
+                    // data: (copy_data !== null)? copy_data:{
+                    //     "directed": true,
+                    //     "multigraph": false,
+                    //     "graph": {
+                    //       "num_ap_txn": 1,
+                    //       "num_tp": 3,
+                    //       "num_in": 2
+                    //     },
+                    //     "nodes": [
+                    //       {
+                    //         "in": false,
+                    //         "tp": true,
+                    //         "tp_name": "西安亚欣航空机械制造有限公司",
+                    //         "lr_name": "罗湖平",
+                    //         "pc": "710089",
+                    //         "business": "许可经营项目：（上述经营范围涉及许可经营项目的，凭许可证明文件或批准证书在有效期内经营，未经许可不得经营）一般经营项目：机械零部件、非标设备的设计、生产、安装、销售；航材销售***（以上经营范围不含国家规定的专控及前置许可项目、禁止项目）",
+                    //         "capital": 1000000.0,
+                    //         "employee": 8.0,
+                    //         "industry": "机械零部件加工",
+                    //         "id": "610114091651625"
+                    //       },
+                    //       {
+                    //         "in": false,
+                    //         "tp": true,
+                    //         "tp_name": "西安弗莱航空机械制造有限公司",
+                    //         "lr_name": "张晓庆",
+                    //         "pc": "710089",
+                    //         "business": "机械零组件及非标设备的设计、生产、销售；航材销售**（以上经营范围凡涉及国家有专项专营规定的从其规定）",
+                    //         "capital": 500000.0,
+                    //         "employee": 12.0,
+                    //         "industry": "其他通用设备制造业",
+                    //         "id": "610181698600875"
+                    //       },
+                    //       {
+                    //         "tp": true,
+                    //         "in": true,
+                    //         "tp_name": "西安市阎良区弗航机械加工厂",
+                    //         "lr_name": "张晓庆",
+                    //         "pc": "710089",
+                    //         "business": "一般经营项目：机械零部件加工***（未取得专项许可的项目除外）",
+                    //         "capital": NaN,
+                    //         "employee": NaN,
+                    //         "industry": "机械零部件加工",
+                    //         "in_name": "张晓庆",
+                    //         "in_entity": "510",
+                    //         "id": "610114198406243541"
+                    //       },
+                    //       {
+                    //         "tp": false,
+                    //         "in": true,
+                    //         "in_name": "罗湖平",
+                    //         "in_entity": "510",
+                    //         "id": "610114197501230015"
+                    //       }
+                    //     ],
+                    //     "links": [
+                    //       {
+                    //         "ap_txn": true,
+                    //         "source": "610114091651625",
+                    //         "target": "610181698600875"
+                    //       },
+                    //       {
+                    //         "in_ratio": 0.8,
+                    //         "source": "610114198406243541",
+                    //         "target": "610181698600875"
+                    //       },
+                    //       {
+                    //         "in_ratio": 1.0,
+                    //         "source": "610114197501230015",
+                    //         "target": "610114091651625"
+                    //       },
+                    //       {
+                    //         "in_ratio": 0.2,
+                    //         "source": "610114197501230015",
+                    //         "target": "610181698600875"
+                    //       }
+                    //     ]
+                    //   },
+                    // data: copy_data,
+                    data:this.affiliatedTransactionDetail,
                     size: { width:this.$el.clientWidth/2, height:this.$el.clientHeight},
                 })
 

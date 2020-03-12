@@ -5,6 +5,7 @@ let EventService = new Vue({
     SuspiciousGroupSelected: 'suspicious_group_selected',
     TimeRangeSelected: 'time_range_selected',
     TimeRangeBrushed: 'time_range_brushed',
+    AffiliatedTransactionSelected: 'affiliated_transaction_selected'
   },
 
   methods:{
@@ -38,6 +39,17 @@ let EventService = new Vue({
     onTimeRangeBrushed: function(callback){
       this.$on(this.TimeRangeBrushed, function(msg){
         callback(msg);
+      })
+    },
+
+    // When user click on a transaction to see its detail info
+    emitAffiliatedTransactionSelected: function(source, target){
+      console.log('emitAffiliatedTransactionSelected msg:',source, target)
+      this.$emit(this.AffiliatedTransactionSelected,source, target);
+    },
+    onAffiliatedTransactionSelected: function (callback) {
+        this.$on(this.AffiliatedTransactionSelected, function(source, target){
+        callback(source, target);
       })
     },
   }

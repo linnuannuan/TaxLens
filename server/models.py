@@ -2,13 +2,14 @@ import pyarrow
 import pandas as pd
 import numpy as np
 import networkx as nx
+from functools import reduce
 
 PATH_TPIIN = './server/data/TPIIN.gpickle'
 PATH_TPIIN_AP_TXN = './server/data/TPIIN_ap_txn.ftr'
 PATH_TPIIN_INVOICE = './server/data/TPIIN_invoice.ftr'
 PATH_TPIIN_INVESTOR = './server/data/TPIIN_investor.ftr'
 PATH_TPIIN_TAXPAYER = './server/data/TPIIN_taxpayer.ftr'
-PATH_TPIIN_TAX_EVADER = './server/data/TPIIN_tax_evader.ftr'
+# PATH_TPIIN_TAX_EVADER = './server/data/TPIIN_tax_evader.ftr'
 
 # PATH_TPIIN_TAXINDEX = './server/data/tax_index.csv'
 
@@ -36,7 +37,7 @@ class Model:
         self.TPIIN_investor = pd.read_feather(PATH_TPIIN_INVESTOR)
         self.TPIIN_taxpayer = pd.read_feather(PATH_TPIIN_TAXPAYER)
         # self.TPIIN_tax_index = pd.read_csv(PATH_TPIIN_TAXINDEX)
-        self.TPIIN_tax_evader = pd.read_feather(PATH_TPIIN_TAX_EVADER)
+        # self.TPIIN_tax_evader = pd.read_feather(PATH_TPIIN_TAX_EVADER)
 
         # declare class variables
         self.AP_list = []
@@ -135,9 +136,9 @@ class Model:
 
         for n in tp_list:
             ap_graph.add_node(n, **dict(tp_df.loc[n]))
-            tax_evader = self.TPIIN_tax_evader.query('tp_id == @n')
-            if not tax_evader.empty:
-                ap_graph.add_node(n, tax_evader=True)  # will be fix to the actual rule number later
+            # tax_evader = self.TPIIN_tax_evader.query('tp_id == @n')
+            # if not tax_evader.empty:
+            #     ap_graph.add_node(n, tax_evader=True)  # will be fix to the actual rule number later
 
         # retrieve investor information
         in_list = [n for n, inv in list(ap_graph.nodes(data='in')) if inv]
@@ -187,5 +188,45 @@ class Model:
         for ap in range(len(self.AP_list)):
             if tp_id in self.AP_list[ap]:
                 ap_id = ap
-
+                break
+        ap_graph = self.TPIIN.subgraph(self.AP_list[ap_id]).copy()
         return self.get_detail_by_ap_id(ap_id) if ap_id != -1 else "{}"
+
+    # def get_ap_id_by_tp_id(self, tp_id):
+    #     # get ap_id
+    #     ap_id = -1
+    #     for ap in range(len(self.AP_list)):
+    #         if tp_id in self.AP_list[ap]:
+    #             ap_id = ap
+    #     ap_graph = self.TPIIN.subgraph(self.AP_list[ap_id]).copy()
+
+
+
+    def get_detail_ap_txn(self, source, target):
+        """
+        get the detail ap_txn
+        """
+        ap_id = -1
+        for ap in range(len(self.AP_list)):
+            if source in self.AP_list[ap]:
+                ap_id = ap
+                break
+        ap_graph = self.TPIIN.subgraph(self.AP_list[ap_id]).copy()
+        ap_graph_undirected = ap_graph.to_undirected(as_view=True)
+
+
+        paths = list(nx.all_simple_paths(ap_graph_undirected, source=source, target=target))
+
+
+        # 获取所有path的node list
+        node_list = list(set(reduce(lambda x, y: x+y, paths)))
+
+
+        # 获取对应node list的subgraph
+        detail_ap_txn_graph = nx.DiGraph(ap_graph.subgraph(node_list))
+
+        detail_ap_txn_graph.remove_nodes_from([n for n, tp in detail_ap_txn_graph.nodes(data='tp') if (tp &(n != source)&(n != target))])
+        # remove_nodes_from([n for n in self.TPIIN.nodes() if n not in control_chain])
+
+        graph_data = nx.node_link_data(detail_ap_txn_graph)
+        return graph_data

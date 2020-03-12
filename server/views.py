@@ -44,3 +44,16 @@ def set_model_parameter():
         post_data = simplejson.loads(post_data)
         TPIIN.get_TPIIN(post_data['max_transaction_length'], post_data['max_control_length'])
     return simplejson.dumps(TPIIN.get_affiliated_party_list(), ensure_ascii=False, ignore_nan=True)
+
+@app.route('/ap_txn_detail', methods=['POST'])
+def get_ap_txn_detail():
+    post_data = request.data.decode()
+    print('view: get ap_txn_detail  post data:', post_data)
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        detail_ap_data = TPIIN.get_detail_ap_txn(post_data['source'], post_data['target'])
+    else:
+        detail_ap_data = TPIIN.get_detail_ap_txn('610198671502546', '610201694932047')  # default case
+
+    print('detail_ap_data:', detail_ap_data)
+    return simplejson.dumps(detail_ap_data, ensure_ascii=False, ignore_nan=True)

@@ -30,6 +30,16 @@ let DataService = new Vue({
           console.log(errResponse)
         })
     },
+    loadDetailAffiliatedTransaction(param, callback){
+      console.log('get data from houtai ',param)
+      this.axios.post(`${this.dataServerUrl}/ap_txn_detail`, param)
+        .then(response => {
+            console.log('enter data service.js get detail affiliated data',response.data)
+          callback(response.data)
+        }, errResponse => {
+          console.log(errResponse)
+        })
+    },
     setAffiliatedPartySetting(param, callback){
       this.axios.post(`${this.dataServerUrl}/set_model`, param)
         .then(response => {
@@ -38,6 +48,7 @@ let DataService = new Vue({
           console.log(errResponse)
         })
     },
+
   }
 });
 

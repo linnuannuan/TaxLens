@@ -4,6 +4,7 @@
 </template>
 <script>
   import * as d3 from "d3";
+  import EventService from "../utils/event-service";
 
   export default {
     name: 'GraphView',
@@ -25,6 +26,10 @@
       this.initGraph();
     },
     methods: {
+      // getDetailTransactionView(source, target) {
+      //   console.log('click to get detail tran:', ' source: ', source, 'target: ', target)
+      //   EventService.emitAffiliatedTransactionSelected(source, target);
+      // },
       initGraph() {
         let width = this.$el.clientWidth;
         let height = this.$el.clientHeight;
@@ -58,7 +63,6 @@
         //   .text("I'm tootip!");
       },
       renderGraph() {
-
         function drag(simulation) {
           function dragStarted(d) {
             if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -182,7 +186,12 @@
             .attr("stroke-width", d => lScale(d.value))
             .attr('opacity', d => d.type == 'invest'? 1/d.value:oScale(d['ap_txn_amount']))
             // link 线段终止坐标待计算
-            .attr("marker-end", d => `url(${new URL(`#arrow-${d.type}`, location)})`);
+            .attr("marker-end", d => `url(${new URL(`#arrow-${d.type}`, location)})`)
+            .on('click',function (d) {
+                console.log('click on d where source = ',d.source,'target = ',d.target)
+                EventService.emitAffiliatedTransactionSelected(d.source.id,d.target.id);
+                // this.getDetailTransactionView(d.source,d.target)
+            })
 
            const node = this.svg.append("g")
             .attr("fill", "currentColor")

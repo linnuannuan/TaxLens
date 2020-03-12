@@ -26,6 +26,13 @@
               :loading-list="loadingList">
           </suspicious-group-list>
         </el-row>
+<!--        <el-row style="height: 400px">-->
+<!--          <tsne-view-->
+<!--              class="grid-list"-->
+<!--              :affiliated-party-list="affiliatedPartyList"-->
+<!--              :loading-list="loadingList">-->
+<!--          </tsne-view>-->
+<!--        </el-row>-->
       </el-col>
       <el-col :span="18" class="MainView">
           <el-row style="height: 50%">
@@ -42,7 +49,8 @@
             <div style="width: 100%; height: 100%; ">
               <detail-view
                   class="grid-content"
-                  :affiliated-party-detail="affiliatedPartyDetail"
+                  :affiliated-transaction-detail="affiliatedTransactionDetail"
+                  :loading-detail="loadingDetailGraph"
                   style="width: 100%; height: 100%; ">
               </detail-view>
             </div>
@@ -51,15 +59,13 @@
     </el-row>
   </div>
 
-
-
 </template>
 
 <script>
   import SuspiciousGroupList from './components/suspicious-group-list'
   import GraphView from './components/graph-view.vue';
   import DetailView from './components/detail-view.vue';
-
+  // import TsneView from './components/tsne-view.vue';
 
   import DataService from './utils/data-service'
   import EventService from "./utils/event-service";
@@ -70,12 +76,13 @@
       SuspiciousGroupList,
       GraphView,
       DetailView,
-      // TSNEView,
+      // TsneView,
     },
     data() {
       return {
         affiliatedPartyList: [],
         affiliatedPartyDetail: {},
+        affiliatedTransactionDetail:{},
 
         max_transaction_length: 5,
         max_control_length: 5,
@@ -83,6 +90,10 @@
 
         loadingList: true,
         loadingGraph: true,
+        loadingDetailGraph:true,
+
+        default_detail_transaction_source:"610198671502546",
+        default_detail_transaction_target:"610201694932047"
       }
     },
     mounted () {
@@ -94,6 +105,20 @@
       DataService.loadAffiliatedPartyDetailByAP(null, data=>{
         this.affiliatedPartyDetail = data;
         this.loadingGraph = false;
+      });
+
+      DataService.loadDetailAffiliatedTransaction(null,(data)=>{
+        this.affiliatedTransactionDetail = data;
+        this.loadingDetailGraph = false;
+      });
+
+      EventService.onAffiliatedTransactionSelected((source, target)=>{
+        this.loadingDetailGraph = true;
+        let para = {'source': source, 'target':target};
+        DataService.loadDetailAffiliatedTransaction(para,(data)=>{
+            this.affiliatedTransactionDetail = data;
+            this.loadingDetailGraph = false;
+         });
       });
 
       EventService.onSuspiciousGroupSelected(ap_id=>{
@@ -123,6 +148,17 @@
         DataService.loadAffiliatedPartyDetailByTP(para, data=>{
           this.affiliatedPartyDetail = data;
           this.loadingGraph = false;
+        })
+      },
+      searchAPT: function() {
+        this.loadingDetailGraph = true;
+        let para = {
+            'source':this.default_detail_transaction_source,
+            'target':this.default_detail_transaction_target
+        };
+        DataService.loadDetailAffiliatedTransaction(para, data=>{
+          this.affiliatedTransactionDetail = data;
+          this.loadingDetailGraph = false;
         })
       },
     }
