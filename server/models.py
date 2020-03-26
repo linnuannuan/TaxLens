@@ -11,7 +11,7 @@ PATH_TPIIN_INVESTOR = './server/data/TPIIN_investor.ftr'
 PATH_TPIIN_TAXPAYER = './server/data/TPIIN_taxpayer.ftr'
 # PATH_TPIIN_TAX_EVADER = './server/data/TPIIN_tax_evader.ftr'
 
-# PATH_TPIIN_TAXINDEX = './server/data/tax_index.csv'
+PATH_TPIIN_TAXINDEX = './server/data/TPIIN_tax_index.pkl'
 
 def get_ap_df(undirected_graph):
     """
@@ -36,7 +36,7 @@ class Model:
         self.TPIIN_invoice = pd.read_feather(PATH_TPIIN_INVOICE)
         self.TPIIN_investor = pd.read_feather(PATH_TPIIN_INVESTOR)
         self.TPIIN_taxpayer = pd.read_feather(PATH_TPIIN_TAXPAYER)
-        # self.TPIIN_tax_index = pd.read_csv(PATH_TPIIN_TAXINDEX)
+        self.TPIIN_tax_index = nx.read_gpickle(PATH_TPIIN_TAXINDEX)
         # self.TPIIN_tax_evader = pd.read_feather(PATH_TPIIN_TAX_EVADER)
 
         # declare class variables
@@ -130,12 +130,18 @@ class Model:
         # retrieve taxpayer information
         tp_list = [n for n, tp in list(ap_graph.nodes(data='tp')) if tp]
         tp_df = self.TPIIN_taxpayer.query('tp_id in @tp_list').set_index('tp_id', drop=True)
-
+        # tax_df = self.TPIIN_tax_index.query('tp_id in @tp_list').set_index('tp_id', drop=True)
         # retrieve taxpayer index info (12 months as 12 dimension)
         # ti_df =  self.TPIIN_tax_index.query('tp_id in @tp_list').set_index('tp_id', drop=True)
 
         for n in tp_list:
             ap_graph.add_node(n, **dict(tp_df.loc[n]))
+            # if len(self.TPIIN_tax_index.query('tp_id == @n'))>0:
+            #     print('get node info: ', tax_df.loc[n])
+            #     ap_graph.add_node(n, **dict(tax_df.loc[n]))
+
+            # print('get info of ', n, ' the answer is:',)
+
             # tax_evader = self.TPIIN_tax_evader.query('tp_id == @n')
             # if not tax_evader.empty:
             #     ap_graph.add_node(n, tax_evader=True)  # will be fix to the actual rule number later
@@ -170,10 +176,15 @@ class Model:
         # retrieve invoice information
         # narrow down search space
         ap_invoice = self.TPIIN_invoice.query('seller_id in @tp_list').query('buyer_id in @tp_list')
+        ap_graph_undirected = ap_graph.to_undirected()
+        ap_graph_undirected.remove_edges_from([(src, dst) for src, dst, data in ap_graph_undirected.edges.data() if ('ap_txn' in data)])
         for u, v, data in list(ap_graph.edges(data=True)):
             if 'ap_txn' in data:
                 txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn']
-                ap_graph.add_edge(u, v, ap_txn_amount=np.sum(txn), ap_txn_count=len(txn))
+                # add all simple path of each ap_txn into the graph to be highlighted
+                paths = list(nx.all_simple_paths(ap_graph_undirected, source=u, target=v))
+                ap_graph.add_edge(u, v, ap_txn_amount=np.sum(txn), ap_txn_count=len(txn), path=paths)
+
 
         return nx.node_link_data(ap_graph)
 
@@ -206,12 +217,15 @@ class Model:
         """
         get the detail ap_txn
         """
+
+        print('get source,target', source, target)
         ap_id = -1
         for ap in range(len(self.AP_list)):
             if source in self.AP_list[ap]:
                 ap_id = ap
                 break
         ap_graph = self.TPIIN.subgraph(self.AP_list[ap_id]).copy()
+
         ap_graph_undirected = ap_graph.to_undirected(as_view=True)
 
 
@@ -225,8 +239,35 @@ class Model:
         # 获取对应node list的subgraph
         detail_ap_txn_graph = nx.DiGraph(ap_graph.subgraph(node_list))
 
-        detail_ap_txn_graph.remove_nodes_from([n for n, tp in detail_ap_txn_graph.nodes(data='tp') if (tp &(n != source)&(n != target))])
-        # remove_nodes_from([n for n in self.TPIIN.nodes() if n not in control_chain])
+        # for n, iv in detail_ap_txn_graph.nodes():
+        #     print(n,iv)
+
+
+        # 去除非source和target的 tp节点
+        # detail_ap_txn_graph.remove_nodes_from([n for n, iv in detail_ap_txn_graph.nodes(data='in') if ((not iv) & (n != source) & (n != target))])
+        # detail_ap_txn_graph.remove_nodes_from([n for n, iv in detail_ap_txn_graph.nodes(data='in') if ((not iv) & (n != source) & (n != target))])
+
+        # 去除transaction的link
+        print('detail edges:', detail_ap_txn_graph.edges())
+        print('remove edges:', [(src, dst) for src, dst, data in detail_ap_txn_graph.edges.data() if (('ap_txn' in data) & ((src != source) | (dst != target)))])
+
+        # remove_edges = [(src, dst) for src, dst, data in detail_ap_txn_graph.edges.data() if (('ap_txn' in data) & ((src != source) | (dst != target)))]
+        # if len(remove_edges)>0:
+        detail_ap_txn_graph.remove_edges_from([(src, dst) for src, dst, data in detail_ap_txn_graph.edges.data() if (('ap_txn' in data) & ((src != source) | (dst != target)))])
+
+
+        tp_list = [n for n, tp in list(detail_ap_txn_graph.nodes(data='tp')) if tp]
+        tp_df = self.TPIIN_taxpayer.query('tp_id in @tp_list').set_index('tp_id', drop=True)
+
+        for n in tp_list:
+            detail_ap_txn_graph.add_node(n, **dict(tp_df.loc[n]))
+
+        in_list = [n for n, inv in list(detail_ap_txn_graph.nodes(data='in')) if inv]
+        in_df = self.TPIIN_investor.query('in_id in @in_list').set_index('in_id', drop=True)
+
+        for n in in_list:
+            detail_ap_txn_graph.add_node(n, **dict(in_df.loc[n]))
+
 
         graph_data = nx.node_link_data(detail_ap_txn_graph)
         return graph_data

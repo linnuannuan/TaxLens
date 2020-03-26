@@ -1,6 +1,6 @@
 /* eslint-disable */
 <template>
-  <div id="detail_view" v-loading="loadingDetailGraph">
+    <div id="detail_view" v-loading="loadingDetailGraph">
 
     <div id="d3Tooltip"></div>
   </div>
@@ -160,7 +160,7 @@
                         .data(i_nodes)
                         .enter()
                         .append('circle')
-                        .attr('cx', d => d.x)
+                        .attr('cx', d => d.x - this.cfg.node.invest_r)
                         .attr('cy', d => d.y)
                         .attr('r', this.cfg.node.invest_r)
                         .attr('fill', d => color(d))
@@ -173,17 +173,15 @@
                         .selectAll('rect')
                         .data(nodes)
                         .enter()
-                        // .append('rect')
-                        // .attr("x",d => (d.x0 < width / 2 ? d.x1 - margin.left : d.x0 + margin.left)
-                        // .attr("y", d => d.y0)
-                        // .attr("height", d => d.y1 - d.y0)
-                        // .attr("width", d => d.x1 - d.x0)
-                        .append('circle')
-                        // .attr('cx', d => d.x0)
-                        .attr('cy', d => (d.y0 + d.y1) / 2)
-                        .attr('cx', d => (d.x0 < width / 2 ? d.x1 : d.x0))
+                        .append('rect')
+                        .attr("x",d => (d.x0 < width / 2 ? d.x1 : d.x0))
+                        .attr("y", d => d.y0)
+                        .attr("height", d => d.y1 - d.y0)
+                        .attr("width", d => d.x1 - d.x0)
+                        // .append('circle')
+                        // .attr('cx', d => (d.x0 < width / 2 ? d.x1 : d.x0))
                         // .attr('cy', d => (d.y0 + d.y1) / 2)
-                        .attr('r', d => (d.y1-d.y0)/2)
+                        // .attr('r', d => (d.y1-d.y0)/2)
                         .attr('fill', d => color(d))
                         .on('click', onNodeClick)
                         // .style('cursor', 'pointer')
@@ -240,10 +238,13 @@
                         .attr('d', d =>{
 
                             // get link list with the same source
-                            let i_link_with_same_source = i_links.filter(l=>l.source.id == d.source.id)
-                            // since the invest ratio is based on the ratio of target node, the rate should reset for source node
-                            let i_link_with_same_source_total_ratio = i_link_with_same_source.reduce((acc,cur)=>acc+cur.value,0)
 
+                            /* neglect the link width*/
+                            // let i_link_with_same_source = i_links.filter(l=>l.source.id == d.source.id)
+                            // since the invest ratio is based on the ratio of target node, the rate should reset for source node
+
+                            /* neglect the link width*/
+                            // let i_link_with_same_source_total_ratio = i_link_with_same_source.reduce((acc,cur)=>acc+cur.value,0)
 
                             // get link list with the same target
                             let i_link_with_same_target = i_links.filter(l=>l.target.id == d.target.id)
@@ -251,48 +252,124 @@
                             // console.log('i_link_with_same_source',i_link_with_same_source)
                             // console.log('i_link_with_same_target',i_link_with_same_target)
 
-                            let source_offset =  2*d.source.r*(i_link_with_same_source.slice(0,i_link_with_same_source.findIndex(e => e == d)).reduce((acc,cur)=>acc+cur.value,0))/i_link_with_same_source_total_ratio
-                            let target_offset = 2*d.target.r*(i_link_with_same_target.slice(0,i_link_with_same_target.findIndex(e => e == d)).reduce((acc,cur)=>acc+cur.value,0))
+                            /* consider the link width */
+                            // let source_offset =  2*d.source.r*(i_link_with_same_source.slice(0,i_link_with_same_source.findIndex(e => e == d)).reduce((acc,cur)=>acc+cur.value,0))/i_link_with_same_source_total_ratio
+
+                            /* target offset as rect */
+                            let target_offset =  (d.target.x1 - d.target.x0) * (i_link_with_same_target.slice(0,i_link_with_same_target.findIndex(e => e == d)).reduce((acc,cur)=>acc+cur.value,0))
+
+                            /* target offset as circle */
+                            // let target_offset = 2*d.target.r*(i_link_with_same_target.slice(0,i_link_with_same_target.findIndex(e => e == d)).reduce((acc,cur)=>acc+cur.value,0))
 
                             //start point x
                             let start_point = {
-                                x:(d.source.x0 + source_offset),
+                                x: d.source.x0,
                                 y: d.source.y
+
+                                // consider the link strength with width
+                                // x:(d.source.x0 + source_offset),
+                                // y: d.source.y
                             }
                             //control point 1
                             let control_point1 = {
-                                x:d.source.x0 + source_offset,
-                                y:(d.source.y + d.target.cy)/2
+                                /* control_point1 as a rect neglect the link width*/
+                                x:d.source.x0,
+                                y:(d.source.y + d.target.y0)/2
+
+                                /* control_point1 as a rect consider the link width*/
+                                // x:(d.source.x0 + source_offset),
+                                // y:(d.source.y + d.target.y0)/2
+
+                                /* control_point1 as a circle */
+                                // x:d.source.x0 + source_offset,
+                                // y:(d.source.y + d.target.cy)/2
                             }
                             //control point 2
                             let control_point2 = {
-                                x:(d.target.cx - d.target.r + source_offset),
-                                y:(d.source.y1 + d.target.cy)/2
+                                /* control_point2 as a rect neglect the link width*/
+                                x: d.target.x0 ,
+                                y:(d.source.y1 + d.target.y0)/2
+
+                                /* control_point2 as a rect consider the link width*/
+                                // x:(d.target.x0 + source_offset),
+                                // y:(d.source.y1 + d.target.y0)/2
+
+                                /* control_point2 as a circle */
+                                // x:(d.target.cx - d.target.r + source_offset),
+                                // y:(d.source.y1 + d.target.cy)/2
                             }
                             //left end point
                             let end_point1 = {
-                                x:(d.target.cx-d.target.r + target_offset),
-                                y:(d.target.cy)
+                                /* end point as a rect */
+                                x:((d.target.x0 < width / 2 ? d.target.x1 : d.target.x0) + target_offset),
+                                y:(d.target.y0)
+
+                                /* end point as a circle */
+                                // x:(d.target.cx-d.target.r + target_offset),
+                                // y:(d.target.cy)
                             }
                             //right end point
                             let end_point2 = {
-                                x:((d.target.cx-d.target.r) + target_offset + (2*d.target.r * d.value)),
-                                y:(d.target.cy)
+                                /* end point as a  rect */
+                                x:((d.target.x0 < width / 2 ? d.target.x1 : d.target.x0) + target_offset),
+                                y:(d.target.y0)
+
+                                /* end point as a circle */
+                                // x:((d.target.cx-d.target.r) + target_offset + (2*d.target.r * d.value)),
+                                // y:(d.target.cy)
                             }
                             // control point 2 with offset
                             let right_control_point2 = {
-                                x:((d.target.cx - d.target.r) + target_offset + (2*d.target.r * d.value)),
-                                y:(d.source.y1 + d.target.cy)/2
+                                /* right_control_point2 as a rect neglect the link width*/
+                                x:((d.target.x0 < width / 2 ? d.target.x1 : d.target.x0)),
+                                y:(d.source.y1 + d.target.y0)/2
+
+
+                                /* right_control_point2 as a rect consider the link width*/
+                                // x:((d.target.x0 < width / 2 ? d.target.x1 : d.target.x0) + target_offset),
+                                // y:(d.source.y1 + d.target.y0)/2
+
+                                /* right_control_point2 as a circle */
+                                // x:((d.target.cx - d.target.r) + target_offset + (2*d.target.r * d.value)),
+                                // y:(d.source.y1 + d.target.cy)/2
                             }
                             // control point 1 with offset
                             let right_control_point1 = {
-                                x:(d.source.x0 + target_offset + (2*d.source.r * d.value)/i_link_with_same_source_total_ratio),
-                                y:(d.source.y + d.target.cy)/2
+                                /* right_control_point1 as a  rect neglect the link width*/
+                                x:(d.source.x0),
+                                y:(d.source.y + d.target.y0)/2
+
+
+                                /* right_control_point1 as a  rect consider the link width*/
+                                // x:(d.source.x0 + target_offset + (2*d.source.r * d.value)/i_link_with_same_source_total_ratio),
+                                // y:(d.source.y + d.target.y0)/2
+
+                               /* right_control_point1 as a  circle */
+                                // x:(d.source.x0 + target_offset + (2*d.source.r * d.value)/i_link_with_same_source_total_ratio),
+                                // y:(d.source.y + d.target.cy)/2
                             }
+
+                            // fix the problem of inner intersection of line
+                            if(control_point1.x > right_control_point1.x){
+                                let t = control_point1
+                                control_point1 = right_control_point1
+                                right_control_point1 = t
+                            }
+                            if(control_point2.x > right_control_point2.x){
+                                let t = control_point2
+                                control_point2 = right_control_point2
+                                right_control_point2 = t
+                            }
+
                             // start point x with offset
                             let start_point2 = {
-                                x:(d.source.x0 + source_offset+ (2*d.source.r * d.value)/i_link_with_same_source_total_ratio),
+                                /* neglict the link with with link ratio */
+                                x:(d.source.x0),
                                 y:d.source.y
+
+                                /* consider the link width of d.source */
+                                // x:(d.source.x0 + source_offset+ (2*d.source.r * d.value)/i_link_with_same_source_total_ratio),
+                                // y:d.source.y
                             }
 
                             return 'M'
@@ -332,7 +409,7 @@
                         .data(i_nodes)
                         .enter()
                         .append('text')
-                        .attr('x', d => (d.x0 < width / 2 ? d.x0 - 35: d.x1 + 35))
+                        .attr('x', d => (d.x0 < width / 2 ? d.x0 : d.x1 ))
                         // 名称向内显示
                         // .attr('x', d => (d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6))
                         .attr('y', d => (d.y1 + d.y0) / 2)
@@ -516,6 +593,7 @@
                     // data: copy_data,
                     data:this.affiliatedTransactionDetail,
                     size: { width:this.$el.clientWidth/2, height:this.$el.clientHeight},
+                    onNodeClick:d => { console.log('click on :', d) }
                 })
 
     }

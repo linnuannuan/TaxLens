@@ -53,7 +53,7 @@ def get_ap_txn_detail():
         post_data = simplejson.loads(post_data)
         detail_ap_data = TPIIN.get_detail_ap_txn(post_data['source'], post_data['target'])
     else:
-        detail_ap_data = TPIIN.get_detail_ap_txn('610198671502546', '610201694932047')  # default case
+        detail_ap_data = TPIIN.get_detail_ap_txn('610201694932047', '610198671502546')  # default case
 
     print('detail_ap_data:', detail_ap_data)
     return simplejson.dumps(detail_ap_data, ensure_ascii=False, ignore_nan=True)
