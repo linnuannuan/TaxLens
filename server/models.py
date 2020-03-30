@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 from functools import reduce
+import random
 
 PATH_TPIIN = './server/data/TPIIN.gpickle'
 PATH_TPIIN_AP_TXN = './server/data/TPIIN_ap_txn.ftr'
@@ -118,6 +119,83 @@ class Model:
         return ap_list_json
 
 
+    def get_ap_txn_time_list(self):
+        """
+        Get the temporal data of ap_transaction_amount to draw the time slider.
+        :return:  list of transaction by time
+        """
+        # https://observablehq.com/@mbrownshoes/multiline-time-series-chart
+        # {'date':[], 'ap_txn_amount_data':[], }
+        # date: A list of time []
+        # ap_txn_amount_data: A list of
+        # affiliated party transaction: -124.7927
+        # 按照日期
+        # TPIIN_ap_txn 对应到 TPIIN_invoice
+        # print(self.TPIIN_ap_txn)
+        ap_txn_by_time = pd.merge(self.TPIIN_ap_txn, self.TPIIN_invoice, on=['seller_id', 'buyer_id'], how='left').groupby('date').sum().reset_index()
+        # ap_txn_by_time.groupby('date').sum('txn')
+        ap_txn_by_time['date'] = ap_txn_by_time['date'].dt.strftime("%Y-%m-%d")
+        # .strftime("%Y-%m-%d")
+
+        return {
+            'date': list(ap_txn_by_time['date']),
+            'ap_txn_amount': list(ap_txn_by_time['txn'])
+        }
+
+        # print(self.TPIIN_ap_txn)
+
+
+
+
+
+
+    def get_affiliated_party_by_time(self, start_time,end_time):
+        """
+        Get the matched affiliated_party list based on start time , end time of ap transaction.
+        :return:  list of ap id
+        """
+
+
+
+
+
+
+    def get_affiliated_party_topo_list(self):
+        """
+        Get the topology list for affiliated parties with their id, inner taxpayer, trade links with sum transaction amount.
+        The ap_id is for internal use only because the topology of affiliated parties differ
+        based on the TPIIN parameter settings.
+        :return: json-ready list of affiliated parties
+        """
+        ap_topo_json = []
+
+        ap_id = 0
+        for ap in self.AP_list:
+            ap_graph = self.TPIIN.subgraph(ap)
+            tp_list = [n for n, tp in list(ap_graph.nodes(data='tp')) if tp]
+            tp_graph = ap_graph.subgraph(tp_list).copy()
+            # remove invest info
+            tp_graph.remove_edges_from([(u, v) for u, v, iv in tp_graph.edges(data='in_ratio') if iv])
+
+            # retrive transaction info
+            ap_invoice = self.TPIIN_invoice.query('seller_id in @tp_list').query('buyer_id in @tp_list')
+
+
+            # calculate the transaction amount of each ap_txn
+            for u, v, data in list(tp_graph.edges(data=True)):
+                if 'ap_txn' in data:
+                    txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn']
+                    ap_txn_amount = np.sum(txn)
+                    tp_graph.add_edge(u, v, ap_txn_amount=ap_txn_amount)
+
+            ap_topo_json.append({'ap_id': ap_id, 'tax_gap': 100*random.random(), 'nodes': nx.node_link_data(tp_graph)['nodes'], 'links': nx.node_link_data(tp_graph)['links']})
+            # get only 10 group for test
+            if ap_id >= 9:
+                break;
+            ap_id += 1
+
+        return ap_topo_json
+
 
     def get_detail_by_ap_id(self, ap_id):
         """
@@ -180,11 +258,18 @@ class Model:
         ap_graph_undirected.remove_edges_from([(src, dst) for src, dst, data in ap_graph_undirected.edges.data() if ('ap_txn' in data)])
         for u, v, data in list(ap_graph.edges(data=True)):
             if 'ap_txn' in data:
+                # calculate the related strength of each ap_txn
+                related_strength = 0
                 txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn']
                 # add all simple path of each ap_txn into the graph to be highlighted
-                paths = list(nx.all_simple_paths(ap_graph_undirected, source=u, target=v))
-                ap_graph.add_edge(u, v, ap_txn_amount=np.sum(txn), ap_txn_count=len(txn), path=paths)
-
+                self.list = list(nx.all_simple_paths(ap_graph_undirected, source=u, target=v))
+                paths = self.list
+                for path in paths:
+                    path_strength = 1
+                    for i in range(0, len(path)-1):
+                        path_strength *= ap_graph_undirected.get_edge_data(path[i], path[i+1])['in_ratio']
+                    related_strength += path_strength
+                ap_graph.add_edge(u, v, ap_txn_amount=np.sum(txn), ap_txn_count=len(txn), path=paths, related_strength=related_strength)
 
         return nx.node_link_data(ap_graph)
 
@@ -248,8 +333,8 @@ class Model:
         # detail_ap_txn_graph.remove_nodes_from([n for n, iv in detail_ap_txn_graph.nodes(data='in') if ((not iv) & (n != source) & (n != target))])
 
         # 去除transaction的link
-        print('detail edges:', detail_ap_txn_graph.edges())
-        print('remove edges:', [(src, dst) for src, dst, data in detail_ap_txn_graph.edges.data() if (('ap_txn' in data) & ((src != source) | (dst != target)))])
+        # print('detail edges:', detail_ap_txn_graph.edges())
+        # print('remove edges:', [(src, dst) for src, dst, data in detail_ap_txn_graph.edges.data() if (('ap_txn' in data) & ((src != source) | (dst != target)))])
 
         # remove_edges = [(src, dst) for src, dst, data in detail_ap_txn_graph.edges.data() if (('ap_txn' in data) & ((src != source) | (dst != target)))]
         # if len(remove_edges)>0:
@@ -271,3 +356,5 @@ class Model:
 
         graph_data = nx.node_link_data(detail_ap_txn_graph)
         return graph_data
+
+

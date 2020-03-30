@@ -29,8 +29,8 @@
         <el-row style="height: 400px">
               <group-view
                   style="height: 100%"
-                  :affiliated-party-list="affiliatedPartyList"
-                  :loading-list="loadingList">
+                  :affiliated-party-topo-list="affiliatedPartyTopoList"
+                  :loading-topo="loadingTopoList">
               </group-view>
            </el-row>
 <!--        <el-row style="height: 400px">-->
@@ -42,7 +42,17 @@
 <!--        </el-row>-->
       </el-col>
       <el-col :span="18" class="MainView">
-          <el-row style="height: 100%">
+          <el-row style="height: 15%">
+            <div style="width: 100%; height: 100%; ">
+              <temporal-view
+                  class="grid-content"
+                  :affiliated-party-time-list="affiliatedPartyTimeList"
+                  :loading-time-slider="loadingDetailGraph"
+                  style="width: 100%; height: 100%; ">
+              </temporal-view>
+            </div>
+          </el-row>
+          <el-row style="height: 85%">
             <div style="width: 100%; height: 100%; ">
                   <graph-view
                       class="grid-content"
@@ -50,6 +60,14 @@
                       :loading-graph="loadingGraph"
                       style="width: 100%; height: 100%; ">
                   </graph-view>
+            </div>
+            <div style="width: 100%; height: 100%; ">
+                  <di-graph-view
+                      class="grid-content"
+                      :affiliated-party-detail="affiliatedPartyDetail"
+                      :loading-graph="loadingGraph"
+                      style="width: 100%; height: 100%; ">
+                  </di-graph-view>
             </div>
           </el-row>
           <el-row style="height: 0%">
@@ -71,8 +89,10 @@
 <script>
   import SuspiciousGroupList from './components/suspicious-group-list'
   import GraphView from './components/graph-view.vue';
+  import DiGraphView from './components/digraph-view.vue';
   import DetailView from './components/detail-view.vue';
   import GroupView from './components/group-view.vue';
+  import TemporalView from './components/temporal-view.vue';
   // import TsneView from './components/tsne-view.vue';
 
   import DataService from './utils/data-service'
@@ -83,13 +103,17 @@
     components: {
       SuspiciousGroupList,
       GraphView,
+      DiGraphView,
       DetailView,
-      GroupView
+      GroupView,
+      TemporalView,
       // TsneView,
     },
     data() {
       return {
         affiliatedPartyList: [],
+        affiliatedPartyTimeList:{},
+        affiliatedPartyTopoList:[],
         affiliatedPartyDetail: {},
         affiliatedTransactionDetail:{},
 
@@ -98,9 +122,11 @@
         search_id: '610198671502546',
 
         loadingList: true,
+        loadingTopoList: true,
         loadingGraph: true,
         loadingDetailGraph:true,
         loadingGroupGlyph:true,
+        loadingTimeSlider:true,
 
         default_detail_transaction_source:"610201694932047",
         default_detail_transaction_target:"610198671502546"
@@ -112,10 +138,15 @@
         this.loadingList = false;
       });
 
-      // DataService.loadAffiliatedPartyGlyph((data)=>{
-      //   this.affiliatedPartyGlyph = data;
-      //   this.loadingList = false;
-      // });
+      DataService.loadAffiliatedPartyByTime((data)=>{
+        this.affiliatedPartyTimeList = data;
+        this.loadingTimeSlider = false;
+      });
+
+      DataService.loadAffiliatedPartyTopoList((data)=>{
+        this.affiliatedPartyTopoList = data;
+        this.loadingTopoList = false;
+      });
 
       DataService.loadAffiliatedPartyDetailByAP(null, data=>{
         this.affiliatedPartyDetail = data;

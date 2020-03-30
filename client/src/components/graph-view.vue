@@ -62,19 +62,33 @@
               min_width : margin_width,
               max_width : width - margin_width,
               min_height : height/3 + margin_height,
-              max_height : 2*height/3 - margin_height
+              max_height : 2*height/3 - margin_height,
+              unimportant_opacity:0.2,
+              default_opacity:0.5,
+              highlight_opacity:1
           },
           invest_panel:{
               min_width : margin_width,
               max_width : width - margin_width,
               min_height : margin_height,
-              max_height : height/3 - margin_height
+              max_height : height/3 - margin_height,
+              highlight_opacity:1,
+              default_opacity:1,
+              unimportant_opacity:0.7,
+              highlight_stroke_width:5
           },
           parallel_panel:{
               min_width : margin_width,
               max_width : width - margin_width,
               min_height : 2*height/3 + margin_height,
-              max_height : height - margin_height
+              max_height : height - margin_height,
+              line_color:'#1f77b4',
+              highlight_color:'#b82e2e',
+              node_color:'#316395',
+              default_opacity:0.5,
+              highlight_opacity:0.8,
+              default_stroke_width:2,
+              highlight_stroke_width:4
           }
         };
         this.svg = d3.select('#relation_structure')
@@ -456,10 +470,8 @@
                         // get the source node and target node
                         let source_node = t_nodes.find(node => node.id == d.source)
                         let target_node = t_nodes.find(node => node.id == d.target)
-                        console.log('draw link: ',d, 'source:', source_node,' target:', target_node)
+                        // console.log('draw link: ',d, 'source:', source_node,' target:', target_node)
 
-                        // if(source_node.x1<target_node.x0){
-                        // }
                         let control_point1 = {
                             x:(source_node.x1 + target_node.x0)/2,
                             y: source_node.y0
@@ -496,48 +508,44 @@
                                 + ',' + right_control_point1.x +','+ right_control_point1.y
                                 + ',' + source_node.x1+','+ source_node.y1
                                 + 'Z'
-                        console.log('path: ',path_d)
                         return path_d
                     })
                     .attr('stroke-opacity', 0.5)
                     .attr('stroke',this.cfg.link.color.txn)
                     .attr('fill',this.cfg.link.color.txn)
-                    .attr('opacity', 0.5)
+                    .attr('opacity', this.cfg.trade_panel.default_opacity)
                     .on('mouseover', d=>{
                         //当鼠标放在交易上时，对应的交易信息在parallel视图中被高亮
                         d3.select('#tp'+t_links.indexOf(d))
                             .transition()
                             .duration(50)
-                            .attr("stroke-width",5)
-                            .attr('opacity',0.8);
+                            // .attr("stroke",this.cfg.parallel_panel.highlight_color)
+                            .attr("stroke-width",this.cfg.parallel_panel.highlight_stroke_width)
+                            .attr('opacity',this.cfg.parallel_panel.highlight_opacity);
 
                         //当鼠标放在交易上时，处本交易以外，其他关联交易透明度降低。
                         d3.selectAll('g.trade_link')
                             .selectAll('path')
-                            .attr('opacity',0.2)
-                        d3.select(event.target).attr('opacity',1)
+                            .attr('opacity',this.cfg.trade_panel.unimportant_opacity)
+                        d3.select(event.target).attr('opacity',this.cfg.trade_panel.highlight_opacity)
 
                         //对应的invest_path高亮
-                        console.log(d)
-                        console.log('invest paths',d.path)
+                        d3.select('g.invest_link').attr('opacity',this.cfg.invest_panel.unimportant_opacity)
                         for(let path_id in d.path){
-                            console.log('iterator to path: ',  d.path[path_id])
                             for( let node_id in d.path[path_id]){
-                                console.log('iterate for node id as :', node_id,' node:', d.path[path_id][node_id])
-                                d3.select('g.invest_link').attr('opacity',0.7)
                                 if(node_id < (d.path[path_id].length-1)){
-                                    // highlight correspond link (undirect link)
+                                    // highlight correspond invest link (undirect link)
                                     d3.select('g.invest_link #in-'+ d.path[path_id][node_id]+'-'+d.path[path_id][parseInt(node_id)+parseInt(1)])
-                                        .attr('opacity',1)
-                                        .attr('stroke-width',5)
+                                        .attr('opacity',this.cfg.invest_panel.highlight_opacity)
+                                        .attr('stroke-width',this.cfg.invest_panel.highlight_stroke_width)
                                     d3.select('g.invest_link #in-'+ d.path[path_id][parseInt(node_id)+parseInt(1)]+'-'+d.path[path_id][node_id])
-                                        .attr('opacity',1)
-                                        .attr('stroke-width',5)
+                                        .attr('opacity',this.cfg.invest_panel.highlight_opacity)
+                                        .attr('stroke-width',this.cfg.invest_panel.highlight_stroke_width)
                                 }
                                 // highlight correspond node
                                 d3.select('g.invest_node #in-'+ d.path[path_id][node_id])
-                                        .attr('opacity',1)
-                                        .attr('stroke-width',5)
+                                        .attr('opacity',this.cfg.invest_panel.highlight_opacity)
+                                        .attr('stroke-width',this.cfg.invest_panel.highlight_stroke_width)
                             }
                         }
 
@@ -547,38 +555,39 @@
                         //当鼠标放在交易上时，对应的交易信息在parallel视图中被取消高亮
                         d3.select('#tp'+t_links.indexOf(d))
                             .transition()
-                            .duration(50)//当鼠标放在矩形上时，矩形变成黄色
-                            .attr("stroke-width",2)
-                            .attr('opacity',0.5);
+                            .duration(50)
+                            .attr("stroke",this.cfg.parallel_panel.line_color)
+                            .attr('stroke-width',2)
+                            .attr('opacity',this.cfg.parallel_panel.default_opacity);
 
                         // All trade path
-                        d3.selectAll('g.trade_link').attr('opacity',0.5)
+                        d3.selectAll('g.trade_link').attr('opacity',this.cfg.trade_panel.default_opacity)
 
                         //当鼠标放在交易上时，处本交易以外，其他关联交易透明度降低。
                         d3.selectAll('g.trade_link')
                             .selectAll('path')
-                            .attr('opacity',0.2)
-                        d3.select(event.target).attr('opacity',1)
+                            .attr('opacity',this.cfg.trade_panel.unimportant_opacity)
+                        d3.select(event.target).attr('opacity',this.cfg.trade_panel.highlight_opacity)
 
                         //对应的invest_path取消高亮
-                        d3.select('g.invest_link').attr('opacity',1)
+                        d3.select('g.invest_link').attr('opacity',this.cfg.invest_panel.default_opacity)
                         for(let path_id in d.path){
                             for( let node_id in d.path[path_id]){
                                 if(node_id < d.path[path_id].length-1){
                                     // cancel highlight correspond link
                                     // undirect link
                                     d3.select('g.invest_link #in-'+ d.path[path_id][node_id]+'-'+d.path[path_id][parseInt(node_id)+parseInt(1)])
-                                        .attr('opacity',1)
-                                        .attr('stroke-width',2)
+                                        .attr('opacity',this.cfg.invest_panel.default_opacity)
+                                        .attr('stroke-width',this.cfg.invest_panel.default_stroke_width)
 
                                     d3.select('g.invest_link #in-'+ d.path[path_id][parseInt(node_id)+parseInt(1)]+'-'+d.path[path_id][node_id])
-                                        .attr('opacity',1)
-                                        .attr('stroke-width',2)
+                                        .attr('opacity',this.cfg.invest_panel.default_opacity)
+                                        .attr('stroke-width',this.cfg.invest_panel.default_stroke_width)
                                 }
                                 // cancel highlight correspond node
                                 d3.select('g.invest_node #in-'+ d.path[path_id][node_id])
-                                        .attr('opacity',1)
-                                        .attr('stroke-width',2)
+                                        .attr('opacity',this.cfg.invest_panel.default_opacity)
+                                        .attr('stroke-width',this.cfg.invest_panel.default_stroke_width)
                             }
                         }
                     })
@@ -711,7 +720,7 @@
               invest_panel_svg.append('g')
                     .classed('invest_link',!0)
                     .attr('fill', 'none') // to avoid fill the path
-                    .attr('opacity', 1)
+                    .attr('opacity', this.cfg.invest_panel.default_opacity)
                     .selectAll('g')
                     .data(i_links)
                     .enter()
@@ -831,6 +840,7 @@
                     // draw value line
                     tplink_svg
                             .datum(link)
+                            .enter()
                             .append('path')
                             .attr('id', 'tp'+t_links.indexOf(link))
                             .attr('d', ()=>{
@@ -846,26 +856,36 @@
                                 )
                                 return path
                             })
-                            .attr('stroke','pink')
+                            .attr('stroke',this.cfg.parallel_panel.line_color)
                             .attr('fill','none')
-                            .on('mouseover',function(){
+                            .on('mouseover', d=> {
                                 //当鼠标放在对应的parallel线上时。该条线被高亮
-                                d3.select('g.path-'+this.id.slice(2,))
+                                console.log('this',this)
+                                d3.select('g.path-'+ t_links.indexOf(d).slice(2,))
                                     .transition()
-                                    .duration(100)
-                                    .attr('r',15)
+                                    .duration(50)
+                                    .selectAll('path')
+                                    // .attr('r',15)
                                     .attr("stroke-width",5)
-                                    .attr("opacity",1);
+                                    .attr("opacity",this.cfg.parallel_panel.highlight_opacity);
+
+                                d3.select('g.path-'+t_links.indexOf(d).slice(2,))
+                                    .selectAll('circle')
+                                    .attr("opacity",this.cfg.parallel_panel.highlight_opacity);
 
                             })
-                            .on('mouseout',function(){
+                            .on('mouseout', d=>{
                                 //当鼠标移出该条取值线。该取值线恢复正常
-                                d3.select('g.path-'+this.id.slice(2,))
+                                d3.select('g.path-'+ t_links.indexOf(d).slice(2,))
                                     .transition()
-                                    .duration(100)
-                                    .attr("stroke-width",2)
-                                    .attr('r',5)
-                                    .attr("opacity",0.5);
+                                    .duration(50)
+                                    .selectAll('path')
+                                    .attr("stroke-width",this.cfg.parallel_panel.default_stroke_width)
+
+                                d3.select('g.path-'+ t_links.indexOf(d).slice(2,))
+                                    .selectAll('circle')
+                                    // .attr('r',5)
+                                    .attr("opacity",this.cfg.parallel_panel.default_opacity);
                             });
 
                     // draw value point
@@ -884,10 +904,11 @@
                             //把点映射到坐标
                             .attr('cx', d=>d.cx)
                             .attr('cy', d=>d.cy)
-                            .attr('fill','pink')
-                            .attr("stroke-width",'pink')
-                            .attr("stroke-opacity",1)
-                            .attr('opacity',0.8)
+                            .attr('fill', this.cfg.parallel_panel.node_color)
+                            .attr('fill-opacity', 0.8)
+                            .attr("stroke-width", this.cfg.parallel_panel.node_color)
+                            .attr("stroke-opacity", 1)
+                            .attr('opacity', 0.8)
                     })
 
 

@@ -5,7 +5,7 @@ let EventService = new Vue({
     SuspiciousGroupSelected: 'suspicious_group_selected',
     TimeRangeSelected: 'time_range_selected',
     TimeRangeBrushed: 'time_range_brushed',
-    AffiliatedTransactionSelected: 'affiliated_transaction_selected'
+    AffiliatedTransactionSelected: 'affiliated_transaction_selected',
   },
 
   methods:{

@@ -14,6 +14,22 @@ let DataService = new Vue({
           console.log(errResponse)
         })
     },
+    loadAffiliatedPartyByTime(callback){
+      this.axios.get(`${this.dataServerUrl}/ap_time_list`)
+        .then(response => {
+          callback(response.data)
+        }, errResponse => {
+          console.log(errResponse)
+        })
+    },
+    loadAffiliatedPartyTopoList(callback){
+      this.axios.get(`${this.dataServerUrl}/ap_topo_list`)
+        .then(response => {
+          callback(response.data)
+        }, errResponse => {
+          console.log(errResponse)
+        })
+    },
     loadAffiliatedPartyDetailByAP(param, callback){
       this.axios.post(`${this.dataServerUrl}/ap_detail`, param)
         .then(response => {
