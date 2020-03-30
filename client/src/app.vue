@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="MainView">
-    <el-row :gutter="5" class="MainView">
+    <el-row :gutter="5" >
       <el-col :span="6" class="MainView">
         <el-row>
           <el-row>
@@ -19,20 +19,13 @@
             <el-col :span="3"><el-button size="mini" circle icon="el-icon-search" @click="searchID"></el-button></el-col>
           </el-row>
         </el-row>
-        <el-row style="height: 400px">
+        <el-row style="height:300px">
           <suspicious-group-list
               class="grid-list"
               :affiliated-party-list="affiliatedPartyList"
               :loading-list="loadingList">
           </suspicious-group-list>
         </el-row>
-        <el-row style="height: 400px">
-              <group-view
-                  style="height: 100%"
-                  :affiliated-party-topo-list="affiliatedPartyTopoList"
-                  :loading-topo="loadingTopoList">
-              </group-view>
-           </el-row>
 <!--        <el-row style="height: 400px">-->
 <!--          <tsne-view-->
 <!--              class="grid-list"-->
@@ -42,45 +35,51 @@
 <!--        </el-row>-->
       </el-col>
       <el-col :span="18" class="MainView">
-          <el-row style="height: 15%">
-            <div style="width: 100%; height: 100%; ">
+          <el-row style="height: 210px">
               <temporal-view
                   class="grid-content"
                   :affiliated-party-time-list="affiliatedPartyTimeList"
-                  :loading-time-slider="loadingDetailGraph"
-                  style="width: 100%; height: 100%; ">
+                  :loading-time-slider="loadingDetailGraph">
               </temporal-view>
-            </div>
           </el-row>
+          <el-row style="height: 210px">
+              <group-view
+                  class="grid-content"
+                  :affiliated-party-topo-list="affiliatedPartyTopoList"
+                  :loading-topo="loadingTopoList">
+              </group-view>
+          </el-row>
+      </el-col>
+    </el-row>
+    <el-row :gutter="5" class="MainView">
           <el-row style="height: 85%">
-            <div style="width: 100%; height: 100%; ">
+              <div style="width: 100%; height: 100%; ">
                   <graph-view
                       class="grid-content"
                       :affiliated-party-detail="affiliatedPartyDetail"
                       :loading-graph="loadingGraph"
                       style="width: 100%; height: 100%; ">
                   </graph-view>
-            </div>
-            <div style="width: 100%; height: 100%; ">
+              </div>
+              <div style="width: 100%; height: 100%; ">
                   <di-graph-view
                       class="grid-content"
                       :affiliated-party-detail="affiliatedPartyDetail"
                       :loading-graph="loadingGraph"
                       style="width: 100%; height: 100%; ">
                   </di-graph-view>
-            </div>
+              </div>
           </el-row>
           <el-row style="height: 0%">
-            <div style="width: 100%; height: 100%; ">
-              <detail-view
-                  class="grid-content"
-                  :affiliated-transaction-detail="affiliatedTransactionDetail"
-                  :loading-detail="loadingDetailGraph"
-                  style="width: 100%; height: 100%; ">
-              </detail-view>
-            </div>
+              <div style="width: 100%; height: 100%; ">
+                  <detail-view
+                      class="grid-content"
+                      :affiliated-transaction-detail="affiliatedTransactionDetail"
+                      :loading-detail="loadingDetailGraph"
+                      style="width: 100%; height: 100%; ">
+                  </detail-view>
+              </div>
           </el-row>
-      </el-col>
     </el-row>
   </div>
 
@@ -238,5 +237,6 @@
     border: 1px solid slategrey;
     border-radius: 5px;
     height: 100%;
+    width:100%;
   }
 </style>

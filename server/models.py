@@ -190,7 +190,7 @@ class Model:
 
             ap_topo_json.append({'ap_id': ap_id, 'tax_gap': 100*random.random(), 'nodes': nx.node_link_data(tp_graph)['nodes'], 'links': nx.node_link_data(tp_graph)['links']})
             # get only 10 group for test
-            if ap_id >= 9:
+            if ap_id >= 19:
                 break;
             ap_id += 1
 

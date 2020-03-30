@@ -40,8 +40,8 @@
                             max_r: 40,
                             color:'skyblue',
                             margin:{
-                                left:65,
-                                top:55
+                                left:100,
+                                top:65
                             }
                         },
                         'individual':{
@@ -54,7 +54,11 @@
                         min_width: 2,
                         max_width: 5,
                         color:'#1f77b4'
-                    }
+                    },
+                    'row_num':2,
+                    'col_num':10,
+                    'row_margin':0.5,
+                    'col_margin':1,
                 },
                 this.svg = d3.select('#group_view')
                           .append("svg")
@@ -66,305 +70,7 @@
                 let group_view_data = lodash.cloneDeep(this.affiliatedPartyTopoList)
                 console.log(group_view_data)
 
-                // the group view data is a group list sort by tax gap
-                // let group_view_data = [
-                //     {
-                //     'ap_id': '610198671502546',
-                //     'tax_gap': Math.random()*100 * Math.random(),
-                //     'num_ap_txn': Math.random()*10,
-                //     'num_nodes': Math.random()*10,
-                //     'nodes':[{
-                //                 capital: 5000000,
-                //                 employee: 32,
-                //                 id: "610185698447743",
-                //                 pc: "710016",
-                //                 tp_name: "陕西融泰汽车销售服务有限公司"
-                //             },{
-                //                 capital: 30000000,
-                //                 employee: 3,
-                //                 id: "610198671502546",
-                //                 pc: "710071",
-                //                 tp_name: "陕西正源股份有限公司"
-                //             },{
-                //                 capital: 5000000,
-                //                 employee: 3,
-                //                 id: "610113663169851",
-                //                 pc: "710071",
-                //                 tp_name: "西安星瑞机电设备有限公司"
-                //             },{
-                //                 capital: 500000,
-                //                 employee: 8,
-                //                 id: "610201694932047",
-                //                 pc: "727031",
-                //                 tp_name: "铜川和信科技环保有限责任公司"
-                //             }
-                //     ],
-                //     'links':[{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 30723.039999999997,
-                //                 ap_txn_count: 4,
-                //                 related_strength: 412.76710636876123,
-                //                 transaction_strength: 517.1901920033026,
-                //                 source: "610113663169851",
-                //                 target: "610185698447743",
-                //             },{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 323995.73,
-                //                 ap_txn_count: 1,
-                //                 // path: (...)
-                //                 related_strength: 315.8012222509752,
-                //                 transaction_strength: 258.9038375844357,
-                //                 source: "610201694932047",
-                //                 target: "610198671502546",
-                //             }]
-                //     },
-                //     {
-                //         'ap_id': '610198671502546',
-                //         'tax_gap': Math.random()*100 * Math.random(),
-                //         'num_ap_txn': Math.random()*10,
-                //         'num_nodes': Math.random()*10,
-                //         'nodes':[{
-                //                     capital: 5000000,
-                //                     employee: 32,
-                //                     id: "610185698447743",
-                //                     pc: "710016",
-                //                     tp_name: "陕西融泰汽车销售服务有限公司"
-                //                 },{
-                //                     capital: 30000000,
-                //                     employee: 3,
-                //                     id: "610198671502546",
-                //                     pc: "710071",
-                //                     tp_name: "陕西正源股份有限公司"
-                //                 },{
-                //                     capital: 5000000,
-                //                     employee: 3,
-                //                     id: "610113663169851",
-                //                     pc: "710071",
-                //                     tp_name: "西安星瑞机电设备有限公司"
-                //                 },{
-                //                     capital: 500000,
-                //                     employee: 8,
-                //                     id: "610201694932047",
-                //                     pc: "727031",
-                //                     tp_name: "铜川和信科技环保有限责任公司"
-                //                 }],
-                //         'links':[{
-                //                     ap_txn: true,
-                //                     ap_txn_amount: 30723.039999999997,
-                //                     ap_txn_count: 4,
-                //                     related_strength: 412.76710636876123,
-                //                     transaction_strength: 517.1901920033026,
-                //                     source: "610113663169851",
-                //                     target: "610185698447743",
-                //                 },{
-                //                     ap_txn: true,
-                //                     ap_txn_amount: 323995.73,
-                //                     ap_txn_count: 1,
-                //                     // path: (...)
-                //                     related_strength: 315.8012222509752,
-                //                     transaction_strength: 258.9038375844357,
-                //                     source: "610201694932047",
-                //                     target: "610198671502546",
-                //                 }]
-                //     },
-                //     {
-                //         'ap_id': '610198671502546',
-                //         'tax_gap': Math.random()*100 * Math.random(),
-                //         'num_ap_txn': Math.random()*10,
-                //         'num_nodes': Math.random()*10,
-                //         'nodes':[{
-                //                     capital: 5000000,
-                //                     employee: 32,
-                //                     id: "610185698447743",
-                //                     pc: "710016",
-                //                     tp_name: "陕西融泰汽车销售服务有限公司"
-                //                 },{
-                //                     capital: 30000000,
-                //                     employee: 3,
-                //                     id: "610198671502546",
-                //                     pc: "710071",
-                //                     tp_name: "陕西正源股份有限公司"
-                //                 },{
-                //                     capital: 5000000,
-                //                     employee: 3,
-                //                     id: "610113663169851",
-                //                     pc: "710071",
-                //                     tp_name: "西安星瑞机电设备有限公司"
-                //                 },{
-                //                     capital: 500000,
-                //                     employee: 8,
-                //                     id: "610201694932047",
-                //                     pc: "727031",
-                //                     tp_name: "铜川和信科技环保有限责任公司"
-                //                 }],
-                //     'links':[{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 30723.039999999997,
-                //                 ap_txn_count: 4,
-                //                 related_strength: 412.76710636876123,
-                //                 transaction_strength: 517.1901920033026,
-                //                 source: "610113663169851",
-                //                 target: "610185698447743",
-                //             },{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 323995.73,
-                //                 ap_txn_count: 1,
-                //                 // path: (...)
-                //                 related_strength: 315.8012222509752,
-                //                 transaction_strength: 258.9038375844357,
-                //                 source: "610201694932047",
-                //                 target: "610198671502546",
-                //             }]
-                //     },
-                //     {
-                //     'ap_id': '610198671502546',
-                //     'tax_gap': Math.random()*100 * Math.random(),
-                //     'num_ap_txn': Math.random()*10,
-                //     'num_nodes': Math.random()*10,
-                //     'nodes':[{
-                //                 capital: 5000000,
-                //                 employee: 32,
-                //                 id: "610185698447743",
-                //                 pc: "710016",
-                //                 tp_name: "陕西融泰汽车销售服务有限公司"
-                //             },{
-                //                 capital: 30000000,
-                //                 employee: 3,
-                //                 id: "610198671502546",
-                //                 pc: "710071",
-                //                 tp_name: "陕西正源股份有限公司"
-                //             },{
-                //                 capital: 5000000,
-                //                 employee: 3,
-                //                 id: "610113663169851",
-                //                 pc: "710071",
-                //                 tp_name: "西安星瑞机电设备有限公司"
-                //             },{
-                //                 capital: 500000,
-                //                 employee: 8,
-                //                 id: "610201694932047",
-                //                 pc: "727031",
-                //                 tp_name: "铜川和信科技环保有限责任公司"
-                //             }],
-                //     'links':[{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 30723.039999999997,
-                //                 ap_txn_count: 4,
-                //                 related_strength: 412.76710636876123,
-                //                 transaction_strength: 517.1901920033026,
-                //                 source: "610113663169851",
-                //                 target: "610185698447743",
-                //             },{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 323995.73,
-                //                 ap_txn_count: 1,
-                //                 // path: (...)
-                //                 related_strength: 315.8012222509752,
-                //                 transaction_strength: 258.9038375844357,
-                //                 source: "610201694932047",
-                //                 target: "610198671502546",
-                //             }]
-                //     },
-                //     {
-                //     'ap_id': '610198671502546',
-                //     'tax_gap': Math.random()*100 * Math.random(),
-                //     'num_ap_txn': Math.random()*10,
-                //     'num_nodes': Math.random()*10,
-                //     'nodes':[{
-                //                 capital: 5000000,
-                //                 employee: 32,
-                //                 id: "610185698447743",
-                //                 pc: "710016",
-                //                 tp_name: "陕西融泰汽车销售服务有限公司"
-                //             },{
-                //                 capital: 30000000,
-                //                 employee: 3,
-                //                 id: "610198671502546",
-                //                 pc: "710071",
-                //                 tp_name: "陕西正源股份有限公司"
-                //             },{
-                //                 capital: 5000000,
-                //                 employee: 3,
-                //                 id: "610113663169851",
-                //                 pc: "710071",
-                //                 tp_name: "西安星瑞机电设备有限公司"
-                //             },{
-                //                 capital: 500000,
-                //                 employee: 8,
-                //                 id: "610201694932047",
-                //                 pc: "727031",
-                //                 tp_name: "铜川和信科技环保有限责任公司"
-                //             }],
-                //     'links':[{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 30723.039999999997,
-                //                 ap_txn_count: 4,
-                //                 related_strength: 412.76710636876123,
-                //                 transaction_strength: 517.1901920033026,
-                //                 source: "610113663169851",
-                //                 target: "610185698447743",
-                //             },{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 323995.73,
-                //                 ap_txn_count: 1,
-                //                 // path: (...)
-                //                 related_strength: 315.8012222509752,
-                //                 transaction_strength: 258.9038375844357,
-                //                 source: "610201694932047",
-                //                 target: "610198671502546",
-                //             }]
-                //     },
-                //     {
-                //     'ap_id': '610198671502546',
-                //     'tax_gap': Math.random()*100 * Math.random(),
-                //     'num_ap_txn': Math.random()*10,
-                //     'num_nodes': Math.random()*10,
-                //     'nodes':[{
-                //                 capital: 5000000,
-                //                 employee: 32,
-                //                 id: "610185698447743",
-                //                 pc: "710016",
-                //                 tp_name: "陕西融泰汽车销售服务有限公司"
-                //             },{
-                //                 capital: 30000000,
-                //                 employee: 3,
-                //                 id: "610198671502546",
-                //                 pc: "710071",
-                //                 tp_name: "陕西正源股份有限公司"
-                //             },{
-                //                 capital: 5000000,
-                //                 employee: 3,
-                //                 id: "610113663169851",
-                //                 pc: "710071",
-                //                 tp_name: "西安星瑞机电设备有限公司"
-                //             },{
-                //                 capital: 500000,
-                //                 employee: 8,
-                //                 id: "610201694932047",
-                //                 pc: "727031",
-                //                 tp_name: "铜川和信科技环保有限责任公司"
-                //             }],
-                //     'links':[{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 30723.039999999997,
-                //                 ap_txn_count: 4,
-                //                 related_strength: 412.76710636876123,
-                //                 transaction_strength: 517.1901920033026,
-                //                 source: "610113663169851",
-                //                 target: "610185698447743",
-                //             },{
-                //                 ap_txn: true,
-                //                 ap_txn_amount: 323995.73,
-                //                 ap_txn_count: 1,
-                //                 // path: (...)
-                //                 related_strength: 315.8012222509752,
-                //                 transaction_strength: 258.9038375844357,
-                //                 source: "610201694932047",
-                //                 target: "610198671502546",
-                //             }]
-                //     }
-                // ]
-                group_view_data.sort((x,y)=>y.tax_gap-x.tax_gap)
+                 group_view_data.sort((x,y)=>y.tax_gap-x.tax_gap)
 
                 // 创建值映射器
                 // group circle size encoder
@@ -387,10 +93,10 @@
                         .enter()
                         .append('circle')
                         .attr('r', d=>groupRScaler(d.tax_gap))
-                        // 设置x坐标为 该容器width 5.5等分（0.5等分留作间距），间距设置为5
-                        .attr('cx',d=> group_view_data.indexOf(d)%5 * this.cfg.width/5.5 + this.cfg.node.group.margin.left)
-                        // 设置默认10个组, 5上5下, 该容器height 3等分（1等分留作间距），间距设置为5
-                        .attr('cy',d=> this.cfg.height/3 *(parseInt(group_view_data.indexOf(d)/5)) + this.cfg.node.group.margin.top )
+                        // 设置x坐标为 该容器width 11等分（1等分留作间距），间距设置为5
+                        .attr('cx',d=> group_view_data.indexOf(d)%this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left)
+                        // 设置默认20个组, 10上10下, 该容器height 3等分（1等分留作间距），间距设置为5
+                        .attr('cy',d=> this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(group_view_data.indexOf(d)/this.cfg.col_num)) + this.cfg.node.group.margin.top )
                         .attr('fill',this.cfg.node.group.color)
                         .attr('fill-opacity',0.5)
                         .attr('stroke',this.cfg.node.group.color)
@@ -416,9 +122,9 @@
                     // if(g_id>0)break;
                     let group_svg = group_content_svg.append('g').classed('group-'+g_id,!0)
                     let group_data = group_view_data[g_id]
-                    let group_min_x = g_id%5 * this.cfg.width/5.5 + this.cfg.node.group.margin.left - groupRScaler(group_data.tax_gap)
-                    let group_max_x = g_id%5 * this.cfg.width/5.5 + this.cfg.node.group.margin.left + groupRScaler(group_data.tax_gap)
-                    let group_y = (this.cfg.height/3 *(parseInt(g_id/5)) + this.cfg.node.group.margin.top)
+                    let group_min_x = g_id%this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left - groupRScaler(group_data.tax_gap)
+                    let group_max_x = g_id%this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left + groupRScaler(group_data.tax_gap)
+                    let group_y = (this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(g_id/this.cfg.col_num)) + this.cfg.node.group.margin.top)
                     // console.log('group_data:',group_data,'g_id:',g_id,' x:',group_min_x,group_max_x,' y',group_y)
                     let xPositionLinear = d3.scaleLinear()
                                         .domain([0, group_data.nodes.length-1])
