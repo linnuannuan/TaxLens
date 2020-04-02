@@ -144,11 +144,6 @@ class Model:
 
         # print(self.TPIIN_ap_txn)
 
-
-
-
-
-
     def get_affiliated_party_by_time(self, start_time,end_time):
         """
         Get the matched affiliated_party list based on start time , end time of ap transaction.

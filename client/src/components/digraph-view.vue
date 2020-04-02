@@ -296,7 +296,6 @@
             node.attr("transform", d => `translate(${d.x},${d.y})`);
             // tp_node.attr("transform", d => `translate(${d.x-3},${d.y-3})`);
           });
-              console.log('',data)
           }
 
 

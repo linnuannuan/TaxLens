@@ -68,7 +68,6 @@
             renderGroupView(){
                 //draw the overview of all the groups
                 let group_view_data = lodash.cloneDeep(this.affiliatedPartyTopoList)
-                console.log(group_view_data)
 
                  group_view_data.sort((x,y)=>y.tax_gap-x.tax_gap)
 
