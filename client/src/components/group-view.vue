@@ -122,8 +122,8 @@
                     // if(g_id>0)break;
                     let group_svg = group_content_svg.append('g').classed('group-'+g_id,!0)
                     let group_data = group_view_data[g_id]
-                    let group_min_x = g_id%this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left - groupRScaler(group_data.tax_gap)
-                    let group_max_x = g_id%this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left + groupRScaler(group_data.tax_gap)
+                    let group_min_x = g_id % this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left - groupRScaler(group_data.tax_gap)
+                    let group_max_x = g_id % this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left + groupRScaler(group_data.tax_gap)
                     let group_y = (this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(g_id/this.cfg.col_num)) + this.cfg.node.group.margin.top)
                     // console.log('group_data:',group_data,'g_id:',g_id,' x:',group_min_x,group_max_x,' y',group_y)
                     let xPositionLinear = d3.scaleLinear()
@@ -172,15 +172,18 @@
                                     .attr('stroke-width',d=>lineWidthScaler(d.ap_txn_amount))
                                     .attr('stroke',this.cfg.link.color)
                                     .attr('fill','none')
-
-
                 }
-
             }
         },
   }
 </script>
 
 <style scoped>
-
+.my-svg-path{
+    stroke-dasharray: 252.2px, 252.2px;
+    stroke-dashoffset: 22px;
+    transition: stroke-dashoffset 0.6s ease 0s, stroke 0.6s ease 0s;
+    transform: rotateZ(90deg);
+    transform-origin: 50% 50%;
+}
 </style>

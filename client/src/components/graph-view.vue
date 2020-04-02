@@ -33,8 +33,8 @@
       initGraph() {
         let width = this.$el.clientWidth;
         let height = this.$el.clientHeight;
-        let margin_width = width/50
-        let margin_height = height/30
+        let margin_width = width/30
+        let margin_height = height/20
 
         //config the node width and link width
         this.cfg={
@@ -82,7 +82,8 @@
               max_width : width - margin_width,
               min_height : 2*height/3 + margin_height,
               max_height : height - margin_height,
-              line_color:'#1f77b4',
+              line_color:'skyblue',
+              // line_color:'#1f77b4',
               highlight_color:'#b82e2e',
               node_color:'#316395',
               default_opacity:0.5,
@@ -136,201 +137,19 @@
         this.svg.selectAll("g").remove()
         if (this.affiliatedPartyDetail !== null) {
           let data = this.affiliatedPartyDetail;
-          // let get_node_link_chart = (data)=>{
-          //   let link_by_src = {}
-          //   let link_by_dst = {}
-          //
-          // data.nodes.forEach(node => {
-          //   link_by_src[node['id']]={'children':[]}
-          //   link_by_dst[node['id']]={'parent':[]}
-          // });
-          //
-          // const links = data.links.map(link => {
-          //   link.type = link.in_ratio? 'invest' : 'txn';
-          //   link.value = link.in_ratio? (1/link.in_ratio): 0.5;
-          //   link_by_src[link.source]['children'].push(link)
-          //   link_by_dst[link.target]['parent'].push(link)
-          //   return Object.create(link)
-          // });
-          //
-          // const nodes = data.nodes.map(node => {
-          //   node.type = node.in ? 'investor' : 'taxpayer';
-          //   // node.value = link_by_src[node['id']]['children'].filter(d=>d['ap_txn'])
-          //   return Object.create(node)
-          // });
-          //
-          // let types = Array.from(new Set(links.map(d => d.type)));
-          //
-          // let industrys =  Array.from(new Set(nodes.filter(d=>!d.in).map( d => d['industry'])));
-          // let color = d3.scaleOrdinal(industrys, d3.schemeSet3);
-          //
-          // // schemeCategory10: 1f77b4,ff7f0e ,2ca02c,d62728,9467bd,8c564b,e377c2,7f7f7f,bcbd22,17becf
-          // // let color = d3.scaleOrdinal(types, d3.schemeCategory10);
-          //
-          // // node capital encoding
-          // let rScale = d3.scaleLinear()
-          //   .domain([d3.min(nodes, function(d){ return d['capital']; }), d3.max(data.nodes, function(d){ return d['capital']; })])
-          //   .range([this.cfg.node.min_r, this.cfg.node.max_r]);
-          //
-          // // node suspect value encoding
-          // // let rScale = d3.scaleLinear()
-          // //   .domain([d3.min(nodes, function(d){ return d['ap_txn_amount']; }), d3.max(data.nodes, function(d){ return d['ap_txn_amount']; })])
-          // //   .range([this.cfg.node.min_r, this.cfg.node.max_r]);
-          //
-          // // invest node suspect value encoding
-          // let irScale = d3.scaleLinear()
-          //   .domain([d3.min(nodes, function(d){ return d['suspect_value']; }), d3.max(data.nodes, function(d){ return d['suspect_value']; })])
-          //   .range([this.cfg.node.min_r, this.cfg.node.max_r]);
-          //
-          //
-          // // link stength encoding
-          // let lScale = d3.scaleLinear().domain([0,1]).range([this.cfg.link.min_width, this.cfg.link.max_width]);
-          //
-          // // trade link strength encoding
-          // let oScale = d3.scaleLinear()
-          //     .domain([d3.min(nodes, function(d){ return d['ap_txn_amount']; }),d3.max(nodes, function(d){ return d['ap_txn_amount']; })])
-          //     .range([0,1]);
-          //
-          //
-          // const simulation = d3.forceSimulation(nodes)
-          //   .force("link", d3.forceLink(links).id(d => d.id))
-          //   .force("charge", d3.forceManyBody().strength(-500))
-          //   .force("x", d3.forceX())
-          //   .force("y", d3.forceY());
-          //
-          // this.svg.selectAll("g").remove();
-          //
-          // // Per-type markers, as they don't inherit styles.
-          // this.svg.append("g").selectAll("marker")
-          //   .data(types)
-          //   .enter()
-          //   .append('marker')
-          //   .attr("id", d => `arrow-${d}`)
-          //   .attr("viewBox", "0 -5 10 10")
-          //   .attr("refX", 15)
-          //   .attr("refY", -0.5)
-          //   .attr("markerWidth", 6)
-          //   .attr("markerHeight", 6)
-          //   .attr("orient", "auto")
-          //   .append("path")
-          //   .attr("fill", d=> this.cfg.link.color[d])
-          //   .attr("d", "M0,-5L10,0L0,5");
-          //
-          // const link = this.svg.append("g")
-          //   .attr("fill", "none")
-          //   .selectAll("path")
-          //   .data(links)
-          //   .enter()
-          //   .append('path')
-          //   .attr("stroke", d => d.type == 'invest'? this.cfg.link.color.invest:this.cfg.link.color.txn)
-          //   .attr("stroke-width", d => lScale(d.value))
-          //   .attr('opacity', d => d.type == 'invest'? 1/d.value:oScale(d['ap_txn_amount']))
-          //   // link 线段终止坐标待计算
-          //   .attr("marker-end", d => `url(${new URL(`#arrow-${d.type}`, location)})`)
-          //   .on('click',function (d) {
-          //       console.log('click on d where source = ',d.source,'target = ',d.target)
-          //       EventService.emitAffiliatedTransactionSelected(d.source.id,d.target.id);
-          //       // this.getDetailTransactionView(d.source,d.target)
-          //   })
-          //
-          //  const node = this.svg.append("g")
-          //   .attr("fill", "currentColor")
-          //   .attr("stroke-linecap", "round")
-          //   .attr("stroke-linejoin", "round")
-          //   .selectAll("g")
-          //   .data(nodes)
-          //   .enter()
-          //   .append('g')
-          //   .call(drag(simulation));
-          //
-          // // const in_node = this.svg.append("g")
-          // //   .attr("fill", "currentColor")
-          // //   .attr("stroke-linecap", "round")
-          // //   .attr("stroke-linejoin", "round")
-          // //   .selectAll("g")
-          // //   .data(nodes.filter(d=>!d.tp))
-          // //   .enter()
-          // //   .append('g')
-          // //   .call(drag(simulation));
-          // //
-          // // const tp_node = this.svg.append("g")
-          // //   .attr("fill", "currentColor")
-          // //   .attr("stroke-linecap", "round")
-          // //   .attr("stroke-linejoin", "round")
-          // //   .selectAll("g")
-          // //   .data(nodes.filter(d=>d.tp))
-          // //   .enter()
-          // //   .append('g')
-          // //   .call(drag(simulation));
-          //
-          //   node.append("circle")
-          //   .attr("stroke", d=>d['in']?'white':color(d['industry']))
-          //   // .attr("fill", d=>color(d['industry']))
-          //   .attr("fill", d=>d['in']? this.cfg.node.color.in:this.cfg.node.color.tp)
-          //   .attr("stroke-width", 1.5)
-          //   .attr("r", d => d['in'] ? irScale(d['suspect_value']): rScale(d['capital']))
-          //   .on('click',function (d) {
-          //     console.log('click :',d)
-          //   })
-          //
-          // // transfer node into circle and rectangle
-          // // in_node.append("circle")
-          // //   .attr("stroke", d=>d['in']?'white':color(d['industry']))
-          // //   // .attr("fill", d=>color(d['industry']))
-          // //   .attr("fill", d=>d['in']? this.cfg.node.color.in:this.cfg.node.color.tp)
-          // //   .attr("stroke-width", 1.5)
-          // //   .attr("r", d => d['in'] ? irScale(d['suspect_value']): rScale(d['capital']))
-          // //   .on('click',function (d) {
-          // //     console.log('click :',d)
-          // //   })
-          // //   // .on("mouseover", function(){return this.tooltip.style("visibility", "visible");})
-          // //   // .on("mousemove", function(){return this.tooltip.style("top", (event.pageY-800)+"px").style("left",(event.pageX-800)+"px");})
-          // //   // .on("mouseout", function(){return this.tooltip.style("visibility", "hidden");});
-          // //
-          // //  tp_node.append("rect")
-          // //   .attr("stroke", d=>color(d['industry']))
-          // //   .attr("fill", d=>color(d['industry']))
-          // //   // .attr("fill", this.cfg.node.color.tp)
-          // //   .attr("stroke-width", 1.5)
-          // //   .attr("width", d=>rScale(d['capital']))
-          // //   .attr("height", d=>rScale(d['capital']))
-          // //   // .attr("x", d=>rScale(d['capital']))
-          // //   .on('click',function (d) {
-          // //     console.log('click :',d)
-          // //   })
-          //
-          //
-          // node.append("text")
-          //   .attr("x", 8)
-          //   .attr("y", "0.31em")
-          //   .text(d => {
-          //     return d.in? d.in_name: d.tp_name;
-          //   })
-          //   .clone(true).lower()
-          //   .attr("fill", "none")
-          //   .attr("stroke", "white")
-          //   .attr("stroke-width", 3);
-          //
-          //
-          // simulation.on("tick", () => {
-          //   link.attr("d", linkArc);
-          //   node.attr("transform", d => `translate(${d.x},${d.y})`);
-          //   // tp_node.attr("transform", d => `translate(${d.x-3},${d.y-3})`);
-          // });
-          //     console.log('',data)
-          // }
 
           let get_new_layout = (data)=> {
               console.log('input data: ',data)
 
-              let t_nodes = data.nodes.filter(d=>!d.in)
+              let t_nodes = data.nodes.filter(d=>d.tp)
               let t_links = data.links.filter(d=>d.ap_txn)
-              console.log('t_nodes , t_links: ', t_nodes, t_links)
+              console.log('Input t_nodes , t_links: ', t_nodes, t_links)
               t_links = t_links.map(d=>{
-                  console.log('check t link:', d.source, d.target)
+                  // console.log('check t link:', d.source, d.target)
                   if(d.throw){d= null;return d}
                   //如果存在互相交易的边
                   if(t_links.find(link=> link.target == d.source && link.source == d.target)){
+                      console.log('exist reverse link')
                      //若当前方向ap txn amount < 反向link ap txn amount
                      if((t_links.find(link=> link.target == d.source && link.source == d.target).ap_txn_amount) > d.ap_txn_amount){
                        // 保留差值为正的边
@@ -339,7 +158,7 @@
                         t_links.find(link=> link.target == d.source && link.source == d.target).bi_direct = true
                         //保留差值用于绘图
                         t_links.find(link=> link.target == d.source && link.source == d.target).amount_offset = d.ap_txn_amount
-                        // console.log('reset this link',d)
+                        // console.log('reset current link',d)
                          d = null
                      }
                      //若当前方向ap txn amount > 反向link ap txn amount
@@ -348,50 +167,98 @@
                          d.bi_direct = true
                          d.amount_offset = t_links.find(link=> link.target == d.source && link.source == d.target).ap_txn_amount
                          t_links.find(link=> link.target == d.source && link.source == d.target).throw = true
-                         // console.log('delete link:', t_links)
+                         // console.log('delete reverse link:', t_links.find(link=> link.target == d.source && link.source == d.target))
                      }
                    }
                   return d
               }).filter(d=>!!d)
 
-              //计算互相交易
+              // init all t_node Object
               t_nodes.map(d=>{
                   d.lay_index = 1
                   d.sourceLinks = t_links.filter(link=>link.source == d.id)
                   d.targetLinks = t_links.filter(link=>link.target == d.id)
+                  //用于记录算过坐标的节点集合，防止闭环计算
+                  d.previous_cal_node_list =[]
               })
-              console.log('---- t_nodes,t_links:', t_nodes, t_links)
+              console.log('Removed mutual transaction t_nodes,t_links:', t_nodes, t_links)
 
               /* calculate the lay index of taxpayer */
               let min_lay_index = 0
 
-              console.log('get_position of t nodes:',t_nodes)
+              // console.log('get_position of t nodes:',t_nodes)
 
+              let iter = 0
               function  get_position(t_nodes,t_links,c_lay_index,node) {
                   //从0开始
-                  console.log('current loop: ','node: ', node,'lay_index: ', c_lay_index)
+                  iter++
+                  if(iter>10){return 0;}
+                  // console.log('current loop: ','node: ', node.map(d=>d.tp_name),'lay_index: ', c_lay_index)
                   if(c_lay_index < min_lay_index){
                      min_lay_index = c_lay_index
                   }
                   node.forEach (node=>{
                          //根据targetlink决定当前的lay-index  根据sourcelink决定之后的lay_index
-                         //当当前的node的lay_index未设置，或设值的偏大，需前移选择最大的 lay_index
-                         if( (node.lay_index == 1)|| (c_lay_index < node.lay_index)){
+                         //若当前的node的lay_index未设置，或原本值的偏大，需要reset lay_index 为更小的值
+                         if( (node.lay_index == 1)|| ( node.lay_index > c_lay_index )){
                              // 设置当前节点的lay index
+                             // console.log('reset lay_index: ',node,'with',c_lay_index)
                              t_nodes.find(d=> d.id == node.id).lay_index = c_lay_index
+
                              // 更改他的前向节点的lay index
-                             console.log('set previous node', node.targetLinks, t_nodes, t_links)
                              let previous_node_li = node.targetLinks.map(link=> t_nodes.find(d => d.id == link.source))
+                             // console.log('previous_node_li: ', previous_node_li.map(d=>d.tp_name))
                              if( previous_node_li.length >0 ){
+                                     previous_node_li = previous_node_li.map(n=>{
+                                         // console.log('previous_cal_node_list:',t_nodes.find(d => d.id == n.id).previous_cal_node_list.map(d=>d.tp_name), 'current node:',n.tp_name)
+                                         if(t_nodes.find(d => d.id == node.id).previous_cal_node_list.indexOf(n)>-1){
+                                            // 若本节点的坐标已经计算过
+                                            //  console.log('There is a calculated node: ', n)
+                                             n=null
+                                         }
+                                         else{
+                                             // 记录已经计算过lay_index的前向节点id，防止闭环死循环
+                                             t_nodes.find(d => d.id == node.id).previous_cal_node_list.push(n)
+                                             // console.log('node:', n, 's previous cal node li:', t_nodes.find(d => d.id == node.id).previous_cal_node_list)
+                                             // t_nodes.find(d => d.id == n.id).previous_cal_node_list = t_nodes.find(d => d.id == n.id).previous_cal_node_list.concat(node.previous_cal_node_list)
+                                         }
+                                         return n
+                                     }).filter(d=>d!=null)
+                                     // console.log('After remove calculated node from previous_node_li: ', previous_node_li.map(d=>d.tp_name))
+                                     // console.log('reset previous node' +
+                                     //     '', previous_node_li, t_nodes, t_links)
                                      return get_position(t_nodes,t_links,c_lay_index-1, previous_node_li)
                              }
                          }
-                         else{
-                             // console.log('current node: ',node,' index: ', c_lay_index)
-                         }
                   })
               }
-              get_position(t_nodes, t_links, 0, t_nodes.filter(node=>node.sourceLinks.length==0 && node.targetLinks.length!=0))
+              console.log('get min source links num from :', t_nodes, t_nodes.filter( n=>!(n.sourceLinks.length==0 && n.targetLinks.length==0) ).map(n=>n.sourceLinks.length))
+              console.log('get max target links num:from', t_nodes.filter(node=>node.sourceLinks.length == min_source_links_num).map(n=>n.targetLinks.length))
+
+              let min_source_links_num = d3.min(t_nodes.filter( n=>!(n.sourceLinks.length==0 && n.targetLinks.length==0) ).map(n=>n.sourceLinks.length))
+              let max_target_links_num = d3.max(t_nodes.filter( n=>!(n.sourceLinks.length==0 && n.targetLinks.length==0) ).filter(node=>node.sourceLinks.length == min_source_links_num).map(n=>n.targetLinks.length))
+
+              console.log('min_source_links_num:', min_source_links_num, 'max_target_links_num:',max_target_links_num)
+              get_position(t_nodes, t_links, 0, t_nodes.filter(node=>node.sourceLinks.length == min_source_links_num && node.targetLinks.length == max_target_links_num ))
+
+              console.log('Calculated t_node x position: t_nodes:',t_nodes,'t_links:', t_links)
+
+              // handle vertical transaction link : put the node into two lay
+              console.log('Vertical trade link:', t_links.filter(l=>t_nodes.find( n=>n.id==l.source ).lay_index == t_nodes.find( n=> n.id==l.target).lay_index))
+              t_links.filter(l=>t_nodes.find( n=>n.id==l.source ).lay_index == t_nodes.find( n=> n.id==l.target).lay_index).forEach(
+                  link=>{
+                      let curr_lay = t_nodes.find( n=> n.id == link.target).lay_index
+
+                      // source_node lay index -1 layindex 之前所有node layindex -1 min_lay_index -1
+                      t_nodes = t_nodes.filter( n=>!(n.lay_index<curr_lay) )
+                                       .concat( t_nodes.filter( n => n.lay_index<curr_lay ).map( d => {d.lay_index = d.lay_index-1;return d }))
+                      t_nodes.find( n=> n.id == link.source).lay_index -= 1
+                      min_lay_index --;
+                  }
+              )
+              console.log('Handled the vertical transaction link: t_nodes:',t_nodes,'t_links:', t_links)
+
+
 
               var x_position = d3.scaleLinear()
                   .domain([d3.min(t_nodes.map(d=>d.lay_index)), d3.max(t_nodes.map(d=>d.lay_index))])
@@ -448,10 +315,11 @@
                         .data(node_li)
                         .enter()
                         .append('text')
-                        .attr('x',d=> (d.x1<(this.cfg.trade_panel.max_width/2))? d.x1+10 : d.x0-100)
+                        .attr('x',d=> (d.x1<(this.cfg.trade_panel.max_width/2))? d.x1+10 : d.x0-150)
                         .attr('y',d=> d.y0 + 15)
                         .attr('dy', '0.35em')
-                        .text(d => d.tp_name);
+                        .text(d => d.tp_name)
+                        .on('click',d=>{console.log(d)});
 
               }
 
@@ -471,25 +339,41 @@
                         let source_node = t_nodes.find(node => node.id == d.source)
                         let target_node = t_nodes.find(node => node.id == d.target)
                         // console.log('draw link: ',d, 'source:', source_node,' target:', target_node)
-
-                        let control_point1 = {
-                            x:(source_node.x1 + target_node.x0)/2,
-                            y: source_node.y0
+                        let path_d;
+                        if(target_node.lay_index < source_node.lay_index){
+                            //设置offset 外环半径为15
+                            let offset_r = 30
+                            let inner_offset_r = 10
+                            path_d = 'M '
+                                + ((source_node.x1) + strokeWidth) +','+ source_node.y0
+                                + 'A '+ offset_r +','+offset_r +' 0 0 1 '+ ((source_node.x1)+ strokeWidth) +','+ (source_node.y0 + 2*offset_r)
+                                + 'L' + (target_node.x0 - strokeWidth) + ',' + (target_node.y0 + 2*offset_r)
+                                + 'A' + offset_r +','+offset_r +' 0 0 1 '+ (target_node.x0 - strokeWidth) + ',' + target_node.y0
+                                /* 第二段弧 */
+                                + 'L'+ (target_node.x0 - strokeWidth) + ',' + target_node.y1
+                                + 'A '+ inner_offset_r +','+inner_offset_r +' 0 0 0 '+ ((target_node.x0) - strokeWidth) +','+ (target_node.y1 + 2*inner_offset_r)
+                                + 'L' + (source_node.x1 + strokeWidth) + ',' + (source_node.y1 + 2*inner_offset_r)
+                                + 'A' + inner_offset_r +','+inner_offset_r +' 0 0 0 '+ (source_node.x1 + strokeWidth) + ',' + source_node.y1
+                                + 'Z'
                         }
-                        let control_point2 = {
-                            x:(source_node.x1 + target_node.x0)/2,
-                            y:target_node.y0
-                        }
-                        let right_control_point1 = {
-                            x:(source_node.x1 + target_node.x0)/2,
-                            y: source_node.y1
-                        }
-                        let right_control_point2 = {
-                            x:(source_node.x1 + target_node.x0)/2,
-                            y:target_node.y1
-                        }
-
-                        let path_d = 'M'
+                        else{
+                            let control_point1 = {
+                                x:(source_node.x1 + target_node.x0)/2,
+                                y: source_node.y0
+                            }
+                            let control_point2 = {
+                                x:(source_node.x1 + target_node.x0)/2,
+                                y:target_node.y0
+                            }
+                            let right_control_point1 = {
+                                x:(source_node.x1 + target_node.x0)/2,
+                                y: source_node.y1
+                            }
+                            let right_control_point2 = {
+                                x:(source_node.x1 + target_node.x0)/2,
+                                y:target_node.y1
+                            }
+                            path_d = 'M'
                                 + ((source_node.x1)+ strokeWidth) +','+ source_node.y0
                                 /* 第一段弧 */
                                 // 控制点1 为 investor 正下方中点坐标为起始节点圆心的平均y
@@ -508,6 +392,7 @@
                                 + ',' + right_control_point1.x +','+ right_control_point1.y
                                 + ',' + source_node.x1+','+ source_node.y1
                                 + 'Z'
+                        }
                         return path_d
                     })
                     .attr('stroke-opacity', 0.5)
@@ -535,12 +420,35 @@
                             for( let node_id in d.path[path_id]){
                                 if(node_id < (d.path[path_id].length-1)){
                                     // highlight correspond invest link (undirect link)
-                                    d3.select('g.invest_link #in-'+ d.path[path_id][node_id]+'-'+d.path[path_id][parseInt(node_id)+parseInt(1)])
+
+                                    // console.log(d)
+                                    // Distinguish between co-investor and interlocking
+                                    console.log(d.path[path_id][parseInt(node_id)+parseInt(1)], d.path[path_id][node_id], [d.source.id, d.target.id])
+                                    if( ([d.source.id, d.target.id].indexOf( d.path[path_id][parseInt(node_id)+parseInt(1)])> -1)  || ([d.source.id, d.target.id].indexOf(d.path[path_id][node_id])>-1)){
+                                        console.log('co-investor')
+                                        d3.select('g.invest_link #in-'+ d.path[path_id][node_id]+'-'+d.path[path_id][parseInt(node_id)+parseInt(1)])
                                         .attr('opacity',this.cfg.invest_panel.highlight_opacity)
                                         .attr('stroke-width',this.cfg.invest_panel.highlight_stroke_width)
-                                    d3.select('g.invest_link #in-'+ d.path[path_id][parseInt(node_id)+parseInt(1)]+'-'+d.path[path_id][node_id])
+
+                                        d3.select('g.invest_link #in-'+ d.path[path_id][parseInt(node_id)+parseInt(1)]+'-'+d.path[path_id][node_id])
                                         .attr('opacity',this.cfg.invest_panel.highlight_opacity)
                                         .attr('stroke-width',this.cfg.invest_panel.highlight_stroke_width)
+
+                                    }
+                                    else{
+                                        console.log('sharelocking')
+                                        d3.select('g.invest_link #in-'+ d.path[path_id][node_id]+'-'+d.path[path_id][parseInt(node_id)+parseInt(1)])
+                                        .attr('opacity',this.cfg.invest_panel.highlight_opacity)
+                                        .attr('stroke','red')
+                                        .attr('stroke-width',this.cfg.invest_panel.highlight_stroke_width)
+
+                                        d3.select('g.invest_link #in-'+ d.path[path_id][parseInt(node_id)+parseInt(1)]+'-'+d.path[path_id][node_id])
+                                        .attr('opacity',this.cfg.invest_panel.highlight_opacity)
+                                        .attr('stroke', 'red')
+                                        // .attr('stroke', '#ff7f0e')
+                                        .attr('stroke-width',this.cfg.invest_panel.highlight_stroke_width)
+                                    }
+
                                 }
                                 // highlight correspond node
                                 d3.select('g.invest_node #in-'+ d.path[path_id][node_id])
@@ -578,11 +486,13 @@
                                     // undirect link
                                     d3.select('g.invest_link #in-'+ d.path[path_id][node_id]+'-'+d.path[path_id][parseInt(node_id)+parseInt(1)])
                                         .attr('opacity',this.cfg.invest_panel.default_opacity)
+                                        .attr('stroke',this.cfg.link.color.invest)
                                         .attr('stroke-width',this.cfg.invest_panel.default_stroke_width)
 
                                     d3.select('g.invest_link #in-'+ d.path[path_id][parseInt(node_id)+parseInt(1)]+'-'+d.path[path_id][node_id])
-                                        .attr('opacity',this.cfg.invest_panel.default_opacity)
-                                        .attr('stroke-width',this.cfg.invest_panel.default_stroke_width)
+                                        .attr('opacity', this.cfg.invest_panel.default_opacity)
+                                        .attr('stroke',this.cfg.link.color.invest)
+                                        .attr('stroke-width', this.cfg.invest_panel.default_stroke_width)
                                 }
                                 // cancel highlight correspond node
                                 d3.select('g.invest_node #in-'+ d.path[path_id][node_id])
@@ -593,11 +503,11 @@
                     })
 
 
-
               let invest_panel_svg = this.svg.append('g')
                         .classed('invest_panel',!0)
+
               /* draw i node */
-              let i_nodes = data.nodes.filter(d=>d.in)
+              let i_nodes = data.nodes.filter(d=>!d.tp)
               i_nodes = i_nodes.map(
                   d=>{
                       console.log('calculate i node position  ', d)
@@ -640,9 +550,7 @@
                       return d
                   }
               )
-
-
-              console.log('calculating i node:',i_nodes)
+              // console.log('calculating i node:',i_nodes)
               while( i_nodes.filter(d=>d.to_calulate.length>0).length>0 ){
                   //存在尚未计算x的i_node
                   i_nodes.filter(d=>d.to_calulate.length>0).map(
@@ -675,6 +583,7 @@
               )
                // fix the overlapping problem of invest nodes.
               i_nodes= i_nodes.sort( function(a,b){ return a.x - b.x } )
+
               for (let i = 0 ; i < i_nodes.length - 1;i++){
                     //若两个相邻的x差值超过invest的Node的直径, 存在overlapping
                     if( ((i_nodes[i+1].x - i_nodes[i].x) < (2*this.cfg.node.invest_r)) && (i_nodes[i+1].y_layindex == i_nodes[i].y_layindex) ){
@@ -688,11 +597,59 @@
                         }
                     }
               }
+              function reduce_overlap(i_nodes,i,direct,max_width,min_width,margin){
+                    // Input： i_nodes, i(current iter index), direct(current iter direction. 1:forward, 0:backward)
+                    if( (direct && (i >= (i_nodes.length-1))) || (!direct && i == 1) ){
+                            return true
+                    }
+                    // console.log('current loop index:', i, 'node_li:', i_nodes.map(d=>d.x), 'direction:', direct)
+
+                    // 当遍历的两个节点之间的间距差小于 invest直径
+                    if( ((i_nodes[i+direct].x - i_nodes[i+(direct-1)].x) < margin) && (i_nodes[i+direct].y_layindex == i_nodes[i+(direct-1)].y_layindex) ) {
+                            // 要么前向节点-2*r  以前向节点向前check,
+                            // 要么后向节点+2r   以后向节点向后check
+                            // 正向
+                            // console.log('reduce_overlap with i:',i_nodes[i+direct].in_name, ' and ', i_nodes[i+(direct-1)].in_name, '：', (i_nodes[i+direct].x - i_nodes[i+(direct-1)].x) < margin)
+                            if( direct ){
+                                //后继节点没有超过max_width边界
+                                if( i_nodes[i+(direct-1)].x + margin < max_width ){
+                                    i_nodes[i+direct].x = i_nodes[i+(direct-1)].x + margin
+                                    // console.log('reset the forward x as : ', i_nodes[i+direct].x)
+                                }
+                                //超过边界 则后推回溯
+                                else{
+                                    // console.log('exeed the maximum width',i_nodes[i+direct])
+                                    i_nodes[i+direct].x = max_width
+                                    i_nodes[i+direct-1].x = max_width - margin
+                                    reduce_overlap(i_nodes, i, 0, max_width,min_width,margin)
+                                }
+                            }
+                            // 反向
+                            else {
+                                // 前继节点没有超过min_width 边界
+                                if( i_nodes[i+(direct)].x - margin > min_width ){
+                                    i_nodes[i+(direct-1)].x = i_nodes[i+(direct)].x - margin
+                                    // console.log('reset the backward x as : ', i_nodes[i+direct-1].x)
+                                }
+                                //超过边界 则后推回溯
+                                else{
+                                    reduce_overlap(i_nodes,i+1,1,max_width,min_width,margin)
+                                }
+                            }
+                     }
+                    else if(!direct){
+                        return true
+                    }
+                    return reduce_overlap(i_nodes,direct?i+1:i-1, direct, max_width, min_width, margin)
+              }
+              reduce_overlap(i_nodes,0,1,this.cfg.trade_panel.max_width,this.cfg.trade_panel.min_width,2*this.cfg.node.invest_r+3)
+
               console.log('After calculating the position of i node: ', i_nodes)
 
               var in_y__position = d3.scaleLinear()
                   .domain([d3.min(i_nodes.map(d=>d.y_layindex)), d3.max(i_nodes.map(d=>d.y_layindex))])
                   .range([this.cfg.invest_panel.min_height, this.cfg.invest_panel.max_height])
+
               i_nodes.map(d=>{
                   d.y = in_y__position(d.y_layindex)
                   return d
@@ -700,21 +657,6 @@
 
 
               let i_links = data.links.filter(d=>!d.ap_txn)
-
-              // draw invest node
-              invest_panel_svg.append('g')
-                        .classed('invest_node',!0)
-                        .attr('stroke', '#000')
-                        .selectAll('circle')
-                        .data(i_nodes)
-                        .enter()
-                        .append('circle')
-                        .attr('id',d=>'in-'+d.id)
-                        .attr('cx', d=>d.x)
-                        .attr('cy', d=>d.y)
-                        .attr('r',this.cfg.node.invest_r)
-                        .attr('fill',this.cfg.node.color.in)
-                        .on('click',d=>{console.log('click on: ',d)})
 
               // draw invest link
               invest_panel_svg.append('g')
@@ -731,9 +673,20 @@
                         // set config
                         // let strokeWidth = this.cfg.node.strokeWidth
                         // get the source node and target node
-                        let source_node = i_nodes.find(node => node.id == d.source)
+                        // if both source node and target node are the tp_node
+
+
+
+
+                        let source_node = (i_nodes.concat(t_nodes)).find(node => node.id == d.source)
                         let target_node = (t_nodes.concat(i_nodes)).find(node => node.id == d.target)
                         console.log('draw invest link: ',d, 'source:', source_node,' target:', target_node)
+
+                        if(source_node.tp){
+                            source_node.x = (source_node.x0 + source_node.x1)/2
+                            source_node.y = (source_node.y0 + source_node.y1)/2
+                        }
+
                         if(!target_node.in){
                             target_node.x = (target_node.x0 + target_node.x1)/2
                             target_node.y = (target_node.y0 + target_node.y1)/2
@@ -762,6 +715,21 @@
                     .attr('stroke',this.cfg.link.color.invest)
                     .attr('stroke-opacity', 0.5)
                     // .attr('fill',this.cfg.link.color.invest)
+
+              // draw invest node
+              invest_panel_svg.append('g')
+                        .classed('invest_node',!0)
+                        .attr('stroke', '#000')
+                        .selectAll('circle')
+                        .data(i_nodes)
+                        .enter()
+                        .append('circle')
+                        .attr('id',d=>'in-'+d.id)
+                        .attr('cx', d=>d.x)
+                        .attr('cy', d=>d.y)
+                        .attr('r',this.cfg.node.invest_r)
+                        .attr('fill',this.cfg.node.color.in)
+                        .on('click',d=>{console.log('click on: ',d)})
 
               /* get text of each invest node*/
               invest_panel_svg
@@ -840,7 +808,6 @@
                     // draw value line
                     tplink_svg
                             .datum(link)
-                            .enter()
                             .append('path')
                             .attr('id', 'tp'+t_links.indexOf(link))
                             .attr('d', ()=>{
@@ -857,6 +824,8 @@
                                 return path
                             })
                             .attr('stroke',this.cfg.parallel_panel.line_color)
+                            .attr('stroke-width',2)
+                            .attr('stroke-opacity',0.9)
                             .attr('fill','none')
                             .on('mouseover', d=> {
                                 //当鼠标放在对应的parallel线上时。该条线被高亮
@@ -900,7 +869,7 @@
                             )
                             .enter()
                             .append('circle')
-                            .attr('r',5)
+                            .attr('r',2)
                             //把点映射到坐标
                             .attr('cx', d=>d.cx)
                             .attr('cy', d=>d.cy)

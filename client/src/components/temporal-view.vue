@@ -88,7 +88,7 @@
                     }],
                     series: [
                         {
-                            name: '模拟数据',
+                            name: 'cuurent data',
                             type: 'line',
                             smooth: true,
                             symbol: 'none',

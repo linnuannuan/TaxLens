@@ -35,14 +35,14 @@
 <!--        </el-row>-->
       </el-col>
       <el-col :span="18" class="MainView">
-          <el-row style="height: 210px">
+          <el-row style="height: 208px">
               <temporal-view
                   class="grid-content"
                   :affiliated-party-time-list="affiliatedPartyTimeList"
                   :loading-time-slider="loadingDetailGraph">
               </temporal-view>
           </el-row>
-          <el-row style="height: 210px">
+          <el-row style="height: 208px">
               <group-view
                   class="grid-content"
                   :affiliated-party-topo-list="affiliatedPartyTopoList"
@@ -52,7 +52,7 @@
       </el-col>
     </el-row>
     <el-row :gutter="5" class="MainView">
-          <el-row style="height: 85%">
+          <el-row style="height: 75%">
               <div style="width: 100%; height: 100%; ">
                   <graph-view
                       class="grid-content"

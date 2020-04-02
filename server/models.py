@@ -170,13 +170,14 @@ class Model:
         ap_topo_json = []
 
         ap_id = 0
+        iter = 0
         for ap in self.AP_list:
             ap_graph = self.TPIIN.subgraph(ap)
             tp_list = [n for n, tp in list(ap_graph.nodes(data='tp')) if tp]
             tp_graph = ap_graph.subgraph(tp_list).copy()
             # remove invest info
-            tp_graph.remove_edges_from([(u, v) for u, v, iv in tp_graph.edges(data='in_ratio') if iv])
-
+            tp_graph.remove_edges_from([(u, v) for u, v, d in tp_graph.edges(data=True) if (not ('ap_txn' in d))])
+            tp_graph.remove_nodes_from(list(nx.isolates(tp_graph)))
             # retrive transaction info
             ap_invoice = self.TPIIN_invoice.query('seller_id in @tp_list').query('buyer_id in @tp_list')
 
@@ -190,9 +191,10 @@ class Model:
 
             ap_topo_json.append({'ap_id': ap_id, 'tax_gap': 100*random.random(), 'nodes': nx.node_link_data(tp_graph)['nodes'], 'links': nx.node_link_data(tp_graph)['links']})
             # get only 10 group for test
-            if ap_id >= 19:
+            if iter >=  19:
                 break;
-            ap_id += 1
+            ap_id += 100
+            iter += 1
 
         return ap_topo_json
 
