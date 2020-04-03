@@ -5,22 +5,21 @@ import simplejson
 
 # initialize the model
 TPIIN = Model()
-TPIIN.get_TPIIN()
 
 
 @app.route('/ap_list')
 def get_ap_list():
     return simplejson.dumps(TPIIN.get_affiliated_party_list(), ensure_ascii=False, ignore_nan=True)
 
+
 @app.route('/ap_time_list')
 def get_ap_time_list():
-    return simplejson.dumps(TPIIN.get_ap_txn_time_list(), ensure_ascii=False, ignore_nan=True)
+    return simplejson.dumps(TPIIN.get_affiliated_party_transaction_list(), ensure_ascii=False, ignore_nan=True)
 
 
 @app.route('/ap_topo_list')
 def get_topo_list():
     return simplejson.dumps(TPIIN.get_affiliated_party_topo_list(), ensure_ascii=False, ignore_nan=True)
-
 
 
 @app.route('/ap_detail', methods=['POST'])
@@ -52,7 +51,7 @@ def set_model_parameter():
     post_data = request.data.decode()
     if post_data != "":
         post_data = simplejson.loads(post_data)
-        TPIIN.get_TPIIN(post_data['max_transaction_length'], post_data['max_control_length'])
+        TPIIN.get_tp_network(post_data['max_transaction_length'], post_data['max_control_length'])
     return simplejson.dumps(TPIIN.get_affiliated_party_list(), ensure_ascii=False, ignore_nan=True)
 
 
