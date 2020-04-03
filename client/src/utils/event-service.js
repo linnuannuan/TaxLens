@@ -44,7 +44,6 @@ let EventService = new Vue({
 
     // When user click on a transaction to see its detail info
     emitAffiliatedTransactionSelected: function(source, target){
-      console.log('emitAffiliatedTransactionSelected msg:',source, target)
       this.$emit(this.AffiliatedTransactionSelected,source, target);
     },
     onAffiliatedTransactionSelected: function (callback) {
