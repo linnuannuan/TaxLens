@@ -106,7 +106,7 @@
       },
       renderGraph() {
         this.svg.selectAll("g").remove()
-        if (this.affiliatedPartyDetail !==== null) {
+        if (this.affiliatedPartyDetail !== null) {
           let data = this.affiliatedPartyDetail;
 
           let get_new_layout = (data)=> {
@@ -305,7 +305,7 @@
               // get the y_index of each node
               n.x0= x_position(n.x_index);
               n.x1= n.x0 + this.cfg.trade_panel.node_width;
-              n.y0= this.cfg.trade_panel.min_height + (this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height) / (t_nodes.filter(node => node.x_index ==== n.x_index).length) * n.y_index ;
+              n.y0= this.cfg.trade_panel.min_height + (this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height) / (t_nodes.filter(node => node.x_index === n.x_index).length) * n.y_index ;
               n.y1= n.y0 + this.cfg.trade_panel.node_width ;
               return n;
             })
@@ -351,7 +351,7 @@
 
             // for(let i = min_lay_index; i<=1; i++){
             //   // get node list of current lay
-            //   let node_li = t_nodes.filter(d => d.x_index ==== i)
+            //   let node_li = t_nodes.filter(d => d.x_index === i)
             //
             //   // vertical position linear encoder
             //   let y_position = d3.scaleLinear()
@@ -678,7 +678,7 @@
                           let target_node = i_nodes.find(n=>n.id === node_id)
                           if(target_node.to_calulate.length===0){
                             accumulate_x += target_node.x
-                            r_node.to_calulate.splice(r_node.to_calulate.findIndex(item => item ==== node_id), 1)
+                            r_node.to_calulate.splice(r_node.to_calulate.findIndex(item => item === node_id), 1)
                             calculated_count++
                           }
                         })
