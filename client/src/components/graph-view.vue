@@ -210,7 +210,7 @@
               get_position(t_nodes, t_links, 0, t_nodes.filter(node=>node.sourceLinks.length == min_source_links_num && node.targetLinks.length == max_target_links_num ))
 
               // handle the position of those trader with no transaction
-              t_nodes.filter(d=>d.x_index == 1).sort((x,y)=> i_links.filter(link=> link.source ==x.id || link.target == x.id).length < i_links.filter(link=> link.source ==y.id || link.target == y.id).length )
+              t_nodes.filter(d=>d.x_index == 1).sort((x,y)=> i_links.filter(link=> link.source ==y.id || link.target == y.id).length < i_links.filter(link=> link.source ==x.id || link.target == x.id).length )
                      .forEach((d,index)=>{
                          t_nodes.find(n=>n.id==d.id).x_index += index
                      })
