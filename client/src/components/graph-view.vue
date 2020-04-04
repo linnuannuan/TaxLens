@@ -33,7 +33,7 @@
       initGraph() {
         let width = this.$el.clientWidth;
         let height = this.$el.clientHeight;
-        let margin_width = width/30
+        let margin_width = width/40
         let margin_height = height/20
 
         //config the node width and link width
@@ -61,8 +61,8 @@
           trade_panel:{
             min_width : margin_width,
             max_width : width - margin_width,
-            min_height : height/3 + margin_height,
-            max_height : 2*height/3 - margin_height,
+            min_height : height/5 + margin_height,
+            max_height : 3*height/5 - margin_height,
             unimportant_opacity:0.2,
             default_opacity:0.5,
             highlight_opacity:1,
@@ -73,17 +73,13 @@
             min_width : margin_width,
             max_width : width - margin_width,
             min_height : margin_height,
-            max_height : height/3 - margin_height,
+            max_height : height/5 - margin_height,
             highlight_opacity:1,
             default_opacity:1,
             unimportant_opacity:0.7,
             highlight_stroke_width:5
           },
           parallel_panel:{
-            min_width : margin_width,
-            max_width : width - margin_width,
-            min_height : 2*height/3 + margin_height,
-            max_height : height - margin_height,
             line_color:'skyblue',
             // line_color:'#1f77b4',
             highlight_color:'#b82e2e',
@@ -92,8 +88,16 @@
             highlight_opacity:0.8,
             default_stroke_width:2,
             highlight_stroke_width:4
+          },
+          calendar_panel:{
+            min_width : margin_width,
+            max_width : width - margin_width,
+            min_height : 3*height/5 + margin_height,
+            max_height : height - margin_height,
+            high_light_stroke_color:'yellow',
           }
-        };
+        }
+
         this.svg = d3.select('#relation_structure')
                 .append("svg")
                 .attr("viewBox", [0, 0, width, height])
@@ -174,7 +178,6 @@
               node.forEach( (node, index)=>{
                 // 根据targetlink决定当前的lay-index  根据sourcelink决定之后的lay_index
                 // 若当前的node的lay_index未设置，或原本值的偏大，需要reset lay_index 为更小的值
-                // console.log('set lay index of:', node.tp_name, c_lay_index )
 
                 // make each transaction lay in the horizontal direction and let invest relation to decide the vertical position
                 c_lay_index -= index*2
@@ -236,22 +239,20 @@
             t_nodes.map(n=>{
               // get the y_index of each node
               if(n.in){
-                console.log('exist ti node',n.tp_name,n.id, 'ilinks:',i_links)
                 let target_i_nodes = i_links.filter(l=>l.source === n.id).map(n=>n.target)
                 let source_i_nodes= i_links.filter(l=>l.target === n.id).map(n=>n.source)
-                let max_source_y_index = d3.max(source_i_nodes.map(node=> t_nodes.find(n=>n.id===node)? t_nodes.find(n=>n.id===node).y_index:0))
+                let max_source_y_index = source_i_nodes.length == 0? 0: d3.max(source_i_nodes.map(node=> t_nodes.find(n=>n.id===node)? t_nodes.find(n=>n.id===node).y_index:0))
                 let reset_target = true
-
+                console.log('exist ti node',n.tp_name,n.id)
                 // 获取每一个前置节点 取最大y_index +1
                 while(source_i_nodes.length>0){
                   // get all previous nodes
-                  source_i_nodes = i_links.filter(l=>l.target in source_i_nodes)
-
+                  source_i_nodes = i_links.filter(l=>l.target in source_i_nodes).map(n=>n.source)
                   // get max lay_index in previous nodes
                   let current_max_lay = d3.max(source_i_nodes.map(node=> t_nodes.find(n=>n.id===node)? t_nodes.find(n=>n.id===node).y_index:0))
-
                   // reset if forward node is tp_node and current y_index > previous set y_index
-                  max_source_y_index = current_max_lay > max_source_y_index? current_max_lay : max_source_y_index
+
+                  max_source_y_index = (!!current_max_lay) & current_max_lay > max_source_y_index? current_max_lay : max_source_y_index
                 }
                 n.y_index = max_source_y_index + 1
 
@@ -259,16 +260,16 @@
                 // 若后置节点已经计算过，则判断后置节点的lay_index是否小于当前要设置的值，若小于重置后置节点lay_index
                 let target_y_index = n.y_index + 1
                 while(reset_target){
-                  //reset current target nodes
+                  // reset current target nodes
                   reset_target = false
                   target_i_nodes.map(node=> {
-                    if(t_nodes.find(n=>n.id === node).y_index < max_source_y_index){
+                    if(t_nodes.find(n=>n.id === node).y_index < target_y_index){
                       t_nodes.find(n=>n.id === node).y_index = target_y_index
                       reset_target = true
                     }
                   })
                   if(reset_target){
-                    target_i_nodes = i_links.filter(l=>l.source in target_i_nodes)
+                    target_i_nodes = i_links.filter(l=>l.source in target_i_nodes).map(n=>n.target)
                     target_y_index++
                   }
                 }
@@ -301,12 +302,16 @@
                     .domain([d3.min(t_nodes.map(d=>d.x_index)), d3.max(t_nodes.map(d=>d.x_index))])
                     .range([this.cfg.trade_panel.min_width, this.cfg.trade_panel.max_width])
 
+            var y_position =d3.scaleLinear()
+                    .domain([d3.min(t_nodes.map(d=>d.y_index)), d3.max(t_nodes.map(d=>d.y_index))])
+                    .range([this.cfg.trade_panel.min_height, this.cfg.trade_panel.max_height])
+
             // set the position info of each node
             t_nodes.map(n=>{
               // get the y_index of each node
               n.x0= x_position(n.x_index);
               n.x1= n.x0 + this.cfg.trade_panel.node_width;
-              n.y0= this.cfg.trade_panel.min_height + (this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height) / (t_nodes.filter(node => node.x_index === n.x_index).length) * n.y_index ;
+              n.y0= y_position(n.y_index)
               n.y1= n.y0 + this.cfg.trade_panel.node_width ;
               return n;
             })
@@ -842,139 +847,131 @@
                     .attr('dy', '0.35em')
                     .text(d => d.in_name);
 
-            // draw the parallel chart
-            let txn_attr_li = ['related strength', 'transaction strength', 'tax burden deviation', 'tb variation deviation', 'net profit deviation', 'np variation deviation', 'elastic deviation']
-            let parallel_svg = this.svg.append('g').classed('parallel',!0)
+            // draw calendar view
+            let calendar_svg = this.svg.append('g').classed('calendar_panel',!0)
 
-            // 坐标系的位置映射
-            let y_linear = d3.scaleLinear()
-                    .domain([0,txn_attr_li.length])
-                    .range([this.cfg.parallel_panel.min_height, this.cfg.parallel_panel.max_height])
 
-            // mock the attr value for each tp link
-            t_links = t_links.map(d=>{
-              txn_attr_li.forEach(attr => d[attr] = 1000*Math.random())
-              return d
-            })
-            // console.log('After generating the suspect value of t link: ',t_links)
+            let formatMonth = d3.utcFormat("%b")
+            let formatDay = d => "SMTWTFS"[d.getUTCDay()]
+            let formatDate = d3.utcFormat("%x")
+            let formatClose = d3.format("$,.2f")
+            let formatValue = d3.format(".2%")
 
-            //创建每个轴的比例尺
-            let attrScale=[]
-            txn_attr_li.forEach(
-                    d=>{
-                      let parallel_attr_svg = parallel_svg.append('g').classed(d,!0)
-                      let dataset = t_links.map(link=>link[d])
-                      // console.log('dataset: ',dataset)
-                      // dataset
-                      // 定义比例尺
-                      let c_attrScale = d3.scaleLinear()
-                              .domain([0, d3.max(dataset)])
-                              .range([this.cfg.parallel_panel.min_width + 10, this.cfg.parallel_panel.max_width - 10]);
-                      // 添加坐标轴
-                      parallel_attr_svg.append("g")
-                              .classed('x_axis',!0)
-                              .attr("transform","translate(0,"+ y_linear(txn_attr_li.indexOf((d))) +")")
-                              .call(d3.axisBottom(c_attrScale))
+            function pathMonth(t) {
+              const n = 7;
+              const d = Math.max(0, Math.min(n, countDay(t)));
+              const w = timeWeek.count(d3.utcYear(t), t);
+              return `${d === 0 ? `M${w * cellSize},0`
+                  : d === n ? `M${(w + 1) * cellSize},0`
+                  : `M${(w + 1) * cellSize},0V${d * cellSize}H${w * cellSize}`}V${n * cellSize}`;
+            }
 
-                      // 添加坐标轴属性的名称
-                      parallel_attr_svg.append('g')
-                              .classed('p_text',!0)
-                              .selectAll('g.p_text')
-                              .data(txn_attr_li)
-                              .enter()
-                              .append('text')
-                              .attr('x', this.cfg.parallel_panel.min_width - 10 )
-                              .attr('y', d => y_linear(txn_attr_li.indexOf((d)))-10 )
-                              .text(d=>d)
+            let countDay =  d => d.getUTCDay()
+            let timeWeek = d3.utcSunday
+            let width = this.cfg.calendar_panel.max_width - this.cfg.calendar_panel.min_width
+            let cellSize = 17
+            let height = cellSize * 9
+            //  record the offset Z
+            let calendar_width = cellSize * 8
+            console.log('t_links',t_links)
+            t_links
+                .sort((a,b)=>t_nodes.find(node=>node.id==a.source).x_index - t_nodes.find(node=>node.id==b.target).x_index)
+                .forEach(
+                (d,index) =>{
+                    // 对每一笔关联交易 都画出交易双方的calendar chart
+                    // 垂直排列日历图
+                    // source 排第一层 y: this.cfg.calendar_panel.min_height
+                    // target 排第二层 y: this.cfg.min_height +
+                    let cur_svg = calendar_svg.append('g')
+                                // .classed('calendar',!0)
+                                .attr('id','calendar-'+d.source+'-'+d.target)
 
-                      // 把比例尺保留方便绘值
-                      attrScale.push(c_attrScale)
-                    }
+                    let offset_x = this.cfg.calendar_panel.min_width + calendar_width * index
+                    let source_offset_y = this.cfg.calendar_panel.min_height
+                    let target_offset_y = this.cfg.calendar_panel.min_height + height
+                    console.log('source_offset_y', source_offset_y)
+                    console.log('target_offset_y', target_offset_y)
+                    get_calendar_view(cur_svg.append('g'), offset_x, source_offset_y)
+                    get_calendar_view(cur_svg.append('g'), offset_x, target_offset_y)
+
+                }
             )
-            // console.log('the parallel x axis: ', txn_attr_li, ' the scaler is: ', attrScale)
+
+            function get_calendar_view(cur_svg, offset_x, offset_y){
+                let calendar_data = []
+                for(let i = 1 ; i < 31 ; i++){
+                    calendar_data.push({
+                        date: new Date(2020,0,i+1),
+                        value: Math.random()*100,
+                        ap_txn:Math.random()>0.8?true:false,
+                        ap_txn_amount: Math.random()*10
+                    })
+                }
+                console.log('calendar_data:',calendar_data)
+                let years = [[2020,calendar_data]]
+                console.log('years', years, 'width', width, 'height', height, 'timeWeek', timeWeek, 'countDay', countDay)
+
+                // 创建颜色映射器
+                let color = d3.scaleSequential([d3.min(calendar_data.map(d=>d.value)), d3.max(calendar_data.map(d=>d.value))], d3.interpolateBlues)
+
+                const year = cur_svg.selectAll("g")
+                    .data(years)
+                    .join("g")
+                      // .attr("transform", (d, i) => `translate(40,${height * i + cellSize * 1.5})`);
+
+                year.append("text")
+                      .attr("x", offset_x - 5)
+                      .attr("y", offset_y - 5)
+                      .attr("font-weight", "bold")
+                      .attr("text-anchor", "end")
+                      .text(([key]) => key);
+
+                year.append("g")
+                      .attr("text-anchor", "end")
+                    .selectAll("text")
+                    .data((d3.range(7)).map(i => new Date(1995, 0, i)))
+                    .join("text")
+                      .attr("x", offset_x - 5)
+                      .attr("y", d => offset_y + (countDay(d) + 0.5) * cellSize )
+                      .attr("dy", "0.31em")
+                      .text(formatDay);
+
+                year.append("g")
+                    .selectAll("rect")
+                    .data(([, values]) => values)
+                    .join("rect")
+                      .attr("width", cellSize - 1)
+                      .attr("height", cellSize - 1)
+                      .attr("x", d => offset_x + timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 0.5)
+                      .attr("y", d => offset_y + countDay(d.date) * cellSize + 0.5)
+                      .attr("fill", d => color(d.value))
+                      .attr("stroke",d=> d.ap_txn? 'yellow' : "currentColor")
+                    .append("title")
+                      .text(d => `  ${formatDate(d.date)}
+                                    ${formatValue(d.value)}${d.close === undefined ? "" : `
+                                    ${formatClose(d.close)}`}`);
+
+                const month = year.append("g")
+                                    .selectAll("g")
+                                    .data(([, values]) =>d3.utcMonths(d3.utcMonth(values[0].date), values[values.length - 1].date))
+                                    .join("g");
+
+                month.filter((d, i) => i).append("path")
+                      .attr("fill", "none")
+                      .attr("stroke", "#fff")
+                      .attr("stroke-width", 3)
+                      .attr("d", pathMonth);
+
+                month.append("text")
+                      .attr("x", d => offset_x + timeWeek.count(d3.utcYear(d), timeWeek.ceil(d)) * cellSize + 2)
+                      .attr("y", offset_y -5)
+                      .text(formatMonth);
+            }
 
 
-            parallel_svg.append('g').classed('suspect_value',!0)
+            // step 1 sort ap txn by  x position
+            // draw the correspond calendar chart with  transaction
 
-            // draw each value line
-            t_links.forEach(link=>{
-              let tplink_svg = this.svg.selectAll('g.suspect_value').append('g')
-                      .classed('path-' + t_links.indexOf(link), !0)
-
-              // draw value line
-              tplink_svg
-                      .datum(link)
-                      .append('path')
-                      .attr('id', 'tp'+t_links.indexOf(link))
-                      .attr('d', ()=>{
-                        let path = 'M'
-                        txn_attr_li.forEach(
-                                attr=>{
-                                  let attr_index = txn_attr_li.indexOf(attr)
-                                  if(attr_index !== 0){
-                                    path += 'L'
-                                  }
-                                  path += attrScale[attr_index](link[attr])+','+ y_linear(attr_index)
-                                }
-                        )
-                        return path
-                      })
-                      .attr('stroke',this.cfg.parallel_panel.line_color)
-                      .attr('stroke-width',2)
-                      .attr('stroke-opacity',0.9)
-                      .attr('fill','none')
-                      .on('mouseover', ()=> {
-                        //当鼠标放在对应的parallel线上时。该条线被高亮
-                        console.log('this',this,event.target)
-                        d3.select('g.path-'+ event.target.id.slice(2,))
-                                .transition()
-                                .duration(50)
-                                .selectAll('path')
-                                // .attr('r',15)
-                                .attr("stroke-width",5)
-                                .attr("opacity",this.cfg.parallel_panel.highlight_opacity);
-
-                        d3.select('g.path-'+ event.target.id.slice(2,))
-                                .selectAll('circle')
-                                .attr("opacity",this.cfg.parallel_panel.highlight_opacity);
-
-                      })
-                      .on('mouseout', ()=>{
-                        //当鼠标移出该条取值线。该取值线恢复正常
-                        d3.select('g.path-'+ event.target.id.slice(2,))
-                                .transition()
-                                .duration(50)
-                                .selectAll('path')
-                                .attr("stroke-width",this.cfg.parallel_panel.default_stroke_width)
-
-                        d3.select('g.path-'+ event.target.id.slice(2,))
-                                .selectAll('circle')
-                                // .attr('r',5)
-                                .attr("opacity",this.cfg.parallel_panel.default_opacity);
-                      });
-
-              // draw value point
-              tplink_svg.selectAll('g.suspect_value')
-                      .data(
-                              txn_attr_li.map(attr=>{
-                                let circle_position  = {}
-                                circle_position.cx = attrScale[txn_attr_li.indexOf(attr)](link[attr])
-                                circle_position.cy = y_linear(txn_attr_li.indexOf(attr))
-                                return circle_position
-                              })
-                      )
-                      .enter()
-                      .append('circle')
-                      .attr('r',2)
-                      //把点映射到坐标
-                      .attr('cx', d=>d.cx)
-                      .attr('cy', d=>d.cy)
-                      .attr('fill', this.cfg.parallel_panel.node_color)
-                      .attr('fill-opacity', 0.8)
-                      .attr("stroke-width", this.cfg.parallel_panel.node_color)
-                      .attr("stroke-opacity", 1)
-                      .attr('opacity', 0.8)
-            })
 
 
           }

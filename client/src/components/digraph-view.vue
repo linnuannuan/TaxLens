@@ -140,8 +140,8 @@
 
             let types = Array.from(new Set(links.map(d => d.type)));
 
-            let industrys =  Array.from(new Set(nodes.filter(d=>!d.in).map( d => d['industry'])));
-            let color = d3.scaleOrdinal(industrys, d3.schemeSet3);
+            // let industrys =  Array.from(new Set(nodes.filter(d=>!d.in).map( d => d['industry'])));
+            // let color = d3.scaleOrdinal(industrys, d3.schemeSet3);
 
             // schemeCategory10: 1f77b4,ff7f0e ,2ca02c,d62728,9467bd,8c564b,e377c2,7f7f7f,bcbd22,17becf
             // let color = d3.scaleOrdinal(types, d3.schemeCategory10);
@@ -242,7 +242,8 @@
             //   .call(drag(simulation));
 
             node.append("circle")
-                    .attr("stroke", d=>d['in']?'white':color(d['industry']))
+                    .attr("stroke", d=>d['tax_evader']?'red':'white')
+                    // .attr("stroke", d=>d['in']?'white':color(d['industry']))
                     // .attr("fill", d=>color(d['industry']))
                     .attr("fill", d=>d['in']? this.cfg.node.color.in:this.cfg.node.color.tp)
                     .attr("stroke-width", 1.5)

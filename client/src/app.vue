@@ -52,7 +52,17 @@
       </el-col>
     </el-row>
     <el-row :gutter="5" class="MainView">
-          <el-row style="height: 75%">
+          <el-col style="width: 25%; height: 75%">
+              <div style="width: 100%; height: 100%; ">
+                  <detail-view
+                      class="grid-content"
+                      :affiliated-party-detail="affiliatedPartyDetail"
+                      :loading-graph="loadingCalendar"
+                      style="width: 100%; height: 100%; ">
+                  </detail-view>
+              </div>
+          </el-col>
+          <el-col style="width: 75%; height: 75%">
               <div style="width: 100%; height: 100%; ">
                   <graph-view
                       class="grid-content"
@@ -61,6 +71,20 @@
                       style="width: 100%; height: 100%; ">
                   </graph-view>
               </div>
+          </el-col>
+    </el-row>
+
+          <el-row style="height: 25%">
+              <div style="width: 100%; height: 100%; ">
+                  <parallel-view
+                      class="grid-content"
+                      :affiliated-party-detail="affiliatedPartyDetail"
+                      :loading-graph="loadingGraph"
+                      style="width: 100%; height: 100%; ">
+                  </parallel-view>
+              </div>
+          </el-row>
+          <el-row style="height: 75%">
               <div style="width: 100%; height: 100%; ">
                   <di-graph-view
                       class="grid-content"
@@ -80,7 +104,6 @@
                   </detail-view>
               </div>
           </el-row>
-    </el-row>
   </div>
 
 </template>
@@ -92,6 +115,7 @@
   import DetailView from './components/detail-view.vue';
   import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
+  import ParallelView from './components/parallel-view.vue';
   // import TsneView from './components/tsne-view.vue';
 
   import DataService from './utils/data-service'
@@ -106,6 +130,7 @@
       DetailView,
       GroupView,
       TemporalView,
+      ParallelView,
       // TsneView,
     },
     data() {
@@ -126,6 +151,7 @@
         loadingDetailGraph:true,
         loadingGroupGlyph:true,
         loadingTimeSlider:true,
+        loadingCalendar:true,
 
         default_detail_transaction_source:"610201694932047",
         default_detail_transaction_target:"610198671502546"
