@@ -114,17 +114,11 @@
           let data = this.affiliatedPartyDetail;
 
           let get_new_layout = (data)=> {
-            console.log('input data: ',data)
-
             let t_nodes = data.nodes.filter(d=>d.tp)
             let t_links = data.links.filter(d=>d.ap_txn)
             let i_links = data.links.filter(d=>d.in_ratio)
             let i_nodes = data.nodes.filter(d=>!d.tp)
 
-
-
-
-            console.log('Input t_nodes , t_links: ', t_nodes, t_links)
             t_links = t_links.map(d=>{
               if(d.throw){d= null;return d}
               //如果存在互相交易的边
@@ -159,7 +153,6 @@
               //用于记录算过坐标的节点集合，防止闭环计算
               d.previous_cal_node_list =[]
             })
-            console.log('Removed mutual transaction t_nodes,t_links:', t_nodes, t_links)
 
             /* calculate the lay index of taxpayer */
             let min_lay_index = 0
@@ -232,9 +225,7 @@
                       min_lay_index --;
                     }
             )
-            console.log('Handled the vertical transaction link: t_nodes:',t_nodes,'t_links:', t_links)
 
-            console.log('i_links',i_links)
             // step 2  get the y_index of each t_node
             t_nodes.map(n=>{
               // get the y_index of each node
@@ -243,7 +234,6 @@
                 let source_i_nodes= i_links.filter(l=>l.target === n.id).map(n=>n.source)
                 let max_source_y_index = source_i_nodes.length == 0? 0: d3.max(source_i_nodes.map(node=> t_nodes.find(n=>n.id===node)? t_nodes.find(n=>n.id===node).y_index:0))
                 let reset_target = true
-                console.log('exist ti node',n.tp_name,n.id)
                 // 获取每一个前置节点 取最大y_index +1
                 while(source_i_nodes.length>0){
                   // get all previous nodes
@@ -282,7 +272,6 @@
 
 
             // step 1  mark the overlapping t_links
-            console.log('Add the y_lay_index : t_nodes:',t_nodes,'t_links:', t_links)
 
             t_links.map(d=>{
               // 若当前的target node 的 lay_index 不是最小的 ，且与比他小的任意的t_node 具有相同 y_index
@@ -294,7 +283,6 @@
               }
               return d
             })
-            console.log('Overlapping links ',t_links.filter(d=>d.overlap))
 
 
 
@@ -452,7 +440,6 @@
                       }
                       // draw overlapping path
                       else if(d.overlap){
-                        console.log('draw overlapping node')
                         let offset_r = 30
                         let inner_offset_r = 10
                         path_d = 'M '
@@ -646,7 +633,6 @@
                       d.sourceLinks.forEach(link=>{
                         if(!t_nodes.find(n => n.id === link.target)){
 
-                          console.log('find ',link.target,' from i_node:',i_nodes,i_nodes.find(n => n.id === link.target))
                           // 存在二级投资，暂不考虑二级投资的x值
                           let target_node = i_nodes.find(n => (n.id === link.target))
 
@@ -754,9 +740,6 @@
             }
             reduce_overlap(i_nodes,0,1,this.cfg.trade_panel.max_width,this.cfg.trade_panel.min_width,2*this.cfg.node.invest_r+3)
 
-            console.log('After calculating the position of i node: ', i_nodes)
-
-
             i_nodes.map(d=>{
               d.y= (this.cfg.invest_panel.min_height + this.cfg.invest_panel.max_height)/2
               return d
@@ -781,7 +764,6 @@
 
                       let source_node = (i_nodes.concat(t_nodes)).find(node => node.id === d.source)
                       let target_node = (t_nodes.concat(i_nodes)).find(node => node.id === d.target)
-                      // console.log('draw invest link: ',d, 'source:', source_node,' target:', target_node)
 
                       if(source_node.tp){
                         source_node.x = (source_node.x0 + source_node.x1)/2
@@ -810,7 +792,6 @@
                               +','+ control_point2.x +','+control_point2.y
                               +','+ (target_node.x) + ',' + target_node.y
                       // + 'Z'
-                      // console.log('path',path_d)
                       return path_d
                     })
                     .attr('stroke',this.cfg.link.color.invest)
@@ -873,7 +854,6 @@
             let height = cellSize * 9
             //  record the offset Z
             let calendar_width = cellSize * 8
-            console.log('t_links',t_links)
             t_links
                 .sort((a,b)=>t_nodes.find(node=>node.id==a.source).x_index - t_nodes.find(node=>node.id==b.target).x_index)
                 .forEach(
@@ -889,8 +869,6 @@
                     let offset_x = this.cfg.calendar_panel.min_width + calendar_width * index
                     let source_offset_y = this.cfg.calendar_panel.min_height
                     let target_offset_y = this.cfg.calendar_panel.min_height + height
-                    console.log('source_offset_y', source_offset_y)
-                    console.log('target_offset_y', target_offset_y)
                     get_calendar_view(cur_svg.append('g'), offset_x, source_offset_y)
                     get_calendar_view(cur_svg.append('g'), offset_x, target_offset_y)
 
@@ -907,9 +885,7 @@
                         ap_txn_amount: Math.random()*10
                     })
                 }
-                console.log('calendar_data:',calendar_data)
                 let years = [[2020,calendar_data]]
-                console.log('years', years, 'width', width, 'height', height, 'timeWeek', timeWeek, 'countDay', countDay)
 
                 // 创建颜色映射器
                 let color = d3.scaleSequential([d3.min(calendar_data.map(d=>d.value)), d3.max(calendar_data.map(d=>d.value))], d3.interpolateBlues)
