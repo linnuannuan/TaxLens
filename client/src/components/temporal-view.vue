@@ -4,7 +4,8 @@
 
 <script>
   /*
-  Source: https://www.echartsjs.com/examples/en/editor.html?c=area-simple
+  Original source: https://www.echartsjs.com/examples/en/editor.html?c=area-simple
+  Documentation for option: https://www.echartsjs.com/en/option.html#title
    */
   import * as echarts from "echarts";
   import EventService from "../utils/event-service";
@@ -17,8 +18,12 @@
     },
     data() {
       return {
+        // the DOM element
         timeSlider: null,
-        timeSliderOption: {},
+        // the start time of the slider
+        timeStart: '2014-01-01',
+        // the end time of the slider
+        timeEnd: '2015-01-01'
       }
     },
     watch:{
@@ -35,10 +40,33 @@
       },
       initTimeSlider() {
         this.timeSlider = echarts.init(document.getElementById('temporal_view'));
-
         this.timeSlider.showLoading();
+
+        // click for 90 days context
+        this.timeSlider.on('click', function (params) {
+          let data = this.affiliatedPartyTimeList.date;
+          let zoomSize = 45;  // days
+
+          this.timeSlider.dispatchAction({
+            type: 'dataZoom',
+            dataZoomIndex: 0,
+            startValue: data[Math.max(params.dataIndex - zoomSize, 0)],
+            endValue: data[Math.min(params.dataIndex + zoomSize, data.length - 1)]
+          });
+        }, this);
+
+        // obtain the time interval in the slider
+        this.timeSlider.on('dataZoom', function (params) {
+          let data = this.affiliatedPartyTimeList.date;
+
+          // dataZoom can be triggered by the slider or the above click listener
+          this.timeStart = params.start? data[Math.floor(data.length * params.start / 100)]: params.startValue;
+          this.timeEnd = params.end? data[Math.floor(data.length * params.end / 100)]: params.endValue;
+        }, this);
+      },
+      renderTimeSlider() {
         // draw time slider for transaction of 2014-2015
-        this.timeSliderOption = {
+        let timeSliderOption = {
           grid: {
             left: '40',
             right: '40',
@@ -117,25 +145,12 @@
             }
           ]
         };
-      },
-      renderTimeSlider() {
-        // set the data
-        this.timeSliderOption['xAxis']['data'] = this.affiliatedPartyTimeList.date;
-        this.timeSliderOption['series'][0]['data'] = this.affiliatedPartyTimeList.ap_txn_amount;
-        this.timeSlider.setOption(this.timeSliderOption);
-        this.timeSlider.hideLoading();
 
-        // click for 90 days context
-        this.timeSlider.on('click', function (params) {
-          let data = this.affiliatedPartyTimeList.date;
-          let zoomSize = 45;  // days
-          this.timeSlider.dispatchAction({
-            type: 'dataZoom',
-            dataZoomIndex: 0,
-            startValue: data[Math.max(params.dataIndex - zoomSize, 0)],
-            endValue: data[Math.min(params.dataIndex + zoomSize, data.length - 1)]
-          });
-        }, this);
+        // set the data
+        timeSliderOption.xAxis.data = this.affiliatedPartyTimeList.date;
+        timeSliderOption.series[0].data = this.affiliatedPartyTimeList.ap_txn_amount;
+        this.timeSlider.setOption(timeSliderOption);
+        this.timeSlider.hideLoading();
       }
     }
   }
