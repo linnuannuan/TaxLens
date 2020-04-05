@@ -849,7 +849,7 @@
 
             let countDay =  d => d.getUTCDay()
             let timeWeek = d3.utcSunday
-            let width = this.cfg.calendar_panel.max_width - this.cfg.calendar_panel.min_width
+            // let width = this.cfg.calendar_panel.max_width - this.cfg.calendar_panel.min_width
             let cellSize = 17
             let height = cellSize * 9
             //  record the offset Z
