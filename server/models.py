@@ -36,16 +36,17 @@ class Model:
     def get_temporal_overview(self):
         """
         Get the temporal data of ap_transaction_amount to draw the time slider.
-        Notice that the data used here is independent, for the sake of having consistent visualization
+        Notice that the data used here is independent to the model output,
+        for the sake of having consistent visualization.
         :return:    date: A list of time
-                    ap_txn_amount_data: A list of affiliated party transaction
+                    ap_txn_amount: A list of affiliated party transaction amount by day
         """
         return {
             'date': list(self.ap_txn_time['date']),
             'ap_txn_amount': list(self.ap_txn_time['txn_sum'])
         }
 
-    def get_tp_network(self, max_txn_length=5, max_control_length=5, start_time='2014-01-01', end_time='2015-12-31'):
+    def get_tp_network(self, max_txn_length=5, max_control_length=3, start_time='2014-01-01', end_time='2015-12-31'):
         """
         Remove affiliated parties who have affiliated transactions taken place exceeding a step limit
         :param max_txn_length: maximum steps for a transaction to be considered affiliated
@@ -93,6 +94,8 @@ class Model:
         self.tp_network.add_edges_from(list(self.ap_network.edges()), ap_txn=True)
         # assign an id for each affiliated party
         self.ap_list = sorted(list(nx.connected_components(tp_network_undirected)), key=lambda _ap: len(_ap))
+
+        return self.get_affiliated_party_list()
 
     def get_affiliated_party_list(self):
         """
@@ -181,7 +184,7 @@ class Model:
         ap_id = self.get_ap_id(tp_id)
         return self.get_detail_by_ap_id(ap_id) if ap_id != -1 else '{}'
 
-    def get_detail_by_ap_id(self, ap_id):
+    def get_detail_by_ap_id(self, ap_id='610198671502546'):
         """
         Prepare the affiliated party sub-graph with additional node information
         :param ap_id: the requested affiliate party id

@@ -6,16 +6,16 @@ let DataService = new Vue({
   },
 
   methods:{
-    loadAffiliatedPartyList(callback){
-      this.axios.get(`${this.dataServerUrl}/ap_list`)
+    loadTemporalOverview(callback){
+      this.axios.get(`${this.dataServerUrl}/temporal_overview`)
         .then(response => {
           callback(response.data)
         }, errResponse => {
           console.log(errResponse)
         })
     },
-    loadAffiliatedPartyByTime(callback){
-      this.axios.get(`${this.dataServerUrl}/ap_time_list`)
+    loadAffiliatedPartyList(param, callback){
+      this.axios.post(`${this.dataServerUrl}/ap_list`, param)
         .then(response => {
           callback(response.data)
         }, errResponse => {

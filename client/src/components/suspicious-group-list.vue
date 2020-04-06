@@ -4,8 +4,7 @@
       :default-sort = "{prop: 'num_ap_txn', order: 'descending'}"
       v-loading="loadingList"
       size="mini"
-      class="grid-content"
-      max-height="400">
+      max-height="190">
     <el-table-column label="Nodes" prop="num_nodes" sortable></el-table-column>
     <el-table-column label="AP txns" prop="num_ap_txn" sortable></el-table-column>
     <el-table-column :label="affiliatedPartyNum" align="right">
@@ -40,9 +39,4 @@
 </script>
 
 <style scoped>
-  .grid-content {
-    border: 1px solid slategrey;
-    border-radius: 5px;
-    height: 100%;
-  }
 </style>

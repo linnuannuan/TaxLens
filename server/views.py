@@ -11,14 +11,20 @@ def json_dump(data):
     return simplejson.dumps(data, ensure_ascii=False, ignore_nan=True)
 
 
-@app.route('/ap_list')
-def get_ap_list():
-    return json_dump(TPIIN.get_affiliated_party_list())
-
-
-@app.route('/ap_time_list')
+@app.route('/temporal_overview')
 def get_temporal_overview():
     return json_dump(TPIIN.get_temporal_overview())
+
+
+@app.route('/ap_list', methods=['POST'])
+def get_ap_list():
+    post_data = request.data.decode()
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        ap_data = TPIIN.get_detail_by_ap_id(post_data['ap_id'])
+    else:
+        ap_data = TPIIN.get_detail_by_tp_id('610198671502546')  # default case
+    return json_dump(TPIIN.get_affiliated_party_list())
 
 
 @app.route('/ap_topo_list')

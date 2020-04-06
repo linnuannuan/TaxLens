@@ -633,6 +633,7 @@
                       d.sourceLinks.forEach(link=>{
                         if(!t_nodes.find(n => n.id === link.target)){
 
+                          console.log('find ',link.target,' from i_node:',i_nodes,i_nodes.find(n => n.id === link.target))
                           // 存在二级投资，暂不考虑二级投资的x值
                           let target_node = i_nodes.find(n => (n.id === link.target))
 
@@ -740,6 +741,7 @@
             }
             reduce_overlap(i_nodes,0,1,this.cfg.trade_panel.max_width,this.cfg.trade_panel.min_width,2*this.cfg.node.invest_r+3)
 
+
             i_nodes.map(d=>{
               d.y= (this.cfg.invest_panel.min_height + this.cfg.invest_panel.max_height)/2
               return d
@@ -764,6 +766,7 @@
 
                       let source_node = (i_nodes.concat(t_nodes)).find(node => node.id === d.source)
                       let target_node = (t_nodes.concat(i_nodes)).find(node => node.id === d.target)
+                      // console.log('draw invest link: ',d, 'source:', source_node,' target:', target_node)
 
                       if(source_node.tp){
                         source_node.x = (source_node.x0 + source_node.x1)/2
@@ -792,6 +795,7 @@
                               +','+ control_point2.x +','+control_point2.y
                               +','+ (target_node.x) + ',' + target_node.y
                       // + 'Z'
+                      // console.log('path',path_d)
                       return path_d
                     })
                     .attr('stroke',this.cfg.link.color.invest)
