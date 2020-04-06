@@ -36,11 +36,11 @@
                         <el-col :span="3"><el-button size="mini" circle icon="el-icon-search" @click="searchID"></el-button></el-col>
                     </el-row>
                 </el-row>
-                <suspicious-group-list
+                <group-list
                         class="overview-right-list"
                         :affiliated-party-list="affiliatedPartyList"
                         :loading-list="loadingList">
-                </suspicious-group-list>
+                </group-list>
             </el-col>
         </el-row>
         <el-row class="detail-view">
@@ -74,7 +74,7 @@
 </template>
 
 <script>
-  import SuspiciousGroupList from './components/suspicious-group-list'
+  import GroupList from './components/group-list'
   import GraphView from './components/graph-view.vue';
   import DiGraphView from './components/digraph-view.vue';
   // import DetailView from './components/detail-view.vue';
@@ -88,7 +88,7 @@
   export default {
     name: 'app',
     components: {
-      SuspiciousGroupList,
+      GroupList,
       GraphView,
       DiGraphView,
       GroupView,

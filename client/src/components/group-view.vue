@@ -4,7 +4,6 @@
 
 <script>
   import * as d3 from "d3";
-  import * as lodash from "lodash";
   import EventService from "../utils/event-service";
 
   export default {
@@ -13,9 +12,12 @@
       affiliatedPartyTopoList: Array,
       loadingTopoList: Boolean
     },
-    computed: {
+    data: function () {
+      return {
+        svg: null,
+      }
     },
-    watch:{
+    watch: {
       affiliatedPartyTopoList: function() {
         this.renderGroupView();
       },
@@ -40,8 +42,8 @@
               max_r: 40,
               color:'skyblue',
               margin:{
-                left:100,
-                top:65
+                left:50,
+                top:50
               }
             },
             'individual':{
@@ -62,38 +64,36 @@
         };
         this.svg = d3.select('#group_view')
           .append("svg")
-          .attr("viewBox", [0, 0, width, height])
-          .style("font", "12px sans-serif");
+          .attr("viewBox", [0, 0, width, height]);
       },
       renderGroupView(){
-        //draw the overview of all the groups
-        let group_view_data = lodash.cloneDeep(this.affiliatedPartyTopoList);
-        group_view_data.sort((x,y)=>y.tax_gap-x.tax_gap);
+        this.svg.selectAll("g").remove();
+
+        let data = this.affiliatedPartyTopoList;
 
         // 创建值映射器
         // group circle size encoder
         let groupRScaler = d3.scaleLinear()
-          .domain([d3.min(group_view_data, function(d){ return d['tax_gap']; }), d3.max(group_view_data, function(d){ return d['tax_gap']; })])
+          .domain([d3.min(data, (d) => { return d.tax_gap }), d3.max(data, (d) => { return d.tax_gap })])
           .range([this.cfg.node.group.min_r, this.cfg.node.group.max_r]);
 
         // individual circle size encode capital
         // let tpRScaler = d3.scaleLinear()
-        //                 .domain([d3.min(group_view_data.map(d=>d.nodes).reduce((acc,cur)=>acc.concat(cur),[]), function(d){ return d['capital']; }), d3.max(group_view_data.map(d=>d.nodes).reduce((acc,cur)=>acc.concat(cur),[]), function(d){ return d['capital']; })])
+        //                 .domain([d3.min(data.map(d=>d.nodes).reduce((acc,cur)=>acc.concat(cur),[]), function(d){ return d['capital']; }), d3.max(data.map(d=>d.nodes).reduce((acc,cur)=>acc.concat(cur),[]), function(d){ return d['capital']; })])
         //                 .range([this.cfg.node.individual.min_r, this.cfg.node.individual.max_r]);
 
         /* draw each group with circle (size encode tax gap) and node_link graph represent inner ap_transaction */
         // draw group circle
         this.svg.append('g')
-          .classed('group_circle',!0)
           .selectAll('circle')
-          .data(group_view_data)
+          .data(data)
           .enter()
           .append('circle')
           .attr('r', d=>groupRScaler(d.tax_gap))
           // 设置x坐标为 该容器width 11等分（1等分留作间距），间距设置为5
-          .attr('cx',d=> group_view_data.indexOf(d)%this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left)
+          .attr('cx',d=> data.indexOf(d)%this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left)
           // 设置默认20个组, 10上10下, 该容器height 3等分（1等分留作间距），间距设置为5
-          .attr('cy',d=> this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(group_view_data.indexOf(d)/this.cfg.col_num)) + this.cfg.node.group.margin.top )
+          .attr('cy',d=> this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(data.indexOf(d)/this.cfg.col_num)) + this.cfg.node.group.margin.top )
           .attr('fill',this.cfg.node.group.color)
           .attr('fill-opacity',0.5)
           .attr('stroke',this.cfg.node.group.color)
@@ -115,10 +115,10 @@
           .attr("fill", this.cfg.link.color)
           .attr("d", "M0,-5L10,0L0,5");
 
-        for( let g_id in group_view_data ){
+        for( let g_id in data ){
           // if(g_id>0)break;
           let group_svg = group_content_svg.append('g').classed('group-'+g_id,!0);
-          let group_data = group_view_data[g_id];
+          let group_data = data[g_id];
           let group_min_x = g_id % this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left - groupRScaler(group_data.tax_gap);
           let group_max_x = g_id % this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left + groupRScaler(group_data.tax_gap);
           let group_y = (this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(g_id/this.cfg.col_num)) + this.cfg.node.group.margin.top);

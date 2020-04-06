@@ -20,7 +20,7 @@
   import EventService from "../utils/event-service";
 
   export default {
-    name: "SuspiciousGroupList",
+    name: "GroupList",
     props:{
       affiliatedPartyList: Array,
       loadingList: Boolean

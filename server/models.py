@@ -5,8 +5,8 @@ from functools import reduce
 import random
 
 PATH_TP_NETWORK = './server/data/tp_network.pkl'
+PATH_TEMPORAL_OVERVIEW = './server/data/temporal_overview.ftr'
 PATH_AP_TXN = './server/data/ap_txn.ftr'
-PATH_AP_TXN_TIME = './server/data/ap_txn_time.ftr'
 PATH_INVOICE = './server/data/invoice.ftr'
 PATH_INVESTOR = './server/data/investor.ftr'
 PATH_TAXPAYER = './server/data/taxpayer.ftr'
@@ -19,7 +19,7 @@ class Model:
         self.tp_network = nx.read_gpickle(PATH_TP_NETWORK)
 
         # initialize temporal overview
-        self.temporal_overview = pd.read_feather(PATH_AP_TXN_TIME)
+        self.temporal_overview = pd.read_feather(PATH_TEMPORAL_OVERVIEW)
         self.temporal_overview['date'] = self.temporal_overview['date'].dt.strftime("%Y-%m-%d")
 
         # load supplementary data for model
@@ -65,9 +65,7 @@ class Model:
 
         # build the trade network with invoice data
         self.ap_network = nx.DiGraph()
-        print(start_time, end_time)
         self.ap_txn_period = self.ap_txn.query('@start_time <= date <= @end_time')
-        print(len(self.ap_txn_period))
         # validate edges by requiring buyer to reach seller within an arbitrary steps in the TPIIN
         for src, tar in zip(self.ap_txn_period['seller_id'], self.ap_txn_period['buyer_id']):
             if nx.shortest_path_length(tp_network_undirected, src, tar) <= max_txn_length:
@@ -149,7 +147,7 @@ class Model:
                 'links': nx.node_link_data(tp_graph)['links']
             })
 
-        return ap_topo_json
+        return sorted(ap_topo_json, key=lambda _ap: _ap['tax_gap'], reverse=True)
 
     def get_ap_id(self, tp_id):
         """
