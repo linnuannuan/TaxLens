@@ -28,17 +28,17 @@
     },
     mounted:function(){
       this.initTimeSlider();
+      this.renderTimeSlider();
     },
     methods: {
       setPeriod(params) {
         let data = this.temporalOverview.date;
+        let n = data.length;
 
         // dataZoom can be triggered by the slider or the above click listener
-        let periodStart = params.start? data[Math.ceil(data.length * params.start / 100)]: params.startValue;
-        let periodEnd = params.end? data[Math.floor(data.length * params.end / 100)-1]: params.endValue;
+        let periodStart = params.start? data[Math.floor(n * params.start / 100)]: params.startValue? params.startValue: '2014-01-01';
+        let periodEnd = params.end? data[Math.min(Math.floor(n * params.end / 100), n-1)]: params.endValue? params.endValue: '2015-12-31';
 
-        console.log(params);
-        console.log(`emit message ${periodStart} to ${periodEnd}`);
         this.$emit('setPeriod', {periodStart: periodStart, periodEnd: periodEnd});
       },
       initTimeSlider() {
@@ -59,15 +59,23 @@
         }, this);
 
         // obtain the time interval in the slider
-        this.timeSlider.on('dataZoom', (params) => {this.setPeriod(params)}, this);
+        this.timeSlider.on('dataZoom', (params) => {
+          // arbitrary echarts id to check if the dataZoom is on x-axis
+          if (!params.dataZoomId || params.dataZoomId.replace(/\0/g, '') === 'series00') {
+            this.setPeriod(params);
+          }
+        }, this);
+        this.timeSlider.on('restore', () => {
+          this.setPeriod({startValue:'2014-01-01', endValue:'2014-12-31'})
+        }, this);
       },
       renderTimeSlider() {
         // draw time slider for transaction of 2014-2015
         let timeSliderOption = {
           // size of the chart, value is the padding to the direction
           grid: {
-            left: '40',
-            right: '40',
+            left: '35',
+            right: '35',
             top: '30',
             bottom: '25',
           },
@@ -111,7 +119,7 @@
               xAxisIndex: 0,
               filterMode: 'filter',
               start: 0,
-              end: 100,
+              end: 49.9,
               top: 'top',
               minValueSpan: 30  // at least one month
             },

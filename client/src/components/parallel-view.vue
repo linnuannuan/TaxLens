@@ -119,7 +119,7 @@
                           attrScale.push(c_attrScale)
                       }
                   );
-                  // console.log('the parallel x axis: ', txn_attr_li, ' the scaler is: ', attrScale)
+                  // console.log('the parallel x axis: ', txn_attr_li, ' the scalar is: ', attrScale)
 
 
                   parallel_svg.append('g').classed('suspect_value', !0);
@@ -153,7 +153,6 @@
                           .attr('fill', 'none')
                           .on('mouseover', () => {
                               //当鼠标放在对应的parallel线上时。该条线被高亮
-                              console.log('this', this, event.target);
                               d3.select('g.path-' + event.target.id.slice(2,))
                                   .transition()
                                   .duration(50)

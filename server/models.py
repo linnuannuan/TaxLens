@@ -15,11 +15,15 @@ PATH_FINANCE = './server/data/finance.ftr'
 
 class Model:
     def __init__(self):
-        # initialize TPIIN
+        # initialize taxpayer network
         self.tp_network = nx.read_gpickle(PATH_TP_NETWORK)
-        # load supplementary data
+
+        # initialize temporal overview
+        self.temporal_overview = pd.read_feather(PATH_AP_TXN_TIME)
+        self.temporal_overview['date'] = self.temporal_overview['date'].dt.strftime("%Y-%m-%d")
+
+        # load supplementary data for model
         self.ap_txn = pd.read_feather(PATH_AP_TXN)
-        self.ap_txn_time = pd.read_feather(PATH_AP_TXN_TIME)
         self.invoice = pd.read_feather(PATH_INVOICE)
         self.investor = pd.read_feather(PATH_INVESTOR)
         self.taxpayer = pd.read_feather(PATH_TAXPAYER)
@@ -28,9 +32,9 @@ class Model:
         # declare class variables
         self.ap_list = []
         self.ap_network = None
+        self.ap_txn_period = pd.DataFrame()
 
-        # initialization
-        self.ap_txn_time['date'] = self.ap_txn_time['date'].dt.strftime("%Y-%m-%d")
+        # initialize
         self.get_tp_network()
 
     def get_temporal_overview(self):
@@ -42,11 +46,11 @@ class Model:
                     ap_txn_amount: A list of affiliated party transaction amount by day
         """
         return {
-            'date': list(self.ap_txn_time['date']),
-            'ap_txn_amount': list(self.ap_txn_time['txn_sum'])
+            'date': list(self.temporal_overview['date']),
+            'ap_txn_amount': list(self.temporal_overview['txn_sum'])
         }
 
-    def get_tp_network(self, max_txn_length=5, max_control_length=3, start_time='2014-01-01', end_time='2015-12-31'):
+    def get_tp_network(self, start_time='2014-01-01', end_time='2014-12-31', max_txn_length=5, max_control_length=3):
         """
         Remove affiliated parties who have affiliated transactions taken place exceeding a step limit
         :param max_txn_length: maximum steps for a transaction to be considered affiliated
@@ -61,9 +65,11 @@ class Model:
 
         # build the trade network with invoice data
         self.ap_network = nx.DiGraph()
-        ap_txn = self.ap_txn.query('@start_time <= date <= @end_time')
+        print(start_time, end_time)
+        self.ap_txn_period = self.ap_txn.query('@start_time <= date <= @end_time')
+        print(len(self.ap_txn_period))
         # validate edges by requiring buyer to reach seller within an arbitrary steps in the TPIIN
-        for src, tar in zip(ap_txn['seller_id'], ap_txn['buyer_id']):
+        for src, tar in zip(self.ap_txn_period['seller_id'], self.ap_txn_period['buyer_id']):
             if nx.shortest_path_length(tp_network_undirected, src, tar) <= max_txn_length:
                 self.ap_network.add_edge(src, tar)
         # remove isolated nodes
@@ -94,8 +100,6 @@ class Model:
         self.tp_network.add_edges_from(list(self.ap_network.edges()), ap_txn=True)
         # assign an id for each affiliated party
         self.ap_list = sorted(list(nx.connected_components(tp_network_undirected)), key=lambda _ap: len(_ap))
-
-        return self.get_affiliated_party_list()
 
     def get_affiliated_party_list(self):
         """
@@ -131,7 +135,7 @@ class Model:
             tp_graph = self.ap_network.subgraph(tp_list).copy()
 
             # retrieve transaction info
-            ap_invoice = self.ap_txn.query('seller_id in @tp_list').query('buyer_id in @tp_list')
+            ap_invoice = self.ap_txn_period.query('seller_id in @tp_list').query('buyer_id in @tp_list')
             # calculate the transaction amount of each ap_txn
             for u, v in tp_graph.edges():
                 txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn_sum']
@@ -215,7 +219,7 @@ class Model:
             ap_graph.add_node(in_node, suspect_value=node_suspect_value)
 
         # retrieve invoice information
-        ap_invoice = self.ap_txn.query('seller_id in @tp_list').query('buyer_id in @tp_list')
+        ap_invoice = self.ap_txn_period.query('seller_id in @tp_list').query('buyer_id in @tp_list')
         # obtain an undirected investment network
         ap_graph_undirected = ap_graph.to_undirected()
         ap_graph_undirected.remove_edges_from(

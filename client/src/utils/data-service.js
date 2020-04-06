@@ -54,15 +54,6 @@ let DataService = new Vue({
           console.log(errResponse)
         })
     },
-    setAffiliatedPartySetting(param, callback){
-      this.axios.post(`${this.dataServerUrl}/set_model`, param)
-        .then(response => {
-          callback(response.data)
-        }, errResponse => {
-          console.log(errResponse)
-        })
-    },
-
   }
 });
 

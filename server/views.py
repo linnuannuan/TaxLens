@@ -21,9 +21,14 @@ def get_ap_list():
     post_data = request.data.decode()
     if post_data != "":
         post_data = simplejson.loads(post_data)
-        ap_data = TPIIN.get_detail_by_ap_id(post_data['ap_id'])
+        TPIIN.get_tp_network(
+            start_time=post_data['start_time'],
+            end_time=post_data['end_time'],
+            max_txn_length=post_data['max_txn_length'],
+            max_control_length=post_data['max_control_length']
+        )
     else:
-        ap_data = TPIIN.get_detail_by_tp_id('610198671502546')  # default case
+        TPIIN.get_tp_network()
     return json_dump(TPIIN.get_affiliated_party_list())
 
 
@@ -54,18 +59,6 @@ def get_ap_by_tp_id():
         ap_data = TPIIN.get_detail_by_tp_id('610198671502546')  # default case
         # ap_data = TPIIN.get_detail_by_tp_id('610402196912020326')
     return json_dump(ap_data)
-
-
-@app.route('/set_model', methods=['POST'])
-def set_model_parameter():
-    post_data = request.data.decode()
-    if post_data != "":
-        post_data = simplejson.loads(post_data)
-        TPIIN.get_tp_network(
-            max_txn_length=post_data['max_transaction_length'],
-            max_control_length=post_data['max_control_length']
-        )
-    return json_dump(TPIIN.get_affiliated_party_list())
 
 
 @app.route('/ap_txn_detail', methods=['POST'])

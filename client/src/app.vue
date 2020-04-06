@@ -28,7 +28,7 @@
                     <el-row>
                         <el-col :span="10" class="overview-right-control-row">Control chain</el-col>
                         <el-col :span="11"><el-input-number size="mini" v-model="controlChain" :min="1" :max="10"></el-input-number></el-col>
-                        <el-col :span="3"><el-button size="mini" circle icon="el-icon-setting" @click="setModelSetting"></el-button></el-col>
+                        <el-col :span="3"><el-button size="mini" circle icon="el-icon-setting" @click="setModelParameter"></el-button></el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="10" class="overview-right-control-row">Search ID</el-col>
@@ -81,7 +81,6 @@
   import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
   import ParallelView from './components/parallel-view.vue';
-  // import TsneView from './components/tsne-view.vue';
 
   import DataService from './utils/data-service'
   import EventService from "./utils/event-service";
@@ -98,18 +97,21 @@
     },
     data() {
       return {
+        // Data acquired from server
         temporalOverview:{},
         affiliatedPartyList: [],
         affiliatedPartyTopoList:[],
         affiliatedPartyDetail: {},
         affiliatedTransactionDetail:{},
 
+        // Model settings
         periodStart: '2014-01-01',
-        periodEnd: '2015-12-31',
+        periodEnd: '2014-12-31',
         transactionChain: 5,
         controlChain: 3,
         search_id: '610198671502546',
 
+        // Loading variable
         loadingList: true,
         loadingTopoList: true,
         loadingGraph: true,
@@ -118,6 +120,7 @@
         loadingTimeSlider:true,
         loadingCalendar:true,
 
+        // Default cases
         default_detail_transaction_source:"610201694932047",
         default_detail_transaction_target:"610198671502546"
       }
@@ -129,6 +132,7 @@
         this.loadingTimeSlider = false;
       });
 
+      // Load the model with default settings
       DataService.loadAffiliatedPartyList(null, (data)=>{
         this.affiliatedPartyList = data;
         this.loadingList = false;
@@ -169,19 +173,26 @@
     },
     methods: {
       setPeriod: function (params) {
-        console.log(`on message ${params.periodStart} to ${params.periodEnd}`);
         this.periodStart = params.periodStart;
         this.periodEnd = params.periodEnd;
       },
-      setModelSetting: function() {
+      setModelParameter: function() {
         this.loadingList = true;
+        this.loadingTopoList = true;
         let para = {
-          'max_transaction_length': this.transactionChain,
+          'start_time': this.periodStart,
+          'end_time': this.periodEnd,
+          'max_txn_length': this.transactionChain,
           'max_control_length': this.controlChain
         };
-        DataService.setAffiliatedPartySetting(para, data=>{
+        DataService.loadAffiliatedPartyList(para, data=>{
           this.affiliatedPartyList = data;
           this.loadingList = false;
+
+          DataService.loadAffiliatedPartyTopoList((data)=>{
+            this.affiliatedPartyTopoList = data;
+            this.loadingTopoList = false;
+          });
         })
       },
       searchID: function() {
