@@ -47,14 +47,16 @@
 
         // click for 90 days context
         this.timeSlider.on('click', function (params) {
+          let index = params.dataIndex;
           let data = this.temporalOverview.date;
-          let zoomSize = 45;  // days
+          while ( data[index].slice(0, 8) === data[index+1].slice(0, 8) ) { index++; } // find month end
+          data = data[index];
 
           this.timeSlider.dispatchAction({
             type: 'dataZoom',
             dataZoomIndex: 0,
-            startValue: data[Math.max(params.dataIndex - zoomSize, 0)],
-            endValue: data[Math.min(params.dataIndex + zoomSize, data.length - 1)]
+            startValue: data.slice(0, 8) + '01',
+            endValue: data
           });
         }, this);
 
@@ -81,7 +83,7 @@
           },
           xAxis: {
             type: 'category',
-            boundaryGap: false,
+            // boundaryGap: false,
             axisLabel: {
               // shows only the first of month
               interval: function (index, value) {
@@ -121,7 +123,7 @@
               start: 0,
               end: 49.9,
               top: 'top',
-              minValueSpan: 30  // at least one month
+              minValueSpan: 27  // at least one month
             },
             {
               type: 'slider',

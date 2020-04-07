@@ -38,8 +38,8 @@
           'height':height,
           'node':{
             'group':{
-              min_r: 30,
-              max_r: 40,
+              min_r: 15,
+              max_r: 30,
               color:'skyblue',
               margin:{
                 left:50,
@@ -47,14 +47,14 @@
               }
             },
             'individual':{
-              min_r: 5,
-              max_r: 10,
+              min_r: 3,
+              max_r: 6,
               color:'#1F497D'
             }
           },
           'link':{
-            min_width: 2,
-            max_width: 5,
+            min_width: 1,
+            max_width: 3,
             color:'#1f77b4'
           },
           'row_num':2,
@@ -74,13 +74,8 @@
         // 创建值映射器
         // group circle size encoder
         let groupRScaler = d3.scaleLinear()
-          .domain([d3.min(data, (d) => { return d.tax_gap }), d3.max(data, (d) => { return d.tax_gap })])
+          .domain([d3.min(data, d=>d.tax_gap), d3.max(data, d=>d.tax_gap)])
           .range([this.cfg.node.group.min_r, this.cfg.node.group.max_r]);
-
-        // individual circle size encode capital
-        // let tpRScaler = d3.scaleLinear()
-        //                 .domain([d3.min(data.map(d=>d.nodes).reduce((acc,cur)=>acc.concat(cur),[]), function(d){ return d['capital']; }), d3.max(data.map(d=>d.nodes).reduce((acc,cur)=>acc.concat(cur),[]), function(d){ return d['capital']; })])
-        //                 .range([this.cfg.node.individual.min_r, this.cfg.node.individual.max_r]);
 
         /* draw each group with circle (size encode tax gap) and node_link graph represent inner ap_transaction */
         // draw group circle
@@ -91,7 +86,9 @@
           .append('circle')
           .attr('r', d=>groupRScaler(d.tax_gap))
           // 设置x坐标为 该容器width 11等分（1等分留作间距），间距设置为5
-          .attr('cx',d=> data.indexOf(d)%this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left)
+          .attr('cx',d=> data.indexOf(d)%this.cfg.col_num
+            * (this.cfg.width - 2 * this.cfg.node.group.margin.left)/(this.cfg.col_num)
+            + this.cfg.node.group.margin.left)
           // 设置默认20个组, 10上10下, 该容器height 3等分（1等分留作间距），间距设置为5
           .attr('cy',d=> this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(data.indexOf(d)/this.cfg.col_num)) + this.cfg.node.group.margin.top )
           .attr('fill',this.cfg.node.group.color)
@@ -172,11 +169,4 @@
 </script>
 
 <style scoped>
-    .my-svg-path{
-        stroke-dasharray: 252.2px, 252.2px;
-        stroke-dashoffset: 22px;
-        transition: stroke-dashoffset 0.6s ease 0s, stroke 0.6s ease 0s;
-        transform: rotateZ(90deg);
-        transform-origin: 50% 50%;
-    }
 </style>
