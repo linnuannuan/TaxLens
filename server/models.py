@@ -50,7 +50,7 @@ class Model:
             'ap_txn_amount': list(self.temporal_overview['txn_sum'])
         }
 
-    def get_tp_network(self, start_time='2014-01-01', end_time='2014-12-31', max_txn_length=5, max_control_length=3):
+    def get_tp_network(self, start_time='2014-01-01', end_time='2014-12-31', max_txn_length=3, max_control_length=2):
         """
         Remove affiliated parties who have affiliated transactions taken place exceeding a step limit
         :param max_txn_length: maximum steps for a transaction to be considered affiliated

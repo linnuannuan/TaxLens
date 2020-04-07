@@ -107,8 +107,8 @@
         // Model settings
         periodStart: '2014-01-01',
         periodEnd: '2014-12-31',
-        transactionChain: 5,
-        controlChain: 3,
+        transactionChain: 3,
+        controlChain: 2,
         search_id: '610198671502546',
 
         // Loading variable
@@ -238,6 +238,7 @@
     .overview-left{
         width: 100%;
         height: 150px;
+        border: 1px solid steelblue;
     }
 
     .overview-right-control{

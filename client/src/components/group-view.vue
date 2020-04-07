@@ -43,7 +43,7 @@
               color:'skyblue',
               margin:{
                 left:50,
-                top:50
+                top:40
               }
             },
             'individual':{
@@ -86,11 +86,9 @@
           .append('circle')
           .attr('r', d=>groupRScaler(d.tax_gap))
           // 设置x坐标为 该容器width 11等分（1等分留作间距），间距设置为5
-          .attr('cx',d=> data.indexOf(d)%this.cfg.col_num
-            * (this.cfg.width - 2 * this.cfg.node.group.margin.left)/(this.cfg.col_num)
-            + this.cfg.node.group.margin.left)
+          .attr('cx',d=>this.cfg.node.group.margin.left + (data.indexOf(d)%this.cfg.col_num) * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1))
           // 设置默认20个组, 10上10下, 该容器height 3等分（1等分留作间距），间距设置为5
-          .attr('cy',d=> this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(data.indexOf(d)/this.cfg.col_num)) + this.cfg.node.group.margin.top )
+          .attr('cy',d=>this.cfg.node.group.margin.top + (Math.floor(data.indexOf(d)/this.cfg.col_num)) * (this.cfg.height-2*this.cfg.node.group.margin.top) / (this.cfg.row_num-1))
           .attr('fill',this.cfg.node.group.color)
           .attr('fill-opacity',0.5)
           .attr('stroke',this.cfg.node.group.color)
@@ -116,9 +114,9 @@
           // if(g_id>0)break;
           let group_svg = group_content_svg.append('g').classed('group-'+g_id,!0);
           let group_data = data[g_id];
-          let group_min_x = g_id % this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left - groupRScaler(group_data.tax_gap);
-          let group_max_x = g_id % this.cfg.col_num * this.cfg.width/(this.cfg.col_num+this.cfg.col_margin) + this.cfg.node.group.margin.left + groupRScaler(group_data.tax_gap);
-          let group_y = (this.cfg.height/(this.cfg.row_num+this.cfg.row_margin) *(parseInt(g_id/this.cfg.col_num)) + this.cfg.node.group.margin.top);
+          let group_min_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left - groupRScaler(group_data.tax_gap);
+          let group_max_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left + groupRScaler(group_data.tax_gap);
+          let group_y = (Math.floor(g_id/this.cfg.col_num) * (this.cfg.height-2*this.cfg.node.group.margin.top) / (this.cfg.row_num-1) + this.cfg.node.group.margin.top);
           let xPositionLinear = d3.scaleLinear()
             .domain([0, group_data.nodes.length-1])
             .range([group_min_x+7, group_max_x-7]);
