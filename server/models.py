@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 from functools import reduce
-import random
 
 PATH_TP_NETWORK = './server/data/tp_network.pkl'
 PATH_TEMPORAL_OVERVIEW = './server/data/temporal_overview.ftr'
@@ -33,6 +32,7 @@ class Model:
         self.ap_list = []
         self.ap_network = None
         self.ap_txn_period = pd.DataFrame()
+        self.finance_period = pd.DataFrame()
 
         # initialize
         self.get_tp_network()
@@ -74,10 +74,8 @@ class Model:
         self.ap_network.remove_nodes_from(list(nx.isolates(self.ap_network)))
 
         # create a mapping for affiliated parties
-        ap_df = []
-        for num, component in enumerate(nx.connected_components(tp_network_undirected), 0):
-            ap_df.extend([dict(tp_id=node, ap_id=num) for node in component])
-        ap_df = pd.DataFrame(ap_df)
+        ap_df = [(i, _ap) for i, ap in enumerate(nx.connected_components(tp_network_undirected)) for _ap in ap]
+        ap_df = pd.DataFrame(ap_df, columns=['ap_id', 'tp_id'])
 
         # remove affiliated parties that have not appeared in ap_network
         ap_node = list(self.ap_network.nodes())
@@ -98,6 +96,7 @@ class Model:
         self.tp_network.add_edges_from(list(self.ap_network.edges()), ap_txn=True)
         # assign an id for each affiliated party
         self.ap_list = sorted(list(nx.connected_components(tp_network_undirected)), key=lambda _ap: len(_ap))
+        self.finance_period = self.finance.query('@start_time <= time_end and time_start <= @end_time')
 
     def get_affiliated_party_list(self):
         """
@@ -106,13 +105,10 @@ class Model:
         based on the TPIIN parameter settings.
         :return: json-ready list of affiliated parties
         """
-        ap_list_json = []
-        for ap_id, ap in enumerate(self.ap_list, 0):
-            ap_graph = self.tp_network.subgraph(ap)
-            num_nodes = nx.number_of_nodes(ap_graph)
-            num_ap_txn = sum([txn for _, _, txn in ap_graph.edges.data('ap_txn')])
-            ap_list_json.append({'ap_id': ap_id, 'num_nodes': num_nodes, 'num_ap_txn': num_ap_txn})
-        return ap_list_json
+        tp = pd.DataFrame([(i, _ap) for i, ap in enumerate(self.ap_list) for _ap in ap], columns=['ap_id', 'num_nodes'])
+        ap_txn = pd.DataFrame([(u, 1) for u, _ in self.ap_network.edges()], columns=['num_nodes', 'num_ap_txn'])
+        ap = tp.merge(ap_txn, how='left').groupby('ap_id').count().reset_index()
+        return ap.to_dict('records')
 
     def get_affiliated_party_topo_list(self):
         """
@@ -121,16 +117,19 @@ class Model:
         the TPIIN parameter settings.
         :return: json-ready list of affiliated parties
         """
+        _ap_list = list(self.ap_network.nodes())
+        _ap_df = pd.DataFrame([(i, _ap) for i, ap in enumerate(self.ap_list) for _ap in ap], columns=['ap_id', 'tp_id'])
+        _ap_df = _ap_df.query('tp_id in @_ap_list')
+        ap_finance = self.finance_period[['tp_id', 'profit']]
+        ap_finance = ap_finance.merge(_ap_df).groupby('ap_id').sum().round(0).reset_index()
+        ap_finance = ap_finance.sort_values('profit', ascending=False).head(20)
+
         ap_topo_json = []
 
-        # for i, ap in enumerate(reversed(self.ap_list), 0):
-        for num in range(20):
-            ap_id = int(len(self.ap_list)*random.random())
-            # Find all taxpayers in the affiliated party
-            tp_graph = self.tp_network.subgraph(self.ap_list[ap_id])
-            tp_list = [n for n, tp in list(tp_graph.nodes(data='tp')) if tp]
+        for ap_id, profit in ap_finance.itertuples(index=False):
             # Find only the nodes involved the the related party transactions
-            tp_graph = self.ap_network.subgraph(tp_list).copy()
+            tp_graph = self.ap_network.subgraph(self.ap_list[ap_id]).copy()
+            tp_list = list(tp_graph.nodes())
 
             # retrieve transaction info
             ap_invoice = self.ap_txn_period.query('seller_id in @tp_list').query('buyer_id in @tp_list')
@@ -142,12 +141,12 @@ class Model:
 
             ap_topo_json.append({
                 'ap_id': ap_id,
-                'tax_gap': 100*random.random(),
+                'profit': profit,
                 'nodes': nx.node_link_data(tp_graph)['nodes'],
                 'links': nx.node_link_data(tp_graph)['links']
             })
 
-        return sorted(ap_topo_json, key=lambda _ap: _ap['tax_gap'], reverse=True)
+        return sorted(ap_topo_json, key=lambda _ap: _ap['profit'], reverse=True)
 
     def get_ap_id(self, tp_id):
         """

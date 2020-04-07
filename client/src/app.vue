@@ -238,7 +238,6 @@
     .overview-left{
         width: 100%;
         height: 150px;
-        border: 1px solid steelblue;
     }
 
     .overview-right-control{
@@ -267,6 +266,7 @@
     .detail-view-graph{
         width: 100%;
         height: 450px;
+        border: 1px solid steelblue;
     }
 
     .detail-view-parallel{

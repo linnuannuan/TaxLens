@@ -74,7 +74,7 @@
         // 创建值映射器
         // group circle size encoder
         let groupRScaler = d3.scaleLinear()
-          .domain([d3.min(data, d=>d.tax_gap), d3.max(data, d=>d.tax_gap)])
+          .domain([d3.min(data, d=>d.profit), d3.max(data, d=>d.profit)])
           .range([this.cfg.node.group.min_r, this.cfg.node.group.max_r]);
 
         /* draw each group with circle (size encode tax gap) and node_link graph represent inner ap_transaction */
@@ -84,7 +84,7 @@
           .data(data)
           .enter()
           .append('circle')
-          .attr('r', d=>groupRScaler(d.tax_gap))
+          .attr('r', d=>groupRScaler(d.profit))
           // 设置x坐标为 该容器width 11等分（1等分留作间距），间距设置为5
           .attr('cx',d=>this.cfg.node.group.margin.left + (data.indexOf(d)%this.cfg.col_num) * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1))
           // 设置默认20个组, 10上10下, 该容器height 3等分（1等分留作间距），间距设置为5
@@ -111,18 +111,17 @@
           .attr("d", "M0,-5L10,0L0,5");
 
         for( let g_id in data ){
-          // if(g_id>0)break;
           let group_svg = group_content_svg.append('g').classed('group-'+g_id,!0);
           let group_data = data[g_id];
-          let group_min_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left - groupRScaler(group_data.tax_gap);
-          let group_max_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left + groupRScaler(group_data.tax_gap);
+          let group_min_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left - groupRScaler(group_data.profit);
+          let group_max_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left + groupRScaler(group_data.profit);
           let group_y = (Math.floor(g_id/this.cfg.col_num) * (this.cfg.height-2*this.cfg.node.group.margin.top) / (this.cfg.row_num-1) + this.cfg.node.group.margin.top);
           let xPositionLinear = d3.scaleLinear()
             .domain([0, group_data.nodes.length-1])
             .range([group_min_x+7, group_max_x-7]);
 
           let lineWidthScaler = d3.scaleLinear()
-            .domain([d3.min(group_data.links, function(d){ return d['ap_txn_amount']; }), d3.max(group_data.links, function(d){ return d['ap_txn_amount']; })])
+            .domain([d3.min(group_data.links, d=>d.ap_txn_amount), d3.max(group_data.links, d=>d.ap_txn_amount)])
             .range([this.cfg.link.min_width, this.cfg.link.max_width]);
 
           // draw the involved trader and their transaction amount in each group
