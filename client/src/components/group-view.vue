@@ -5,6 +5,7 @@
 <script>
   import * as d3 from "d3";
   import EventService from "../utils/event-service";
+  import * as echarts from "echarts";
 
   export default {
     name: "GroupView",
@@ -15,19 +16,129 @@
     data: function () {
       return {
         svg: null,
+        test: false,
       }
     },
     watch: {
       affiliatedPartyTopoList: function() {
-        this.renderGroupView();
+        if (this.test) {
+          this.renderSankeyView();
+        } else {
+          this.renderGroupView();
+        }
       },
     },
     mounted:function(){
-      this.initGroupView();
+      if (this.test) {
+        this.initSankeyView();
+      } else {
+        this.initGroupView();
+      }
     },
     methods: {
       handleView(id) {
         EventService.emitSuspiciousGroupSelected(id);
+      },
+      initSankeyView(){
+        this.svg = echarts.init(document.getElementById('temporal_view'));
+        this.svg.showLoading();
+      },
+      renderSankeyView(){
+        // draw time slider for transaction of 2014-2015
+        let sankeyOption = {
+          // size of the chart, value is the padding to the direction
+          grid: {
+            left: '35',
+            right: '35',
+            top: '30',
+            bottom: '25',
+          },
+          xAxis: {
+            type: 'category',
+            // boundaryGap: false,
+            axisLabel: {
+              // shows only the first of month
+              interval: function (index, value) {
+                return value.slice(-2) === '01';
+              },
+              // shows the name of month
+              formatter: function (value) {
+                const MONTH = [
+                  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                ];
+                return MONTH[parseInt(value.slice(5,7))-1] + value.slice(2,4);
+              },
+              showMinLabel: true,
+              showMaxLabel: true,
+            },
+            axisTick: {
+              alignWithLabel: true,
+              // shows only the first of month
+              interval: function (index, value) {
+                return value.slice(-2) === '01';
+              },
+            },
+            data: null,
+          },
+          yAxis: {
+            type: 'value',
+            boundaryGap: false,
+            min: 0
+          },
+          dataZoom: [
+            {
+              type: 'slider',
+              show: true,
+              xAxisIndex: 0,
+              filterMode: 'filter',
+              start: 0,
+              end: 49.9,
+              top: 'top',
+              minValueSpan: 27  // at least one month
+            },
+            {
+              type: 'slider',
+              show: true,
+              yAxisIndex: 0,
+              filterMode: 'empty',
+              left: 'right',
+              start: 0,
+              end: 100
+            }
+          ],
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross',
+            },
+            formatter: function (params) {
+              return params[0].value.toFixed(2) + ' million';
+            },
+          },
+          toolbox: {
+            top: 'top',
+            right: 'right',
+            feature: {
+              restore: {
+                title: ' ',
+              }
+            }
+          },
+          series: [
+            {
+              type: 'bar',
+              animation: false,  // setting to false for better performance
+              data: null
+            }
+          ]
+        };
+
+        // set the data
+        sankeyOption.xAxis.data = this.temporalOverview.date;
+        sankeyOption.series[0].data = this.temporalOverview.ap_txn_amount;
+        this.svg.setOption(sankeyOption);
+        this.svg.hideLoading();
       },
       initGroupView(){
         // init the overview of group
@@ -74,7 +185,7 @@
         // 创建值映射器
         // group circle size encoder
         let groupRScaler = d3.scaleLinear()
-          .domain([d3.min(data, d=>d.profit), d3.max(data, d=>d.profit)])
+          .domain([d3.min(data, d=>d['profit']), d3.max(data, d=>d['profit'])])
           .range([this.cfg.node.group.min_r, this.cfg.node.group.max_r]);
 
         /* draw each group with circle (size encode tax gap) and node_link graph represent inner ap_transaction */
@@ -84,7 +195,7 @@
           .data(data)
           .enter()
           .append('circle')
-          .attr('r', d=>groupRScaler(d.profit))
+          .attr('r', d=>groupRScaler(d['profit']))
           // 设置x坐标为 该容器width 11等分（1等分留作间距），间距设置为5
           .attr('cx',d=>this.cfg.node.group.margin.left + (data.indexOf(d)%this.cfg.col_num) * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1))
           // 设置默认20个组, 10上10下, 该容器height 3等分（1等分留作间距），间距设置为5
@@ -113,15 +224,15 @@
         for( let g_id in data ){
           let group_svg = group_content_svg.append('g').classed('group-'+g_id,!0);
           let group_data = data[g_id];
-          let group_min_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left - groupRScaler(group_data.profit);
-          let group_max_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left + groupRScaler(group_data.profit);
+          let group_min_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left - groupRScaler(group_data['profit']);
+          let group_max_x = g_id % this.cfg.col_num * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1) + this.cfg.node.group.margin.left + groupRScaler(group_data['profit']);
           let group_y = (Math.floor(g_id/this.cfg.col_num) * (this.cfg.height-2*this.cfg.node.group.margin.top) / (this.cfg.row_num-1) + this.cfg.node.group.margin.top);
           let xPositionLinear = d3.scaleLinear()
             .domain([0, group_data.nodes.length-1])
             .range([group_min_x+7, group_max_x-7]);
 
-          let lineWidthScaler = d3.scaleLinear()
-            .domain([d3.min(group_data.links, d=>d.ap_txn_amount), d3.max(group_data.links, d=>d.ap_txn_amount)])
+          let lineWidthScalar = d3.scaleLinear()
+            .domain([d3.min(group_data.links, d=>d['ap_txn_amount']), d3.max(group_data.links, d=>d['ap_txn_amount'])])
             .range([this.cfg.link.min_width, this.cfg.link.max_width]);
 
           // draw the involved trader and their transaction amount in each group
@@ -131,7 +242,7 @@
             .enter()
             .append('circle')
             .attr('r', this.cfg.node.individual.min_r)
-            // .attr('r', d => tpRScaler(d.capital) )
+            // .attr('r', d => tpRScalar(d.capital) )
             .attr('cx',d => xPositionLinear(group_data.nodes.indexOf(d)))
             .attr('cy',group_y)
             .attr('fill',this.cfg.node.individual.color);
@@ -156,7 +267,7 @@
                 return 'M'+source_x + ',' + y + 'L' + target_x + ',' + y
               }
             })
-            .attr('stroke-width',d=>lineWidthScaler(d.ap_txn_amount))
+            .attr('stroke-width',d=>lineWidthScalar(d['ap_txn_amount']))
             .attr('stroke',this.cfg.link.color)
             .attr('fill','none')
         }

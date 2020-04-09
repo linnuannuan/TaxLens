@@ -132,16 +132,7 @@
         this.loadingTimeSlider = false;
       });
 
-      // Load the model with default settings
-      DataService.loadAffiliatedPartyList(null, (data)=>{
-        this.affiliatedPartyList = data;
-        this.loadingList = false;
-      });
-
-      DataService.loadAffiliatedPartyTopoList((data)=>{
-        this.affiliatedPartyTopoList = data;
-        this.loadingTopoList = false;
-      });
+      this.setModelParameter();
 
       DataService.loadAffiliatedPartyDetailByAP(null, data=>{
         this.affiliatedPartyDetail = data;
