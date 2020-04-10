@@ -40,7 +40,7 @@
         EventService.emitSuspiciousGroupSelected(id);
       },
       initSankeyView(){
-        this.svg = echarts.init(document.getElementById('temporal_view'));
+        this.svg = echarts.init(document.getElementById('group_view'));
         this.svg.showLoading();
       },
       renderSankeyView(){

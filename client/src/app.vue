@@ -224,6 +224,7 @@
     .overview{
         width: 100%;
         height: 300px;
+        /*border: 1px solid steelblue;*/
     }
 
     .overview-left{
@@ -239,8 +240,9 @@
     .overview-right-control-row{
         padding-left: 4px;
         padding-top: 4px;
+        padding-bottom: 4px;
         text-align: left;
-        font-size: small;
+        font-size: 14px;
     }
 
     .overview-right-list{
@@ -257,11 +259,12 @@
     .detail-view-graph{
         width: 100%;
         height: 450px;
-        border: 1px solid steelblue;
+        /*border: 1px solid steelblue;*/
     }
 
     .detail-view-parallel{
         width: 100%;
         height: 150px;
+        border: 1px solid steelblue;
     }
 </style>
