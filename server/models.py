@@ -50,13 +50,13 @@ class Model:
             'ap_txn_amount': list(self.temporal_overview['txn_sum'])
         }
 
-    def get_tp_network(self, start_time='2014-01-01', end_time='2014-12-31', max_txn_length=3, max_control_length=2):
+    def get_tp_network(self, _start_time='2014-01-01', _end_time='2014-12-31', max_txn_length=3, max_control_length=2):
         """
         Remove affiliated parties who have affiliated transactions taken place exceeding a step limit
         :param max_txn_length: maximum steps for a transaction to be considered affiliated
         :param max_control_length: maximum steps for a taxpayer to be considered related to the suspect
-        :param start_time: the start time of query
-        :param end_time: the end time of query
+        :param _start_time: the start time of query
+        :param _end_time: the end time of query
         :return: the resulted TPIIN and a corresponding affiliated transaction network
         """
         # initialize taxpayer network
@@ -65,7 +65,7 @@ class Model:
 
         # build the trade network with invoice data
         self.ap_network = nx.DiGraph()
-        self.ap_txn_period = self.ap_txn.query('@start_time <= date <= @end_time')
+        self.ap_txn_period = self.ap_txn.query('@_start_time <= date <= @_end_time')
         # validate edges by requiring buyer to reach seller within an arbitrary steps in the TPIIN
         for src, tar in zip(self.ap_txn_period['seller_id'], self.ap_txn_period['buyer_id']):
             if nx.shortest_path_length(tp_network_undirected, src, tar) <= max_txn_length:
@@ -78,9 +78,9 @@ class Model:
         ap_df = pd.DataFrame(ap_df, columns=['ap_id', 'tp_id'])
 
         # remove affiliated parties that have not appeared in ap_network
-        ap_node = list(self.ap_network.nodes())
-        ap_exist = ap_df.query('tp_id in @ap_node')['ap_id'].drop_duplicates()
-        self.tp_network.remove_nodes_from(ap_df.query('ap_id not in @ap_exist')['tp_id'])
+        _ap_node = list(self.ap_network.nodes())
+        _ap_exist = ap_df.query('tp_id in @_ap_node')['ap_id'].drop_duplicates()
+        self.tp_network.remove_nodes_from(ap_df.query('ap_id not in @_ap_exist')['tp_id'])
 
         # obtain the control chain using BFS
         control_chain = set()
@@ -96,7 +96,7 @@ class Model:
         self.tp_network.add_edges_from(list(self.ap_network.edges()), ap_txn=True)
         # assign an id for each affiliated party
         self.ap_list = sorted(list(nx.connected_components(tp_network_undirected)), key=lambda _ap: len(_ap))
-        self.finance_period = self.finance.query('@start_time <= time_end and time_start <= @end_time')
+        self.finance_period = self.finance.query('@_start_time <= time_end and time_start <= @_end_time')
 
     def get_affiliated_party_list(self):
         """
@@ -129,10 +129,10 @@ class Model:
         for ap_id, profit in ap_finance.itertuples(index=False):
             # Find only the nodes involved the the related party transactions
             tp_graph = self.ap_network.subgraph(self.ap_list[ap_id]).copy()
-            tp_list = list(tp_graph.nodes())
+            _tp_list = list(tp_graph.nodes())
 
             # retrieve transaction info
-            ap_invoice = self.ap_txn_period.query('seller_id in @tp_list').query('buyer_id in @tp_list')
+            ap_invoice = self.ap_txn_period.query('seller_id in @_tp_list').query('buyer_id in @_tp_list')
             # calculate the transaction amount of each ap_txn
             for u, v in tp_graph.edges():
                 txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn_sum']
@@ -185,7 +185,7 @@ class Model:
         ap_id = self.get_ap_id(tp_id)
         return self.get_detail_by_ap_id(ap_id) if ap_id != -1 else '{}'
 
-    def get_detail_by_ap_id(self, ap_id='610198671502546'):
+    def get_detail_by_ap_id(self, ap_id):
         """
         Prepare the affiliated party sub-graph with additional node information
         :param ap_id: the requested affiliate party id
@@ -271,3 +271,63 @@ class Model:
         self.get_taxpayer_detail(detail_ap_txn_graph)
         self.get_investor_detail(detail_ap_txn_graph)
         return nx.node_link_data(detail_ap_txn_graph)
+
+    def get_calendar_data(self, seller_id, buyer_id, start_time='2014-01-01', end_time='2014-12-31'):
+        """
+        Return an array first having seller as source, then buyer as source
+        :param seller_id: the id of seller
+        :param buyer_id: the id of buyer
+        :param start_time: the start time of query period
+        :param end_time: the end time tof query period
+        :return: an array first having seller as source, then buyer as source
+        """
+        return [
+            self.get_calendar_data_by_tp_id(seller_id, buyer_id, start_time, end_time),
+            self.get_calendar_data_by_tp_id(buyer_id, seller_id, start_time, end_time)
+        ]
+
+    def get_calendar_data_by_tp_id(self, tp_id, _rtp_id, start_time, end_time):
+        """
+        Retrieve the all invoices in the period to calculate tp_id cumulative profit, with the portion of ap and rtp.
+
+        The return type can be changed easily in from the options provided in the link:
+        https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_dict.html
+        :param tp_id: the id of source
+        :param _rtp_id: the id of target
+        :param start_time: the start time of query period
+        :param end_time: the end time tof query period
+        :return: a dictionary of list {}
+        """
+        # initialize invoice and DataFrame
+        _ap_id = self.get_ap_id(tp_id)
+        _ap_list = self.ap_list[_ap_id]
+        tp_invoice = self.invoice.query('@start_time <= date <= @end_time')  # filter by time
+        tp_invoice = tp_invoice.query('buyer_id == @tp_id or seller_id == @tp_id')  # filter by tp_id
+        tp_calendar = pd.DataFrame(index=pd.date_range(start_time, end_time))
+
+        # retrieve total revenue and expense
+        tp_revenue = tp_invoice.query('seller_id == @tp_id')
+        tp_expense = tp_invoice.query('buyer_id  == @tp_id')
+        tp_calendar['revenue'] = tp_revenue[['date', 'txn_sum']].groupby('date').sum()
+        tp_calendar['expense'] = tp_expense[['date', 'txn_sum']].groupby('date').sum()
+
+        # retrieve related party revenue and expense
+        tp_revenue = tp_revenue.query('buyer_id  in @_ap_list')
+        tp_expense = tp_expense.query('seller_id in @_ap_list')
+        tp_calendar['ap_revenue'] = tp_revenue[['date', 'txn_sum']].groupby('date').sum()
+        tp_calendar['ap_expense'] = tp_expense[['date', 'txn_sum']].groupby('date').sum()
+
+        # retrieve related taxpayer revenue and expense
+        tp_revenue = tp_revenue.query('buyer_id  == @_rtp_id')
+        tp_expense = tp_expense.query('seller_id == @_rtp_id')
+        tp_calendar['rtp_revenue'] = tp_revenue[['date', 'txn_sum']].groupby('date').sum()
+        tp_calendar['rtp_expense'] = tp_expense[['date', 'txn_sum']].groupby('date').sum()
+
+        # calculate the cumulative profit
+        tp_calendar = tp_calendar.fillna(0)
+        tp_calendar['cumulative_profit'] = tp_calendar['revenue'] - tp_calendar['expense']
+        tp_calendar['cumulative_profit'] = tp_calendar['cumulative_profit'].cumsum()
+
+        # format the DataFrame
+        tp_calendar = tp_calendar.astype('int').reset_index().rename(columns={'index': 'date'}).astype({'date': 'str'})
+        return tp_calendar.to_dict("list")
