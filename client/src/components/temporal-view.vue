@@ -43,37 +43,7 @@
       },
       initTimeSlider() {
         this.timeSlider = echarts.init(document.getElementById('temporal_view'));
-        this.timeSlider.showLoading();
-
-        // click for 90 days context
-        this.timeSlider.on('click', function (params) {
-          let index = params.dataIndex;
-          let data = this.temporalOverview.date;
-          while ( data[index].slice(0, 8) === data[index+1].slice(0, 8) ) { index++; } // find month end
-          data = data[index];
-
-          this.timeSlider.dispatchAction({
-            type: 'dataZoom',
-            dataZoomIndex: 0,
-            startValue: data.slice(0, 8) + '01',
-            endValue: data
-          });
-        }, this);
-
-        // obtain the time interval in the slider
-        this.timeSlider.on('dataZoom', (params) => {
-          // arbitrary echarts id to check if the dataZoom is on x-axis
-          if (!params.dataZoomId || params.dataZoomId.replace(/\0/g, '') === 'series00') {
-            this.setPeriod(params);
-          }
-        }, this);
-        this.timeSlider.on('restore', () => {
-          this.setPeriod({startValue:'2014-01-01', endValue:'2014-12-31'})
-        }, this);
-      },
-      renderTimeSlider() {
-        // draw time slider for transaction of 2014-2015
-        let timeSliderOption = {
+        this.timeSlider.setOption({
           // size of the chart, value is the padding to the direction
           grid: {
             left: '35',
@@ -152,20 +122,48 @@
                 title: ' ',
               }
             }
-          },
-          series: [
-            {
-              type: 'bar',
-              animation: false,  // setting to false for better performance
-              data: null
-            }
-          ]
-        };
+          }
+        });
+        this.timeSlider.showLoading();
 
+        // click for quarter context
+        this.timeSlider.on('click', function (params) {
+          let date = this.temporalOverview.date[params.dataIndex];
+          let year = date.slice(0, 5);
+          let quarter = ~~((parseInt(date.slice(5, 7)) - 1) / 3); // start month must be [1,4,7,10]; ~~ is equivalent to parseInt
+          let end = (quarter === 1 || quarter === 2)? '-30': '-31'; // day end must be either 30 for [6, 9] or 31 for [3, 12]
+
+          this.timeSlider.dispatchAction({
+            type: 'dataZoom',
+            dataZoomIndex: 0,
+            startValue: year + (quarter*3+1).toString().padStart(2, '0') + '-01',
+            endValue: year + ((quarter+1)*3).toString().padStart(2, '0') + end
+          });
+        }, this);
+
+        // obtain the time interval in the slider
+        this.timeSlider.on('dataZoom', (params) => {
+          // arbitrary echarts id to check if the dataZoom is on x-axis
+          if (!params.dataZoomId || params.dataZoomId.replace(/\0/g, '') === 'series00') {
+            this.setPeriod(params);
+          }
+        }, this);
+        this.timeSlider.on('restore', () => {
+          this.setPeriod({startValue:'2014-01-01', endValue:'2014-12-31'})
+        }, this);
+      },
+      renderTimeSlider() {
         // set the data
-        timeSliderOption.xAxis.data = this.temporalOverview.date;
-        timeSliderOption.series[0].data = this.temporalOverview.ap_txn_amount;
-        this.timeSlider.setOption(timeSliderOption);
+        this.timeSlider.setOption({
+          xAxis: {
+            data: this.temporalOverview.date
+          },
+          series: {
+            type: 'bar',
+            animation: false,  // setting to false for better performance
+            data: this.temporalOverview.ap_txn_amount
+          }
+        });
         this.timeSlider.hideLoading();
       }
     }
