@@ -77,8 +77,8 @@
           .style("font", "12px sans-serif");
       },
       renderGraph: function () {
-        /*绘制双向桑基图*/
-        let chart = ({
+          /*绘制双向桑基图*/
+          let chart = ({
                        // container,
                        data,
                        // margin,

@@ -51,16 +51,30 @@
             <!--                        :loading-graph="loadingCalendar">-->
             <!--                </detail-view>-->
             <!--            </el-col>-->
-            <graph-view
-                    class="detail-view-graph"
-                    :affiliated-party-detail="affiliatedPartyDetail"
-                    :loading-graph="loadingGraph">
-            </graph-view>
-            <parallel-view
-                    class="detail-view-parallel"
-                    :affiliated-party-detail="affiliatedPartyDetail"
-                    :loading-graph="loadingGraph">
-            </parallel-view>
+            <el-row>
+                <el-col :span="12">
+                    <graph-view
+                        class="detail-view-graph"
+                        :affiliated-party-detail="affiliatedPartyDetail"
+                        :loading-graph="loadingGraph">
+                    </graph-view>
+                </el-col>
+                <el-col :span="12">
+                    <calendar-view
+                            class="detail-view-calendar"
+                            :affiliated-party-detail="affiliatedPartyDetail"
+                            :calendarData="affiliatedPartyDetail"
+                            :loadingCalendar="loadingCalendar">
+                    </calendar-view>
+                </el-col>
+            </el-row>
+            <el-row>
+                <parallel-view
+                        class="detail-view-parallel"
+                        :affiliated-party-detail="affiliatedPartyDetail"
+                        :loading-graph="loadingGraph">
+                </parallel-view>
+            </el-row>
         </el-row>
         <el-row style="height: 100%">
             <di-graph-view
@@ -81,6 +95,7 @@
   import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
   import ParallelView from './components/parallel-view.vue';
+  import CalendarView from './components/calendar-view.vue';
 
   import DataService from './utils/data-service'
   import EventService from "./utils/event-service";
@@ -94,6 +109,7 @@
       GroupView,
       TemporalView,
       ParallelView,
+      CalendarView,
     },
     data() {
       return {
@@ -103,6 +119,7 @@
         affiliatedPartyTopoList:[],
         affiliatedPartyDetail: {},
         affiliatedTransactionDetail:{},
+        affiliatedTransactionProfitDetail:{},
 
         // Model settings
         periodStart: '2014-01-01',
@@ -115,10 +132,10 @@
         loadingList: true,
         loadingTopoList: true,
         loadingGraph: true,
+        loadingCalendar:true,
         loadingDetailGraph:true,
         loadingGroupGlyph:true,
         loadingTimeSlider:true,
-        loadingCalendar:true,
 
         // Default cases
         default_detail_transaction_source:"610201694932047",
@@ -139,18 +156,26 @@
         this.loadingGraph = false;
       });
 
-      DataService.loadDetailAffiliatedTransaction(null,(data)=>{
-        this.affiliatedTransactionDetail = data;
-        this.loadingDetailGraph = false;
+      // DataService.loadDetailAffiliatedTransaction(null,(data)=>{
+      //   this.affiliatedTransactionDetail = data;
+      //   this.loadingDetailGraph = false;
+      // });
+
+      DataService.loadCalendarDataByTransaction(null,(data)=>{
+        this.affiliatedTransactionProfitDetail = data;
+        this.loadingCalendar = false;
       });
 
       EventService.onAffiliatedTransactionSelected((source, target)=>{
-        this.loadingDetailGraph = true;
-        let para = {'source': source, 'target':target};
-        DataService.loadDetailAffiliatedTransaction(para,(data)=>{
-          this.affiliatedTransactionDetail = data;
-          this.loadingDetailGraph = false;
-        });
+        // this.loadingDetailGraph = true;
+        // let para = {'source': source, 'target':target};
+        // DataService.loadCalendarDataByTransaction(para,(data)=>{
+        //   this.affiliatedTransactionProfitDetail = data;
+        //   this.loadingCalendar = false;
+        // });
+          this.default_detail_transaction_source = source
+          this.default_detail_transaction_target = target
+          this.getCalendar()
       });
 
       EventService.onSuspiciousGroupSelected(ap_id=>{
@@ -194,17 +219,31 @@
           this.loadingGraph = false;
         })
       },
-      searchAPT: function() {
-        this.loadingDetailGraph = true;
+      // searchAPT: function() {
+      //   this.loadingDetailGraph = true;
+      //   let para = {
+      //     'source':this.default_detail_transaction_source,
+      //     'target':this.default_detail_transaction_target
+      //   };
+      //   DataService.loadDetailAffiliatedTransaction(para, data=>{
+      //     this.affiliatedTransactionDetail = data;
+      //     this.loadingDetailGraph = false;
+      //   })
+      // },
+      // re render calendar view
+      getCalendar: function () {
+        this.loadingCalendar = true;
         let para = {
           'source':this.default_detail_transaction_source,
-          'target':this.default_detail_transaction_target
+          'target':this.default_detail_transaction_target,
+          'start_time':this.periodStart,
+          'end_time':this.periodEnd,
         };
-        DataService.loadDetailAffiliatedTransaction(para, data=>{
-          this.affiliatedTransactionDetail = data;
-          this.loadingDetailGraph = false;
+        DataService.loadCalendarDataByTransaction(para, data=>{
+          this.affiliatedTransactionProfitDetail = data;
+          this.loadingCalendar = false;
         })
-      },
+      }
     }
   }
 </script>
@@ -257,7 +296,11 @@
     }
 
     .detail-view-graph{
-        width: 100%;
+        height: 450px;
+        /*border: 1px solid steelblue;*/
+    }
+
+    .detail-view-calendar{
         height: 450px;
         /*border: 1px solid steelblue;*/
     }

@@ -4,7 +4,8 @@
 </template>
 <script>
   import * as d3 from "d3";
-  // import EventService from "../utils/event-service";
+  import EventService from "../utils/event-service";
+  // import DataService from "../utils/data-service";
 
   export default {
     name: 'GraphView',
@@ -33,8 +34,8 @@
       initGraph() {
         let width = this.$el.clientWidth;
         let height = this.$el.clientHeight;
-        let margin_width = width/40
-        let margin_height = height/20
+        let margin_width = width/10
+        let margin_height = height/10
 
         //config the node width and link width
         this.cfg={
@@ -58,44 +59,34 @@
               'invest':'#ff7f0e',
             }
           },
+          invest_panel:{
+            min_width : margin_width,
+            max_width : width - margin_width,
+            min_height : margin_height,
+            max_height : height/4 - margin_height,
+            highlight_opacity:1,
+            default_opacity:1,
+            unimportant_opacity:0.7,
+            highlight_stroke_width:5
+          },
           trade_panel:{
             min_width : margin_width,
             max_width : width - margin_width,
-            min_height : height/5 + margin_height,
-            max_height : 3*height/5 - margin_height,
+            min_height : height/4 + margin_height,
+            max_height : height - margin_height,
             unimportant_opacity:0.2,
             default_opacity:0.5,
             highlight_opacity:1,
             node_width: 30,
             node_height:30
           },
-          invest_panel:{
-            min_width : margin_width,
-            max_width : width - margin_width,
-            min_height : margin_height,
-            max_height : height/5 - margin_height,
-            highlight_opacity:1,
-            default_opacity:1,
-            unimportant_opacity:0.7,
-            highlight_stroke_width:5
-          },
           parallel_panel:{
-            line_color:'skyblue',
-            // line_color:'#1f77b4',
             highlight_color:'#b82e2e',
-            node_color:'#316395',
             default_opacity:0.5,
             highlight_opacity:0.8,
             default_stroke_width:2,
             highlight_stroke_width:4
           },
-          calendar_panel:{
-            min_width : margin_width,
-            max_width : width - margin_width,
-            min_height : 3*height/5 + margin_height,
-            max_height : height - margin_height,
-            high_light_stroke_color:'yellow',
-          }
         }
 
         this.svg = d3.select('#relation_structure')
@@ -617,6 +608,10 @@
                         }
                       }
                     })
+                    .on('click', d=>{
+                        // 渲染对应calendar view this.$emit('setPeriod', {periodStart: periodStart, periodEnd: periodEnd});
+                        EventService.emitAffiliatedTransactionSelected(d.source.id, d.target.id);
+                    })
 
 
             let invest_panel_svg = this.svg.append('g')
@@ -831,122 +826,6 @@
                     .attr('y',d=> d.y - 30)
                     .attr('dy', '0.35em')
                     .text(d => d.in_name);
-
-            // draw calendar view
-            let calendar_svg = this.svg.append('g').classed('calendar_panel',!0)
-
-
-            let formatMonth = d3.utcFormat("%b")
-            let formatDay = d => "SMTWTFS"[d.getUTCDay()]
-            let formatDate = d3.utcFormat("%x")
-            let formatClose = d3.format("$,.2f")
-            let formatValue = d3.format(".2%")
-
-            function pathMonth(t) {
-              const n = 7;
-              const d = Math.max(0, Math.min(n, countDay(t)));
-              const w = timeWeek.count(d3.utcYear(t), t);
-              return `${d === 0 ? `M${w * cellSize},0`
-                  : d === n ? `M${(w + 1) * cellSize},0`
-                  : `M${(w + 1) * cellSize},0V${d * cellSize}H${w * cellSize}`}V${n * cellSize}`;
-            }
-
-            let countDay =  d => d.getUTCDay()
-            let timeWeek = d3.utcSunday
-            // let width = this.cfg.calendar_panel.max_width - this.cfg.calendar_panel.min_width
-            let cellSize = 17
-            let height = cellSize * 9
-            //  record the offset Z
-            let calendar_width = cellSize * 8
-            t_links
-                .sort((a,b)=>t_nodes.find(node=>node.id==a.source).x_index - t_nodes.find(node=>node.id==b.target).x_index)
-                .forEach(
-                (d,index) =>{
-                    // 对每一笔关联交易 都画出交易双方的calendar chart
-                    // 垂直排列日历图
-                    // source 排第一层 y: this.cfg.calendar_panel.min_height
-                    // target 排第二层 y: this.cfg.min_height +
-                    let cur_svg = calendar_svg.append('g')
-                                // .classed('calendar',!0)
-                                .attr('id','calendar-'+d.source+'-'+d.target)
-
-                    let offset_x = this.cfg.calendar_panel.min_width + calendar_width * index
-                    let source_offset_y = this.cfg.calendar_panel.min_height
-                    let target_offset_y = this.cfg.calendar_panel.min_height + height
-                    get_calendar_view(cur_svg.append('g'), offset_x, source_offset_y)
-                    get_calendar_view(cur_svg.append('g'), offset_x, target_offset_y)
-
-                }
-            )
-
-            function get_calendar_view(cur_svg, offset_x, offset_y){
-                let calendar_data = []
-                for(let i = 1 ; i < 31 ; i++){
-                    calendar_data.push({
-                        date: new Date(2020,0,i+1),
-                        value: Math.random()*100,
-                        ap_txn:Math.random()>0.8?true:false,
-                        ap_txn_amount: Math.random()*10
-                    })
-                }
-                let years = [[2020,calendar_data]]
-
-                // 创建颜色映射器
-                let color = d3.scaleSequential([d3.min(calendar_data.map(d=>d.value)), d3.max(calendar_data.map(d=>d.value))], d3.interpolateBlues)
-
-                const year = cur_svg.selectAll("g")
-                    .data(years)
-                    .join("g")
-                      // .attr("transform", (d, i) => `translate(40,${height * i + cellSize * 1.5})`);
-
-                year.append("text")
-                      .attr("x", offset_x - 5)
-                      .attr("y", offset_y - 5)
-                      .attr("font-weight", "bold")
-                      .attr("text-anchor", "end")
-                      .text(([key]) => key);
-
-                year.append("g")
-                      .attr("text-anchor", "end")
-                    .selectAll("text")
-                    .data((d3.range(7)).map(i => new Date(1995, 0, i)))
-                    .join("text")
-                      .attr("x", offset_x - 5)
-                      .attr("y", d => offset_y + (countDay(d) + 0.5) * cellSize )
-                      .attr("dy", "0.31em")
-                      .text(formatDay);
-
-                year.append("g")
-                    .selectAll("rect")
-                    .data(([, values]) => values)
-                    .join("rect")
-                      .attr("width", cellSize - 1)
-                      .attr("height", cellSize - 1)
-                      .attr("x", d => offset_x + timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 0.5)
-                      .attr("y", d => offset_y + countDay(d.date) * cellSize + 0.5)
-                      .attr("fill", d => color(d.value))
-                      .attr("stroke",d=> d.ap_txn? 'yellow' : "currentColor")
-                    .append("title")
-                      .text(d => `  ${formatDate(d.date)}
-                                    ${formatValue(d.value)}${d.close === undefined ? "" : `
-                                    ${formatClose(d.close)}`}`);
-
-                const month = year.append("g")
-                                    .selectAll("g")
-                                    .data(([, values]) =>d3.utcMonths(d3.utcMonth(values[0].date), values[values.length - 1].date))
-                                    .join("g");
-
-                month.filter((d, i) => i).append("path")
-                      .attr("fill", "none")
-                      .attr("stroke", "#fff")
-                      .attr("stroke-width", 3)
-                      .attr("d", pathMonth);
-
-                month.append("text")
-                      .attr("x", d => offset_x + timeWeek.count(d3.utcYear(d), timeWeek.ceil(d)) * cellSize + 2)
-                      .attr("y", offset_y -5)
-                      .text(formatMonth);
-            }
 
 
             // step 1 sort ap txn by  x position

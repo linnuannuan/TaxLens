@@ -46,14 +46,23 @@ let DataService = new Vue({
           console.log(errResponse)
         })
     },
-    loadDetailAffiliatedTransaction(param, callback){
-      this.axios.post(`${this.dataServerUrl}/ap_txn_detail`, param)
+    loadCalendarDataByTransaction(param, callback){
+      this.axios.post(`${this.dataServerUrl}/profit_detail`, param)
         .then(response => {
           callback(response.data)
         }, errResponse => {
           console.log(errResponse)
         })
     },
+
+    // loadDetailAffiliatedTransaction(param, callback){
+    //   this.axios.post(`${this.dataServerUrl}/ap_txn_detail`, param)
+    //     .then(response => {
+    //       callback(response.data)
+    //     }, errResponse => {
+    //       console.log(errResponse)
+    //     })
+    // },
   }
 });
 
