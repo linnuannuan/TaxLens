@@ -56,14 +56,14 @@
                     <graph-view
                         class="detail-view-graph"
                         :affiliated-party-detail="affiliatedPartyDetail"
-                        :loading-graph="loadingGraph">
+                        :loading-graph="loadingGraph"
+                    >
                     </graph-view>
                 </el-col>
                 <el-col :span="12">
                     <calendar-view
                             class="detail-view-calendar"
-                            :affiliated-party-detail="affiliatedPartyDetail"
-                            :calendarData="affiliatedPartyDetail"
+                            :calendarData="affiliatedTransactionProfitDetail"
                             :loadingCalendar="loadingCalendar">
                     </calendar-view>
                 </el-col>
@@ -123,7 +123,7 @@
 
         // Model settings
         periodStart: '2014-01-01',
-        periodEnd: '2014-12-31',
+        periodEnd: '2014-03-31',
         transactionChain: 3,
         controlChain: 2,
         search_id: '610198671502546',
@@ -156,26 +156,22 @@
         this.loadingGraph = false;
       });
 
-      // DataService.loadDetailAffiliatedTransaction(null,(data)=>{
-      //   this.affiliatedTransactionDetail = data;
-      //   this.loadingDetailGraph = false;
-      // });
-
       DataService.loadCalendarDataByTransaction(null,(data)=>{
         this.affiliatedTransactionProfitDetail = data;
         this.loadingCalendar = false;
       });
 
       EventService.onAffiliatedTransactionSelected((source, target)=>{
-        // this.loadingDetailGraph = true;
-        // let para = {'source': source, 'target':target};
-        // DataService.loadCalendarDataByTransaction(para,(data)=>{
-        //   this.affiliatedTransactionProfitDetail = data;
-        //   this.loadingCalendar = false;
-        // });
-          this.default_detail_transaction_source = source
-          this.default_detail_transaction_target = target
-          this.getCalendar()
+         let para = {
+          'seller_id': source,
+          'buyer_id': target,
+          'start_time': this.periodStart,
+          'end_time': this.periodEnd,
+        };
+        DataService.loadCalendarDataByTransaction(para, data=>{
+          this.affiliatedTransactionProfitDetail = data;
+          this.loadingCalendar = false;
+        })
       });
 
       EventService.onSuspiciousGroupSelected(ap_id=>{
@@ -230,20 +226,6 @@
       //     this.loadingDetailGraph = false;
       //   })
       // },
-      // re render calendar view
-      getCalendar: function () {
-        this.loadingCalendar = true;
-        let para = {
-          'source':this.default_detail_transaction_source,
-          'target':this.default_detail_transaction_target,
-          'start_time':this.periodStart,
-          'end_time':this.periodEnd,
-        };
-        DataService.loadCalendarDataByTransaction(para, data=>{
-          this.affiliatedTransactionProfitDetail = data;
-          this.loadingCalendar = false;
-        })
-      }
     }
   }
 </script>

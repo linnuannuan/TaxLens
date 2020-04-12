@@ -84,5 +84,5 @@ def get_calendar():
             post_data['end_time']
         )
     else:
-        detail_ap_data = '{}'
+        detail_ap_data = {}
     return json_dump(detail_ap_data)

@@ -330,4 +330,4 @@ class Model:
 
         # format the DataFrame
         tp_calendar = tp_calendar.astype('int').reset_index().rename(columns={'index': 'date'}).astype({'date': 'str'})
-        return tp_calendar.to_dict("list")
+        return tp_calendar.to_dict("split")

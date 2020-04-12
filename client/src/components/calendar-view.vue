@@ -13,7 +13,6 @@
           props: {
               calendarData: Object,
               loadingCalendar: Boolean,
-              affiliatedPartyDetail: Object,
           },
           data() {
               return {
@@ -21,7 +20,7 @@
               }
           },
           watch: {
-              affiliatedPartyDetail: function () {
+              calendarData: function () {
                   this.renderGraph();
               },
           },
@@ -47,76 +46,94 @@
               },
               renderGraph() {
                   // 生成模拟数据
-                  let origin_data = {
-                        'source':[
-                            //'sum_of_profit', 'revenue', 'expense', 'ap_revenue', 'ap_expense', 'is_related'
-                            []
-                        ],
-                        'target':[
-                            //'sum_of_profit', 'revenue', 'expense', 'ap_revenue', 'ap_expense', 'is_related'
-                            []
-                        ]
-                  }
-                  console.log('origin_data:', origin_data)
+                  console.log('origin_data:', this.calendarData)
+                  // let src_data = this.calendarData[0]
+                  // let dst_data = this.calendarData[0]
+                  // src_data = src_data.date.map((key,value)=>[key, src_data.cumulative_profit[value], src_data.cumulative_profit[value]]);
 
-                  drawCalendar(origin_data,document.getElementById('calendar_view'))
+
+                  drawCalendar(this.calendarData,document.getElementById('calendar_view'))
                   // data: calendar data
                   // element document.getElementById('calendar_view')
 
                   function drawCalendar(origin_data, element) {
                         const cyear =2014
-                        function getVirtulOData(year) {
-                            year = year || cyear;
-                            var date = +echarts.number.parseDate(year + '-01-01');
-                            var end = +echarts.number.parseDate((+year + 1) + '-01-01');
-                            var dayTime = 3600 * 24 * 1000;
-                            var data = ['Date', 'Profit', 'Normal Transaction', 'Ap Transaction'];
-                            for (var time = date; time < end; time += dayTime) {
-                                let random_txn = Math.random() * 1000
-                                data.push([
-                                    echarts.format.formatTime('yyyy-MM-dd', time),
-                                    Math.floor(Math.random() * 1000) - 500,
-                                    random_txn - 500,
-                                    random_txn>800 ? random_txn* Math.random():0
-                                ]);
-                            }
-                            return data;
-                        }
-                        let src_dataset =[]
-                        let dst_dataset =[]
+                        let src_dataset = [origin_data[0].columns].concat(origin_data[0].data)
+                        let dst_dataset = [origin_data[1].columns].concat(origin_data[1].data)
+                        let dataset = src_dataset.slice(1,).concat(dst_dataset.slice(1,)).map(d=>{
+                            return [d[0],d[7],(d[5]-d[6])]
+                        })
 
-                        src_dataset = getVirtulOData(cyear)
-                        dst_dataset = getVirtulOData(cyear)
+                         // origin dataset =
+                         // {
+                         // 'date': ['2014-01-01', '2014-01-02', '2014-01-03', '2014-01-04'],
+                         // 'revenue': [0, 0, 0, 0],
+                         // 'expense': [0, 0, 0, 0],
+                         // 'ap_revenue': [0, 0, 0, 0],
+                         // 'ap_expense': [0, 0, 0, 0],
+                         // 'rtp_revenue': [0, 0, 0, 0],
+                         // 'rtp_expense': [0, 0, 0, 0],
+                         // 'cumulative_profit': [0, 0, 0, 0]}
+                        //         7,               5-6                  3-4
+                        // "Date", "Profit", "Normal Transaction", "Ap Transaction
+
                         console.log(src_dataset,dst_dataset)
 
                         var option = {
                             dataset:{
-                                source: src_dataset.concat(dst_dataset),
+                                source: dataset,
                             },
                             tooltip: {
                                 position: 'top',
                             },
-                            visualMap: [{
-                                min: -500,
-                                max: 500,
+                            // //"Date", "Profit", "Normal Transaction", "Ap Transaction
+                            // set the visual map of profit
+                            visualMap: [
+                            // encode the normal transaction
+                            {
+                                min: -Math.max(...dataset.map(d=>Math.abs(d[2]))),
+                                max: Math.max(...dataset.map(d=>Math.abs(d[2]))),
+                                calculable: true,
+                                orient: 'horizontal',
+                                left: 'center',
+                                top: 'top',
+                                dimension:2,
+                                inRange: {
+                                    // color: ['green','white','red'],
+                                    // opacity: [0.5,0.5],
+                                    symbolSize:[15,0,15]
+                                },
+                                seriesIndex:[1,3],
+                                show:false
+                            },
+                            // encode the ap_transaction
+                            {
+                                min: -Math.max(...dataset.map(d=>Math.abs(d[3]))),
+                                max: Math.max(...dataset.map(d=>Math.abs(d[3]))),
                                 calculable: true,
                                 orient: 'horizontal',
                                 left: 'right',
                                 top: 'top',
-                                dimension:1,
-                                seriesIndex:[0,1,2,3,4,5],
+                                inRange: {
+                                    // color: ['green','white','red'],
+                                    // opacity: [0.5,0.5],
+                                    symbolSize:[15,0,15]
+                                },
+                                dimension:2,
+                                seriesIndex:[2,5],
                                 show:false
-
-                            },{
-                                min: -500,
-                                max: 500,
+                            },
+                            // set the color visual map of profit and normal transaction based on profit
+                            {
+                                min: Math.min(...dataset.map(d=>d[2])),
+                                max: Math.max(...dataset.map(d=>d[2])),
                                 calculable: true,
                                 orient: 'horizontal',
                                 left: 'right',
                                 top: 'top',
                                 inRange: {
                                     color: ['green','white','red'],
-                                    opacity: [0.5,0.5]
+                                    opacity: [0.5,0.5],
                                 },
                                 controller: {
                                     inRange: {
@@ -170,9 +187,9 @@
                                 coordinateSystem: 'calendar',
                                 data: src_dataset,
                                 hoverAnimation: true,
-                                symbolSize: function (val) {
-                                    return Math.abs(val[2] / 80);
-                                },
+                                // symbolSize: function (val) {
+                                //     return Math.abs(val[2] / 80);
+                                // },
                                 itemStyle: {
                                     color: '#ddb926',
                                     // color:"yellow"
@@ -183,9 +200,9 @@
                                 type: 'effectScatter',
                                 coordinateSystem: 'calendar',
                                 data: src_dataset.filter(d=>d[3]),
-                                symbolSize: function (val) {
-                                    return Math.abs(val[3] / 80);
-                                },
+                                // symbolSize: function (val) {
+                                //     return Math.abs(val[3] / 80);
+                                // },
                                 showEffectOn: 'render',
                                 rippleEffect: {
                                     brushType: 'stroke'
@@ -221,9 +238,9 @@
                                 calendarIndex: 1,
                                 coordinateSystem: 'calendar',
                                 data: dst_dataset,
-                                symbolSize: function (val) {
-                                    return Math.abs(val[2] / 80);
-                                },
+                                // symbolSize: function (val) {
+                                //     return Math.abs(val[2] / 80);
+                                // },
                                 itemStyle: {
                                     color: '#ddb926',
                                     // color:"yellow"
@@ -235,9 +252,9 @@
                                 calendarIndex: 1,
                                 coordinateSystem: 'calendar',
                                 data: src_dataset.filter(d=>d[3]),
-                                symbolSize: function (val) {
-                                    return Math.abs(val[3] / 80);
-                                },
+                                // symbolSize: function (val) {
+                                //     return Math.abs(val[3] / 80);
+                                // },
                                 showEffectOn: 'render',
                                 rippleEffect: {
                                     brushType: 'stroke'

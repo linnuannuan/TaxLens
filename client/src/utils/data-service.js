@@ -47,7 +47,7 @@ let DataService = new Vue({
         })
     },
     loadCalendarDataByTransaction(param, callback){
-      this.axios.post(`${this.dataServerUrl}/profit_detail`, param)
+      this.axios.post(`${this.dataServerUrl}/calendar`, param)
         .then(response => {
           callback(response.data)
         }, errResponse => {
