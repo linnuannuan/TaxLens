@@ -68,13 +68,13 @@
                     </calendar-view>
                 </el-col>
             </el-row>
-            <el-row>
-                <parallel-view
-                        class="detail-view-parallel"
-                        :affiliated-party-detail="affiliatedPartyDetail"
-                        :loading-graph="loadingGraph">
-                </parallel-view>
-            </el-row>
+<!--            <el-row>-->
+<!--                <parallel-view-->
+<!--                        class="detail-view-parallel"-->
+<!--                        :affiliated-party-detail="affiliatedPartyDetail"-->
+<!--                        :loading-graph="loadingGraph">-->
+<!--                </parallel-view>-->
+<!--            </el-row>-->
         </el-row>
         <el-row style="height: 100%">
             <di-graph-view
@@ -94,7 +94,7 @@
   // import DetailView from './components/detail-view.vue';
   import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
-  import ParallelView from './components/parallel-view.vue';
+  // import ParallelView from './components/parallel-view.vue';
   import CalendarView from './components/calendar-view.vue';
 
   import DataService from './utils/data-service'
@@ -108,7 +108,7 @@
       DiGraphView,
       GroupView,
       TemporalView,
-      ParallelView,
+      // ParallelView,
       CalendarView,
     },
     data() {
