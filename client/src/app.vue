@@ -54,7 +54,7 @@
             <el-col :span="12" class="detail-view">
                 <calendar-view
                         class="detail-view-calendar"
-                        :calendar-data="affiliatedTransactionProfitDetail"
+                        :calendar-data="calendarData"
                         :loading-calendar="loadingCalendar">
                 </calendar-view>
             </el-col>
@@ -108,7 +108,7 @@
         affiliatedPartyTopoList:[],
         affiliatedPartyDetail: {},
         affiliatedTransactionDetail:{},
-        affiliatedTransactionProfitDetail:[],
+        calendarData:[],
 
         // Model settings
         periodStart: '2014-01-01',
@@ -146,7 +146,7 @@
       });
 
       DataService.loadCalendarDataByTransaction(null,(data)=>{
-        this.affiliatedTransactionProfitDetail = data;
+        this.calendarData = data;
         this.loadingCalendar = false;
       });
 
@@ -167,7 +167,7 @@
           'end_time': this.periodEnd,
         };
         DataService.loadCalendarDataByTransaction(para, data=>{
-          this.affiliatedTransactionProfitDetail = data;
+          this.calendarData = data;
           this.loadingCalendar = false;
         })
       });
@@ -275,7 +275,7 @@
     .detail-view-calendar{
         width: 100%;
         height: 450px;
-        /*border: 1px solid steelblue;*/
+        border: 1px solid steelblue;
     }
 
     .detail-view-parallel{

@@ -32,8 +32,10 @@
       },
       renderCalendar() {
         if (this.calendarData === undefined || this.calendarData.length === 0) return;
-        let src_data = this.calendarData[0];
-        let dst_data = this.calendarData[1];
+
+        // layout
+        let src_data = this.calendarData[0]['source'];
+        let dst_data = this.calendarData[1]['source'];
 
         let date_start  = src_data['date'][0];
         let date_end    = src_data['date'][src_data['date'].length-1];
@@ -44,33 +46,33 @@
         let heatmap_max_dst = Math.max(...dst_data[heatmap]);
         let heatmap_min_dst = Math.min(...dst_data[heatmap]);
 
+        // min-max configuration for scatter plots, adding ones to make sure zeros are eliminated
         let scatter = 'ap_profit';
-        let scatter_max_src = Math.max(...src_data[scatter]);
-        let scatter_min_src = Math.min(...src_data[scatter]);
-        let scatter_max_dst = Math.max(...dst_data[scatter]);
-        let scatter_min_dst = Math.min(...dst_data[scatter]);
+        let scatter_max_src = Math.max(...src_data[scatter], 1);
+        let scatter_min_src = Math.min(...src_data[scatter], -1);
+        let scatter_max_dst = Math.max(...dst_data[scatter], 1);
+        let scatter_min_dst = Math.min(...dst_data[scatter], -1);
 
+        // layout parameters
+        let calendarPadding = 80;
 
         this.calendar.setOption({
-          dataset: [
-            {source: src_data},
-            {source: dst_data}
-          ],
+          dataset: this.calendarData,
           tooltip: {},
           calendar: [
             {
-              top: 60,
-              bottom: 10,
+              top: calendarPadding,
+              bottom: calendarPadding,
               left: '5%',
-              right: '55%',
+              right: '52.5%',
               range: [date_start, date_end],
               itemStyle: {borderWidth: 0.5},
               yearLabel: {show: false}
             },
             {
-              top: 60,
-              bottom: 10,
-              left: '55%',
+              top: calendarPadding,
+              bottom: calendarPadding,
+              left: '52.5%',
               right: '5%',
               range: [date_start, date_end],
               itemStyle: {borderWidth: 0.5},
@@ -81,57 +83,91 @@
             // left calendar
             {
               seriesIndex: 0,
+              type: 'continuous',
               min: heatmap_min_src,
               max: heatmap_max_src,
-              calculable: true,
               dimension: heatmap,
-              type: 'continuous',
               orient: 'horizontal',
-              top: 'top',
+              bottom: 'bottom',
               left: 'left',
+              calculable: true,
+              padding: 10,
+              itemWidth: 10,
+              itemHeight: 250,
+              text: ['Profit', 'Loss'],
               inRange: {
                 color: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
+                opacity: 0.75
               },
+              formatter: (value) => {return ~~(value/1000) + 'k'},
             },
             {
               seriesIndex: 1,
               show: false,
-              min: scatter_min_src,
-              max: scatter_max_src,
-              dimension: scatter,
               type: 'continuous',
+              min: scatter_min_src,
+              max: 0,
               orient: 'horizontal',
               inRange: {
                 color: ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],
-                symbolSize: [0, 10]
+                symbolSize: [20, 0]
+              },
+            },
+            {
+              seriesIndex: 2,
+              show: false,
+              type: 'continuous',
+              min: 0,
+              max: scatter_max_src,
+              orient: 'horizontal',
+              inRange: {
+                color: ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],
+                symbolSize: [0, 20]
               },
             },
             // right calendar
             {
-              seriesIndex: 2,
+              seriesIndex: 3,
+              type: 'continuous',
               min: heatmap_min_dst,
               max: heatmap_max_dst,
-              calculable: true,
               dimension: heatmap,
-              type: 'continuous',
               orient: 'horizontal',
-              top: 'top',
+              bottom: 'bottom',
               right: 'right',
+              calculable: true,
+              padding: 10,
+              itemWidth: 10,
+              itemHeight: 250,
+              text: ['Profit', 'Loss'],
               inRange: {
                 color: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
+                opacity: 0.75
               },
+              formatter: (value) => {return ~~(value/1000) + 'k'},
             },
             {
-              seriesIndex: 3,
+              seriesIndex: 4,
               show: false,
-              min: scatter_min_dst,
-              max: scatter_max_dst,
-              dimension: scatter,
               type: 'continuous',
+              min: scatter_min_dst,
+              max: 0,
               orient: 'horizontal',
               inRange: {
                 color: ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],
-                symbolSize: [0, 10]
+                symbolSize: [20, 0]
+              },
+            },
+            {
+              seriesIndex: 5,
+              show: false,
+              type: 'continuous',
+              min: 0,
+              max: scatter_max_dst,
+              orient: 'horizontal',
+              inRange: {
+                color: ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],
+                symbolSize: [0, 20]
               },
             },
           ],
@@ -151,7 +187,24 @@
               coordinateSystem: 'calendar',
               datasetIndex: 0,
               calendarIndex: 0,
-              encode: {}
+              dimensions: ['date', scatter],
+              encode: {},
+              itemStyle: {
+                borderColor: 'white',
+                borderWidth: 3
+              }
+            },
+            {
+              type: 'scatter',
+              coordinateSystem: 'calendar',
+              datasetIndex: 0,
+              calendarIndex: 0,
+              dimensions: ['date', scatter],
+              encode: {},
+              itemStyle: {
+                borderColor: 'white',
+                borderWidth: 3
+              }
             },
             // right calendar
             {
@@ -168,7 +221,24 @@
               coordinateSystem: 'calendar',
               datasetIndex: 1,
               calendarIndex: 1,
-              encode: {}
+              dimensions: ['date', scatter],
+              encode: {},
+              itemStyle: {
+                borderColor: 'white',
+                borderWidth: 3
+              }
+            },
+            {
+              type: 'scatter',
+              coordinateSystem: 'calendar',
+              datasetIndex: 1,
+              calendarIndex: 1,
+              dimensions: ['date', scatter],
+              encode: {},
+              itemStyle: {
+                borderColor: 'white',
+                borderWidth: 3
+              }
             }
           ]
         });
