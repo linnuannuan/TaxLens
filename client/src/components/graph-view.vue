@@ -74,10 +74,12 @@
             highlight_stroke_width:5
           },
           trade_panel:{
-            min_width : margin_width,
-            max_width : width - margin_width,
-            min_height : height/4 + margin_height,
-            max_height : height - margin_height,
+            min_width:margin_width-width/2,
+            // min_width : margin_width,
+            max_width:width - margin_width -width/2,
+            // max_width : width - margin_width,
+            min_height : height/4 + margin_height -height/2,
+            max_height : height - margin_height-height/2,
             unimportant_opacity:0.2,
             default_opacity:0.5,
             highlight_opacity:1,
@@ -95,7 +97,8 @@
 
         this.svg = d3.select('#relation_structure')
                 .append("svg")
-                .attr("viewBox", [0, 0, width, height])
+                .attr("viewBox", [-width/2, -height/2,width,height])
+                // .attr("viewBox", [0, 0, width, height])
                 .style("font", "12px sans-serif");
         // this.tooltip = d3.select("#relation_structure")
         //   .append("div")
@@ -860,16 +863,49 @@
 
                 data.links.forEach(d=>{
                    // Add edges to the graph.
-                    g.setEdge( d.source, d.target, { label: d.ap_txn?'txn':'inv'});
+                    g.setEdge( d.source, d.target, { label: d.ap_txn?'txn':'invest'});
                 })
 
                 dagre.layout(g);
-                // g.nodes().forEach(function(v) {
-                //      console.log("Node " + v + ": " + JSON.stringify(g.node(v)));
-                // });
-                // g.edges().forEach(function(e) {
-                //     console.log("Edge " + e.v + " -> " + e.w + ": " + JSON.stringify(g.edge(e)));
-                // });
+                let calculate_width =(d3.max(g.nodes().map(d=>g.node(d).x)) - d3.min(g.nodes().map(d=>g.node(d).x)))
+                let calculate_height =(d3.max(g.nodes().map(d=>g.node(d).y)) - d3.min(g.nodes().map(d=>g.node(d).y)))
+                this.cfg.node.rect_width= calculate_width>(this.cfg.trade_panel.max_width - this.cfg.trade_panel.min_width) ?  (this.cfg.trade_panel.max_width - this.cfg.trade_panel.min_width)/calculate_width * this.cfg.node.rect_width : this.cfg.node.rect_width
+                this.cfg.node.rect_height= calculate_height>(this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height) ?  (this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height)/calculate_height * this.cfg.node.rect_height : this.cfg.node.rect_height
+
+                let x_position_linear = d3.scaleLinear()
+                                            .domain([d3.min(g.nodes().map(d=>g.node(d).x)), d3.max(g.nodes().map(d=>g.node(d).x))])
+                                            .range([this.cfg.trade_panel.min_width,this.cfg.trade_panel.max_width])
+                let y_position_linear = d3.scaleLinear()
+                                            .domain([d3.min(g.nodes().map(d=>g.node(d).y)), d3.max(g.nodes().map(d=>g.node(d).y))])
+                                            .range([this.cfg.trade_panel.min_height,this.cfg.trade_panel.max_height])
+                g.nodes().forEach(d=> {
+                    g.node(d).x = x_position_linear(g.node(d).x);
+                    g.node(d).y = y_position_linear(g.node(d).y);
+                })
+                g.edges().forEach(d=> g.edge(d).points.map(p=>{p.x = x_position_linear(p.x);p.y = y_position_linear(p.y);return p}))
+
+
+                // let width_position_linear = d3.scaleLinear()
+                //                             .domain([d3.min(g.nodes().map(d=>g.node(d.v).x)), d3.max(g.nodes().map(d=>g.node(d.v).x))])
+                //                             .range([this.cfg.trade_panel.min_width,this.cfg.trade_panel.max_width])
+                // node_width =
+
+                let types = ['invest','txn']
+                // Per-type markers, as they don't inherit styles.
+                this.svg.append("g").selectAll("marker")
+                        .data(types)
+                        .enter()
+                        .append('marker')
+                        .attr("id", d => `arrow-${d}`)
+                        .attr("viewBox", "0 -5 10 10")
+                        .attr("refX", 15)
+                        .attr("refY", -0.5)
+                        .attr("markerWidth", 6)
+                        .attr("markerHeight", 6)
+                        .attr("orient", "auto")
+                        .append("path")
+                        .attr("fill", d=> this.cfg.link.color[d])
+                        .attr("d", "M0,-5L10,0L0,5");
 
                 // draw node
                 this.svg.append('g').classed('node',!0)
@@ -882,6 +918,17 @@
                         .attr('width',this.cfg.node.rect_width)
                         .attr('height',this.cfg.node.rect_height)
                         .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
+
+                // add text to node
+                this.svg.append('g').classed('text',!0)
+                        .selectAll('g')
+                        .data(g.nodes())
+                        .enter()
+                        .append('text')
+                        .attr('x',d=>g.node(d).x - 12*g.node(d).name.length/2)
+                        .attr('y',d=>g.node(d).y + this.cfg.node.rect_height + 12 )
+                        .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
+                        .text(d=>g.node(d).name)
 
                 // draw edge
                 var line = d3.line()
@@ -902,17 +949,21 @@
                                                         .domain([link_data[0][1], link_data[link_data.length-1][1]])
                                                         .range([link_data[0][1]+offset_y, link_data[link_data.length-1][1]])
 
+                            // link_data.map(d=> { d[0] += offset_x ; d[1] += 2*offset_y; return d})
+
                             link_data.map(d=> { d[0] += offset_x ; d[1]= position_linear(d[1]); return d})
                             return line(link_data)
                         })
-                        .attr("stroke", d=>g.edge(d).label=='inv'?this.cfg.link.color.invest:this.cfg.link.color.txn)
+                        .attr("stroke", d=>g.edge(d).label=='invest'?this.cfg.link.color.invest:this.cfg.link.color.txn)
                         .attr("stroke-width", "1px")
+                        .attr("marker-end", d => `url(${new URL(`#arrow-${g.edge(d).label}`, location)})`)
                         .attr("fill", "none");
 
-                // var lineData = [[50,50],[100,50],[100,100],[100,150],[50,100]];
-                // svg.append("path")
-                //     .attr("d", line(lineData))
+                console.log('width',this.cfg.node.rect_width)
 
+
+                        this.cfg.node.rect_width = 30
+                        this.cfg.node.rect_height = 30
 
           }
           // get_node_link_chart(data)
