@@ -6,7 +6,7 @@
   import * as d3 from "d3";
   import * as dagre from "dagre";
   // import * as lodash from 'lodash'
-  // import EventService from "../utils/event-service";
+  import EventService from "../utils/event-service";
   // import DataService from "../utils/data-service";
 
   export default {
@@ -84,7 +84,7 @@
             default_opacity:0.5,
             highlight_opacity:1,
             node_width: 30,
-            node_height:30
+            node_height:50
           },
           parallel_panel:{
             highlight_color:'#b82e2e',
@@ -107,6 +107,7 @@
         //   .text("I'm tootip!");
       },
       renderGraph() {
+
         this.svg.selectAll("g").remove()
         if (this.affiliatedPartyDetail !== null) {
           let data = this.affiliatedPartyDetail;
@@ -867,17 +868,25 @@
                 })
 
                 dagre.layout(g);
-                let calculate_width =(d3.max(g.nodes().map(d=>g.node(d).x)) - d3.min(g.nodes().map(d=>g.node(d).x)))
-                let calculate_height =(d3.max(g.nodes().map(d=>g.node(d).y)) - d3.min(g.nodes().map(d=>g.node(d).y)))
-                this.cfg.node.rect_width= calculate_width>(this.cfg.trade_panel.max_width - this.cfg.trade_panel.min_width) ?  (this.cfg.trade_panel.max_width - this.cfg.trade_panel.min_width)/calculate_width * this.cfg.node.rect_width : this.cfg.node.rect_width
-                this.cfg.node.rect_height= calculate_height>(this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height) ?  (this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height)/calculate_height * this.cfg.node.rect_height : this.cfg.node.rect_height
+
+                let node_width = g.graph().width>(this.cfg.trade_panel.max_width - this.cfg.trade_panel.min_width) ?  (this.cfg.trade_panel.max_width - this.cfg.trade_panel.min_width)/g.graph().width * this.cfg.node.rect_width : this.cfg.node.rect_width
+                let node_height = g.graph().height>(this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height) ?  (this.cfg.trade_panel.max_height - this.cfg.trade_panel.min_height)/g.graph().height * this.cfg.node.rect_height : this.cfg.node.rect_height
+
+
+                let all_x = g.edges().reduce((acc,d)=>acc.concat(g.edge(d).points.map(p=>p.x)),[]).concat(g.nodes().map(d=>g.node(d).x))
+                // let all_y = g.edges().reduce((acc,d)=>acc.concat(g.edge(d).points.map(p=>p.y)),[]).concat(g.nodes().map(d=>g.node(d).y))
 
                 let x_position_linear = d3.scaleLinear()
-                                            .domain([d3.min(g.nodes().map(d=>g.node(d).x)), d3.max(g.nodes().map(d=>g.node(d).x))])
+                                            // .domain([0,g.graph().width])
+                                            .domain([d3.min(all_x), d3.max(all_x)])
                                             .range([this.cfg.trade_panel.min_width,this.cfg.trade_panel.max_width])
+
+
                 let y_position_linear = d3.scaleLinear()
-                                            .domain([d3.min(g.nodes().map(d=>g.node(d).y)), d3.max(g.nodes().map(d=>g.node(d).y))])
+                                            .domain([0,g.graph().height])
+                                            // .domain([d3.min(g.nodes().map(d=>g.node(d).y)), d3.max(g.nodes().map(d=>g.node(d).y))])
                                             .range([this.cfg.trade_panel.min_height,this.cfg.trade_panel.max_height])
+
                 g.nodes().forEach(d=> {
                     g.node(d).x = x_position_linear(g.node(d).x);
                     g.node(d).y = y_position_linear(g.node(d).y);
@@ -915,8 +924,8 @@
                         .append('rect')
                         .attr('x',d=>g.node(d).x )
                         .attr('y',d=>g.node(d).y )
-                        .attr('width',this.cfg.node.rect_width)
-                        .attr('height',this.cfg.node.rect_height)
+                        .attr('width',node_width)
+                        .attr('height',node_height)
                         .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
 
                 // add text to node
@@ -926,7 +935,7 @@
                         .enter()
                         .append('text')
                         .attr('x',d=>g.node(d).x - 12*g.node(d).name.length/2)
-                        .attr('y',d=>g.node(d).y + this.cfg.node.rect_height + 12 )
+                        .attr('y',d=>g.node(d).y + node_height + 12 )
                         .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
                         .text(d=>g.node(d).name)
 
@@ -941,8 +950,8 @@
                         .enter()
                         .append('path')
                         .attr('d',d=> {
-                            let offset_x = this.cfg.node.rect_width/2
-                            let offset_y = this.cfg.node.rect_height
+                            let offset_x = node_width/2
+                            let offset_y = node_height
                             let link_data = [[g.node(d.v).x, + g.node(d.v).y]].concat(g.edge(d).points.map(p=>[p.x,p.y])).concat([[g.node(d.w).x,g.node(d.w).y]]);
 
                             let position_linear = d3.scaleLinear()
@@ -955,15 +964,15 @@
                             return line(link_data)
                         })
                         .attr("stroke", d=>g.edge(d).label=='invest'?this.cfg.link.color.invest:this.cfg.link.color.txn)
-                        .attr("stroke-width", "1px")
+                        .attr("stroke-width", "2px")
                         .attr("marker-end", d => `url(${new URL(`#arrow-${g.edge(d).label}`, location)})`)
-                        .attr("fill", "none");
+                        .attr("fill", "none")
+                        .attr('cursor','pointer')
+                        .on('click', d=>{
+                            EventService.emitAffiliatedTransactionSelected(d.v, d.w);
+                        });
 
-                console.log('width',this.cfg.node.rect_width)
 
-
-                        this.cfg.node.rect_width = 30
-                        this.cfg.node.rect_height = 30
 
           }
           // get_node_link_chart(data)
