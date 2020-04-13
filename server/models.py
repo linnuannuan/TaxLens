@@ -323,11 +323,12 @@ class Model:
         tp_calendar['rtp_revenue'] = tp_revenue[['date', 'txn_sum']].groupby('date').sum()
         tp_calendar['rtp_expense'] = tp_expense[['date', 'txn_sum']].groupby('date').sum()
 
-        # calculate the cumulative profit
+        # calculate the profits
         tp_calendar = tp_calendar.fillna(0)
-        tp_calendar['cumulative_profit'] = tp_calendar['revenue'] - tp_calendar['expense']
-        tp_calendar['cumulative_profit'] = tp_calendar['cumulative_profit'].cumsum()
+        tp_calendar['profit'] = tp_calendar['revenue'] - tp_calendar['expense']
+        tp_calendar['profit'] = tp_calendar['profit'].cumsum()
+        tp_calendar['ap_profit'] = tp_calendar['ap_revenue'] - tp_calendar['ap_expense']
 
         # format the DataFrame
         tp_calendar = tp_calendar.astype('int').reset_index().rename(columns={'index': 'date'}).astype({'date': 'str'})
-        return tp_calendar.to_dict("split")
+        return tp_calendar.to_dict("list")

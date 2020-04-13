@@ -84,5 +84,10 @@ def get_calendar():
             post_data['end_time']
         )
     else:
-        detail_ap_data = {}
+        detail_ap_data = TPIIN.get_calendar_data(
+            '610198748609852',
+            '610198684755147',
+            '2014-01-01',
+            '2014-03-31'
+        )
     return json_dump(detail_ap_data)

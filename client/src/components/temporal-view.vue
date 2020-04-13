@@ -161,7 +161,7 @@
           series: {
             type: 'bar',
             animation: false,  // setting to false for better performance
-            data: this.temporalOverview.ap_txn_amount
+            data: this.temporalOverview['ap_txn_amount']
           }
         });
         this.timeSlider.hideLoading();

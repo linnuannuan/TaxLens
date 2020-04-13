@@ -1,5 +1,5 @@
 <template>
-    <div id="app" class="MainView">
+    <div id="app">
         <el-row class="overview">
             <el-col :span="19" class="overview">
                 <temporal-view
@@ -44,37 +44,27 @@
             </el-col>
         </el-row>
         <el-row class="detail-view">
-            <!--            <el-col style="width: 25%; height: 60%">-->
-            <!--                <detail-view-->
-            <!--                        class="grid-content"-->
-            <!--                        :affiliated-party-detail="affiliatedPartyDetail"-->
-            <!--                        :loading-graph="loadingCalendar">-->
-            <!--                </detail-view>-->
-            <!--            </el-col>-->
-            <el-row>
-                <el-col :span="12">
-                    <graph-view
+            <el-col :span="12" class="detail-view">
+                <graph-view
                         class="detail-view-graph"
                         :affiliated-party-detail="affiliatedPartyDetail"
-                        :loading-graph="loadingGraph"
-                    >
-                    </graph-view>
-                </el-col>
-                <el-col :span="12">
-                    <calendar-view
-                            class="detail-view-calendar"
-                            :calendarData="affiliatedTransactionProfitDetail"
-                            :loadingCalendar="loadingCalendar">
-                    </calendar-view>
-                </el-col>
-            </el-row>
-<!--            <el-row>-->
-<!--                <parallel-view-->
-<!--                        class="detail-view-parallel"-->
-<!--                        :affiliated-party-detail="affiliatedPartyDetail"-->
-<!--                        :loading-graph="loadingGraph">-->
-<!--                </parallel-view>-->
-<!--            </el-row>-->
+                        :loading-graph="loadingGraph">
+                </graph-view>
+            </el-col>
+            <el-col :span="12" class="detail-view">
+                <calendar-view
+                        class="detail-view-calendar"
+                        :calendar-data="affiliatedTransactionProfitDetail"
+                        :loading-calendar="loadingCalendar">
+                </calendar-view>
+            </el-col>
+            <!--            <el-row>-->
+            <!--                <parallel-view-->
+            <!--                        class="detail-view-parallel"-->
+            <!--                        :affiliated-party-detail="affiliatedPartyDetail"-->
+            <!--                        :loading-graph="loadingGraph">-->
+            <!--                </parallel-view>-->
+            <!--            </el-row>-->
         </el-row>
         <el-row style="height: 100%">
             <di-graph-view
@@ -91,7 +81,6 @@
   import GroupList from './components/group-list'
   import GraphView from './components/graph-view.vue';
   import DiGraphView from './components/digraph-view.vue';
-  // import DetailView from './components/detail-view.vue';
   import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
   // import ParallelView from './components/parallel-view.vue';
@@ -119,7 +108,7 @@
         affiliatedPartyTopoList:[],
         affiliatedPartyDetail: {},
         affiliatedTransactionDetail:{},
-        affiliatedTransactionProfitDetail:{},
+        affiliatedTransactionProfitDetail:[],
 
         // Model settings
         periodStart: '2014-01-01',
@@ -161,8 +150,17 @@
         this.loadingCalendar = false;
       });
 
+      EventService.onSuspiciousGroupSelected(ap_id=>{
+        this.loadingGraph = true;
+        let para = {'ap_id': ap_id};
+        DataService.loadAffiliatedPartyDetailByAP(para, data=>{
+          this.affiliatedPartyDetail = data;
+          this.loadingGraph = false;
+        });
+      });
+
       EventService.onAffiliatedTransactionSelected((source, target)=>{
-         let para = {
+        let para = {
           'seller_id': source,
           'buyer_id': target,
           'start_time': this.periodStart,
@@ -172,15 +170,6 @@
           this.affiliatedTransactionProfitDetail = data;
           this.loadingCalendar = false;
         })
-      });
-
-      EventService.onSuspiciousGroupSelected(ap_id=>{
-        this.loadingGraph = true;
-        let para = {'ap_id': ap_id};
-        DataService.loadAffiliatedPartyDetailByAP(para, data=>{
-          this.affiliatedPartyDetail = data;
-          this.loadingGraph = false;
-        });
       });
     },
     methods: {
@@ -278,11 +267,13 @@
     }
 
     .detail-view-graph{
+        width: 100%;
         height: 450px;
         /*border: 1px solid steelblue;*/
     }
 
     .detail-view-calendar{
+        width: 100%;
         height: 450px;
         /*border: 1px solid steelblue;*/
     }
