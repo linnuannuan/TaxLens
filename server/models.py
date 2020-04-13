@@ -282,8 +282,8 @@ class Model:
         :return: an array first having seller as source, then buyer as source
         """
         return [
-            self.get_calendar_data_by_tp_id(seller_id, buyer_id, start_time, end_time),
-            self.get_calendar_data_by_tp_id(buyer_id, seller_id, start_time, end_time)
+            {'source': self.get_calendar_data_by_tp_id(seller_id, buyer_id, start_time, end_time)},
+            {'source': self.get_calendar_data_by_tp_id(buyer_id, seller_id, start_time, end_time)}
         ]
 
     def get_calendar_data_by_tp_id(self, tp_id, _rtp_id, start_time, end_time):
