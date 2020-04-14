@@ -74,17 +74,23 @@
             highlight_stroke_width:5
           },
           trade_panel:{
-            min_width:margin_width-width/2,
+            /* Previous Config  (treemap+sankey) */
             // min_width : margin_width,
-            max_width:width - margin_width -width/2,
             // max_width : width - margin_width,
-            min_height : height/4 + margin_height -height/2,
-            max_height : height - margin_height-height/2,
+            // min_height : height/4 + margin_height,
+            // max_height : height - margin_height,
             unimportant_opacity:0.2,
             default_opacity:0.5,
             highlight_opacity:1,
+
+            // current config (dagre)
+            min_width:margin_width-width/2,
+            max_width:width - margin_width -width/2,
+            min_height : height/4 + margin_height -height/2,
+            max_height : height - margin_height-height/2,
             node_width: 30,
-            node_height:50
+            node_height:50,
+            text_unhighlight_opacity:0.5,
           },
           parallel_panel:{
             highlight_color:'#b82e2e',
@@ -927,6 +933,19 @@
                         .attr('width',node_width)
                         .attr('height',node_height)
                         .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
+                        // .on('mouseover', d=>{
+                        //     // unhighlight other node text
+                        //     d3.select('.text').selectAll('path').attr('opacity', this.cfg.trade_panel.unimportant_opacity)
+                        //
+                        //     // highlight the node and its text
+                        //     d3.select('#text-'+d).attr('opacity',this.cfg.trade_panel.highlight_opacity)
+                        // })
+                        // .on('mouseout', d=>{
+                        //     // unhighlight other node text
+                        //     d3.select('.text').selectAll('path').attr('opacity', this.cfg.trade_panel.highlight_opacity)
+                        //
+                        //
+                        // })
 
                 // add text to node
                 this.svg.append('g').classed('text',!0)
@@ -934,7 +953,8 @@
                         .data(g.nodes())
                         .enter()
                         .append('text')
-                        .attr('x',d=>g.node(d).x - 12*g.node(d).name.length/2)
+                        .attr('id', d=>'text-'+d)
+                        .attr('x',d=>g.node(d).x - 12*g.node(d).name.length/2 + node_width/2)
                         .attr('y',d=>g.node(d).y + node_height + 12 )
                         .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
                         .text(d=>g.node(d).name)
