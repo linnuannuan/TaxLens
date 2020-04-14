@@ -80,12 +80,12 @@
               calculable: true,
               padding: 10,
               itemWidth: 10,
-              itemHeight: 250,
+              itemHeight: 200,
               text: ['Profit', 'Loss'],
               inRange: {
                 color: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
               },
-              formatter: (value) => {return ~~(value/1000) + 'k'},
+              formatter: (value) => {return this.appendThousandSeparator(~~(value/1000)) + 'k'},
             },
             {
               id: 'src_vm_scatter',
@@ -114,12 +114,12 @@
               calculable: true,
               padding: 10,
               itemWidth: 10,
-              itemHeight: 250,
+              itemHeight: 200,
               text: ['Profit', 'Loss'],
               inRange: {
                 color: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
               },
-              formatter: (value) => {return ~~(value/1000) + 'k'},
+              formatter: (value) => {return this.appendThousandSeparator(~~(value/1000)) + 'k'},
             },
             {
               id: 'dst_vm_scatter',
@@ -162,8 +162,8 @@
               },
               symbolOffset: [0, '-50%'],
               itemStyle: {
-                borderColor: 'white',
-                borderWidth: 3,
+                borderColor: 'black',
+                borderWidth: 1,
               },
               tooltip: {
                 formatter: tooltipFormatter
@@ -199,8 +199,8 @@
               },
               symbolOffset: [0, '-50%'],
               itemStyle: {
-                borderColor: 'white',
-                borderWidth: 3
+                borderColor: 'black',
+                borderWidth: 1,
               },
               tooltip: {
                 formatter: tooltipFormatter
@@ -268,19 +268,22 @@
             {
               id: 'src_series_scatter',
               symbolSize: function (value) {
-                return Math.abs(value[1]/scatter_max_src*20);
+                return value[1] && Math.abs(value[1]/scatter_max_src*15)+5;
               },
             },
             // right calendar
             {
               id: 'dst_series_scatter',
               symbolSize: function (value) {
-                return Math.abs(value[1]/scatter_max_dst*20);
+                return value[1] && Math.abs(value[1]/scatter_max_dst*15)+5;
               },
             },
           ]
         });
       },
+      appendThousandSeparator(number) {
+        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
     }
   }
 </script>
