@@ -58,13 +58,6 @@
                         :loading-calendar="loadingCalendar">
                 </calendar-view>
             </el-col>
-            <!--            <el-row>-->
-            <!--                <parallel-view-->
-            <!--                        class="detail-view-parallel"-->
-            <!--                        :affiliated-party-detail="affiliatedPartyDetail"-->
-            <!--                        :loading-graph="loadingGraph">-->
-            <!--                </parallel-view>-->
-            <!--            </el-row>-->
         </el-row>
         <el-row style="height: 100%">
             <di-graph-view
@@ -83,7 +76,6 @@
   import DiGraphView from './components/digraph-view.vue';
   import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
-  // import ParallelView from './components/parallel-view.vue';
   import CalendarView from './components/calendar-view.vue';
 
   import DataService from './utils/data-service'
@@ -97,7 +89,6 @@
       DiGraphView,
       GroupView,
       TemporalView,
-      // ParallelView,
       CalendarView,
     },
     data() {
@@ -204,17 +195,6 @@
           this.loadingGraph = false;
         })
       },
-      // searchAPT: function() {
-      //   this.loadingDetailGraph = true;
-      //   let para = {
-      //     'source':this.default_detail_transaction_source,
-      //     'target':this.default_detail_transaction_target
-      //   };
-      //   DataService.loadDetailAffiliatedTransaction(para, data=>{
-      //     this.affiliatedTransactionDetail = data;
-      //     this.loadingDetailGraph = false;
-      //   })
-      // },
     }
   }
 </script>
@@ -274,13 +254,7 @@
 
     .detail-view-calendar{
         width: 100%;
-        height: 450px;
-        border: 1px solid steelblue;
-    }
-
-    .detail-view-parallel{
-        width: 100%;
-        height: 150px;
-        border: 1px solid steelblue;
+        height: 100%;
+        /*border: 1px solid steelblue;*/
     }
 </style>

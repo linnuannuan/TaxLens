@@ -89,7 +89,8 @@ class Model:
             control_chain |= {v for _, v in
                               nx.bfs_edges(tp_network_undirected, source=node, depth_limit=max_control_length)}
         # remove the nodes that are out of reach
-        self.tp_network.remove_nodes_from([n for n in self.tp_network.nodes() if n not in control_chain])
+        control_chain = [n for n in self.tp_network.nodes() if n not in control_chain]
+        self.tp_network.remove_nodes_from(control_chain)
 
         # augment the taxpayer network with affiliated transactions
         self.tp_network.add_edges_from(list(self.tp_network.edges()), ap_txn=False)  # initialize
