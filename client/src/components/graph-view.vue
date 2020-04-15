@@ -70,8 +70,8 @@
             max_height : height/4 - margin_height,
             highlight_opacity:1,
             default_opacity:1,
-            unimportant_opacity:0.7,
-            highlight_stroke_width:5
+            unimportant_opacity:0.3,
+            highlight_stroke_width:4
           },
           trade_panel:{
             /* Previous Config  (treemap+sankey) */
@@ -865,12 +865,12 @@
                 data.nodes.forEach(d=>{
                     // Add nodes to the graph. The first argument is the node id. The second is metadata about the node.
                     // name: d.tp ? d.tp_name:d.in_name label: "Kevin Spacey",  width: 144, height: 100
-                    g.setNode( d.id, { label: d.tp ? "tp":"in",  name: d.tp ? d.tp_name:d.in_name, width:this.cfg.node.rect_width, height:this.cfg.node.rect_height});
+                    g.setNode( d.id, { label: d.tp ? "tp":"in",  name: d.tp ? d.tp_name:d.in_name, width:this.cfg.node.rect_width, height:this.cfg.node.rect_height, tax_evader:d.tax_evader});
                 })
 
                 data.links.forEach(d=>{
                    // Add edges to the graph.
-                    g.setEdge( d.source, d.target, { label: d.ap_txn?'txn':'invest'});
+                    g.setEdge( d.source, d.target, { label: d.ap_txn?'txn':'invest', path: d.ap_txn ? d.path:[]});
                 })
 
                 dagre.layout(g);
@@ -913,7 +913,7 @@
                         .append('marker')
                         .attr("id", d => `arrow-${d}`)
                         .attr("viewBox", "0 -5 10 10")
-                        .attr("refX", 15)
+                        .attr("refX", 9)
                         .attr("refY", -0.5)
                         .attr("markerWidth", 6)
                         .attr("markerHeight", 6)
@@ -933,19 +933,15 @@
                         .attr('width',node_width)
                         .attr('height',node_height)
                         .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
-                        // .on('mouseover', d=>{
-                        //     // unhighlight other node text
-                        //     d3.select('.text').selectAll('path').attr('opacity', this.cfg.trade_panel.unimportant_opacity)
-                        //
-                        //     // highlight the node and its text
-                        //     d3.select('#text-'+d).attr('opacity',this.cfg.trade_panel.highlight_opacity)
-                        // })
-                        // .on('mouseout', d=>{
-                        //     // unhighlight other node text
-                        //     d3.select('.text').selectAll('path').attr('opacity', this.cfg.trade_panel.highlight_opacity)
-                        //
-                        //
-                        // })
+                        .attr('stroke',d=>g.node(d).tax_evader?'red':'#ccc')
+                        .on('mouseover', d=>{
+                            // show its name
+                            d3.select('#text-'+d).attr('fill-opacity',1)
+                        })
+                        .on('mouseout', d=>{
+                            // unhighlight other node text
+                            d3.select('#text-'+d).attr('fill-opacity',0)
+                        })
 
                 // add text to node
                 this.svg.append('g').classed('text',!0)
@@ -957,7 +953,20 @@
                         .attr('x',d=>g.node(d).x - 12*g.node(d).name.length/2 + node_width/2)
                         .attr('y',d=>g.node(d).y + node_height + 12 )
                         .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
+                        .attr('fill-opacity',0)
                         .text(d=>g.node(d).name)
+
+                // add id text to node
+                this.svg.append('g').classed('text',!0)
+                        .selectAll('g')
+                        .data(g.nodes())
+                        .enter()
+                        .append('text')
+                        .attr('id', d=>'text-'+d)
+                        .attr('x',d=>g.node(d).x + node_width + 3 )
+                        .attr('y',d=>g.node(d).y + node_height/2 + 6)
+                        .attr('fill',d=>g.node(d).label == 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
+                        .text(d=>d.slice(d.length-4,d.length))
 
                 // draw edge
                 var line = d3.line()
@@ -969,6 +978,7 @@
                         .data(g.edges())
                         .enter()
                         .append('path')
+                        .attr('id', d=> g.edge(d).label + "-" + d.v + "-" + d.w)
                         .attr('d',d=> {
                             let offset_x = node_width/2
                             let offset_y = node_height
@@ -983,11 +993,46 @@
                             link_data.map(d=> { d[0] += offset_x ; d[1]= position_linear(d[1]); return d})
                             return line(link_data)
                         })
-                        .attr("stroke", d=>g.edge(d).label=='invest'?this.cfg.link.color.invest:this.cfg.link.color.txn)
+                        .attr("stroke", d=>g.edge(d).label=='invest' ? this.cfg.link.color.invest:this.cfg.link.color.txn)
                         .attr("stroke-width", "2px")
                         .attr("marker-end", d => `url(${new URL(`#arrow-${g.edge(d).label}`, location)})`)
                         .attr("fill", "none")
                         .attr('cursor','pointer')
+                        .on('mouseover',d=>{
+                              //对应的invest_path高亮
+                              if(g.edge(d).label == 'txn'){
+                                  for(let path_id in g.edge(d).path){
+                                    for( let node_id in g.edge(d).path[path_id]){
+                                      if( node_id < (g.edge(d).path[path_id].length-1) ){
+                                        // highlight correspond invest link (undirect link)
+                                        d3.select('#txn-'+d.v+"-"+d.w)
+                                          .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width)
+                                        d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
+                                          .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width)
+                                        d3.select('#invest'+ '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)] + '-' + g.edge(d).path[path_id][parseInt(node_id)])
+                                          .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width)
+                                      }
+                                    }
+                                  }
+                              }
+                        })
+                        .on('mouseout',d=>{
+                            if(g.edge(d).label == 'txn') {
+                                for (let path_id in g.edge(d).path) {
+                                    for (let node_id in g.edge(d).path[path_id]) {
+                                        if (node_id < (g.edge(d).path[path_id].length - 1)) {
+                                            // unhighlight correspond invest link (undirect link)
+                                            d3.select('#txn-' + d.v + "-" + d.w)
+                                                .attr('stroke-width', 2)
+                                            d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
+                                                .attr('stroke-width', 2)
+                                            d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)] + '-' + g.edge(d).path[path_id][parseInt(node_id)])
+                                                .attr('stroke-width', 2)
+                                        }
+                                    }
+                                }
+                            }
+                        })
                         .on('click', d=>{
                             EventService.emitAffiliatedTransactionSelected(d.v, d.w);
                         });
