@@ -8,6 +8,7 @@
   Documentation for option: https://www.echartsjs.com/en/option.html#title
    */
   import * as echarts from "echarts";
+  import DateService from "../utils/date-service";
 
   export default {
     name: "TemporalView",
@@ -132,15 +133,13 @@
         // click for quarter context
         this.timeSlider.on('click', function (params) {
           let date = this.temporalOverview.date[params.dataIndex];
-          let year = date.slice(0, 5);
-          let quarter = ~~((parseInt(date.slice(5, 7)) - 1) / 3); // start month must be [1,4,7,10]; ~~ is equivalent to parse Int
-          let end = (quarter === 1 || quarter === 2)? '-30': '-31'; // day end must be either 30 for [6, 9] or 31 for [3, 12]
+          let quarterRange = DateService.parseDateToRange(date);
 
           this.timeSlider.dispatchAction({
             type: 'dataZoom',
             dataZoomIndex: 0,
-            startValue: year + (quarter*3+1).toString().padStart(2, '0') + '-01',
-            endValue: year + ((quarter+1)*3).toString().padStart(2, '0') + end
+            startValue: quarterRange[0],
+            endValue: quarterRange[1]
           });
         }, this);
 

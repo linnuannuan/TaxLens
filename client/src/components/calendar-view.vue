@@ -4,6 +4,7 @@
 
 <script>
   import * as echarts from "echarts";
+  import DateService from "../utils/date-service";
 
   export default {
     name: 'CalendarView',
@@ -27,47 +28,51 @@
       this.renderCalendar();
     },
     methods: {
-      try() {
-        console.log('success')
-      },
       initCalendar() {
         this.calendar = echarts.init(document.getElementById('calendar_view'));
 
-        // An internal function for toolbox item handling periods operstion
+        // An internal function for toolbox item handling periods operation
         let goToQuarter = function (params, offset) {
           let originalStart = params.option.calendar[0].range[0];
-
-          // Parse the date
-          let year = parseInt(originalStart.slice(0, 4));
-          // start month must be [1,4,7,10]; ~~ is equivalent to parse Int
-          let quarter = ~~((parseInt(originalStart.slice(5, 7)) - 1) / 3) + offset;
-          // Handle year change
-          year = quarter === -1? year-1: quarter === 4? year+1: year;
-          quarter = quarter === -1? 3: quarter === 4? 0: quarter;
-          // day end must be either 30 for [6, 9] or 31 for [3, 12]
-          let end = (quarter === 1 || quarter === 2)? '-30': '-31';
-
-          // Calculate new range
-          let startValue = year + '-' + (quarter*3+1).toString().padStart(2, '0') + '-01';
-          let endValue = year + '-' + ((quarter+1)*3).toString().padStart(2, '0') + end;
-
+          let quarterRange = DateService.parseDateToRange(originalStart, offset);
           params.scheduler.ecInstance.setOption({
               calendar: [
                 // left calendar
                 {
                   id: 'src_calendar',
-                  range: [startValue, endValue],
+                  range: quarterRange,
                 },
                 // right calendar
                 {
                   id: 'dst_calendar',
-                  range: [startValue, endValue],
+                  range: quarterRange,
                 }
               ],
             }
           )
         };
 
+        // An internal function for toolbox item handling year and quarter switch
+        let switchInterval = function (params) {
+          let originalStart = params.option.calendar[0].range[0];
+          DateService.toggleQuarterMode();
+          let quarterRange = DateService.parseDateToRange(originalStart);
+          params.scheduler.ecInstance.setOption({
+              calendar: [
+                // left calendar
+                {
+                  id: 'src_calendar',
+                  range: quarterRange,
+                },
+                // right calendar
+                {
+                  id: 'dst_calendar',
+                  range: quarterRange,
+                }
+              ],
+            }
+          )
+        };
 
         // An internal function for formatting numbers
         let appendThousandSeparator = function (number) {
@@ -103,6 +108,12 @@
                 title: 'Previous period',
                 icon: 'image://keyboard_arrow_left-black-18dp.svg',
                 onclick: function (params) { goToQuarter(params, -1) }
+              },
+              myCalendarSwitch: {
+                show: true,
+                title: 'Switch to year view',
+                icon: 'image://date_range-black-18dp.svg',
+                onclick: function (params) { switchInterval(params) }
               },
               myQuarterNext: {
                 show: true,
