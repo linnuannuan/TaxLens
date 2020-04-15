@@ -174,7 +174,10 @@
                   .attr('y',d=>g.node(d).y )
                   .attr('width',node_width)
                   .attr('height',node_height)
-                  .attr('fill',d=>g.node(d).label === 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in);
+                  .attr('fill',d=>g.node(d).label === 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
+                  .on('click', d=>{
+                    console.log(d);
+                  });
 
           // add text to node
           this.svg.append('g').classed('text',!0)
