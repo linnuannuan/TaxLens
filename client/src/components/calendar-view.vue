@@ -279,6 +279,10 @@
 
         this.calendar.setOption({
           dataset: this.calendarData,
+          title: [
+            { left: '100', text: this.calendarSourceId },
+            { right: '100', text: this.calendarTargetId },
+          ],
           calendar: [
             // left calendar
             {

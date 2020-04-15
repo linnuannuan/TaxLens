@@ -99,7 +99,6 @@
         this.svg.selectAll("g").remove();
         if (this.affiliatedPartyDetail.nodes !== undefined) {
           let data = this.affiliatedPartyDetail;
-          console.log(data)
           // Create a new directed graph
           var g = new dagre.graphlib.Graph();
 
@@ -113,7 +112,7 @@
             // Add nodes to the graph. The first argument is the node id. The second is metadata about the node.
             g.setNode( d.id, {
               label: d.tp ? "tp":"in",
-              name: d.tp ? d.id.slice(d.id.length-4):d.in_name,
+              name: d.tp ? d.id.slice(d.id.length-4): d.in_name,
               width:this.cfg.node.rect_width,
               height:this.cfg.node.rect_height
             });
