@@ -5,11 +5,14 @@
 <script>
   import * as echarts from "echarts";
   import DateService from "../utils/date-service";
+  import EventService from "../utils/event-service";
 
   export default {
     name: 'CalendarView',
     props: {
       calendarData: Array,
+      calendarSourceId: String,
+      calendarTargetId: String,
       loadingCalendar: Boolean,
     },
     data() {
@@ -32,46 +35,11 @@
         this.calendar = echarts.init(document.getElementById('calendar_view'));
 
         // An internal function for toolbox item handling periods operation
-        let goToQuarter = function (params, offset) {
+        let periodOperation = function (params, offset) {
           let originalStart = params.option.calendar[0].range[0];
           let quarterRange = DateService.parseDateToRange(originalStart, offset);
-          params.scheduler.ecInstance.setOption({
-              calendar: [
-                // left calendar
-                {
-                  id: 'src_calendar',
-                  range: quarterRange,
-                },
-                // right calendar
-                {
-                  id: 'dst_calendar',
-                  range: quarterRange,
-                }
-              ],
-            }
-          )
-        };
-
-        // An internal function for toolbox item handling year and quarter switch
-        let switchInterval = function (params) {
-          let originalStart = params.option.calendar[0].range[0];
-          DateService.toggleQuarterMode();
-          let quarterRange = DateService.parseDateToRange(originalStart);
-          params.scheduler.ecInstance.setOption({
-              calendar: [
-                // left calendar
-                {
-                  id: 'src_calendar',
-                  range: quarterRange,
-                },
-                // right calendar
-                {
-                  id: 'dst_calendar',
-                  range: quarterRange,
-                }
-              ],
-            }
-          )
+          // params.scheduler.ecInstance.setOption()
+          EventService.emitAffiliatedTransactionSelected(null, null, quarterRange[0], quarterRange[1]);
         };
 
         // An internal function for formatting numbers
@@ -107,19 +75,22 @@
                 show: true,
                 title: 'Previous period',
                 icon: 'image://keyboard_arrow_left-black-18dp.svg',
-                onclick: function (params) { goToQuarter(params, -1) }
+                onclick: function (params) { periodOperation(params, -1) }
               },
               myCalendarSwitch: {
                 show: true,
                 title: 'Switch to year view',
                 icon: 'image://date_range-black-18dp.svg',
-                onclick: function (params) { switchInterval(params) }
+                onclick: function (params) {
+                  DateService.toggleQuarterMode();
+                  periodOperation(params);
+                }
               },
               myQuarterNext: {
                 show: true,
                 title: 'Next period',
                 icon: 'image://keyboard_arrow_right-black-18dp.svg',
-                onclick: function (params) { goToQuarter(params, +1) }
+                onclick: function (params) { periodOperation(params, +1) }
               },
             }
           },
@@ -300,8 +271,8 @@
         let date_end    = src_data['date'][src_data['date'].length-1];
 
         // min-max configuration for heatmap
-        let heatmap_interval_src = (Math.max(...src_data['profit']) + Math.abs(Math.min(...src_data['profit']))) / 2;
-        let heatmap_interval_dst = (Math.max(...dst_data['profit']) + Math.abs(Math.min(...dst_data['profit']))) / 2;
+        let heatmap_interval_src = (Math.max(...src_data['profit']) + Math.abs(Math.min(...src_data['profit'], 0))) / 2;
+        let heatmap_interval_dst = (Math.max(...dst_data['profit']) + Math.abs(Math.min(...dst_data['profit'], 0))) / 2;
         // min-max configuration for scatter plots
         let scatter_max_src = Math.max.apply(null, src_data['ap_profit'].map(Math.abs));
         let scatter_max_dst = Math.max.apply(null, dst_data['ap_profit'].map(Math.abs));

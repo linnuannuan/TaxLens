@@ -55,6 +55,8 @@
                 <calendar-view
                         class="detail-view-calendar"
                         :calendar-data="calendarData"
+                        :calendar-source-id="calendarSourceId"
+                        :calendar-target-id="calendarTargetId"
                         :loading-calendar="loadingCalendar">
                 </calendar-view>
             </el-col>
@@ -109,8 +111,8 @@
         search_id: '610198671502546',
 
         // Calendar query
-        calendarSourceID: '610198748609852',
-        calendarTargetID: '610198684755147',
+        calendarSourceId: '610198748609852',
+        calendarTargetId: '610198684755147',
 
         // Loading variable
         loadingList: true,
@@ -154,12 +156,14 @@
         });
       });
 
-      EventService.onAffiliatedTransactionSelected((source, target)=>{
+      EventService.onAffiliatedTransactionSelected((source, target, periodStart, periodEnd)=>{
+        this.calendarSourceId = source || this.calendarSourceId;
+        this.calendarTargetId = target || this.calendarTargetId;
         let para = {
-          'seller_id': source || this.calendarSourceID,
-          'buyer_id': target || this.calendarTargetID,
-          'start_time': this.periodStart,
-          'end_time': this.periodEnd,
+          'seller_id': source || this.calendarSourceId,
+          'buyer_id': target || this.calendarTargetId,
+          'start_time': periodStart || this.periodStart,
+          'end_time': periodEnd || this.periodEnd,
         };
         DataService.loadCalendarDataByTransaction(para, data=>{
           this.calendarData = data;

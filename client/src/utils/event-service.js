@@ -20,12 +20,12 @@ let EventService = new Vue({
     },
 
     // When user click on a transaction to see its detail info
-    emitAffiliatedTransactionSelected: function(source, target){
-      this.$emit(this.AffiliatedTransactionSelected,source, target);
+    emitAffiliatedTransactionSelected: function(source, target, periodStart, periodEnd){
+      this.$emit(this.AffiliatedTransactionSelected, source, target, periodStart, periodEnd);
     },
     onAffiliatedTransactionSelected: function (callback) {
-        this.$on(this.AffiliatedTransactionSelected, function(source, target){
-        callback(source, target);
+      this.$on(this.AffiliatedTransactionSelected, function(source, target, periodStart, periodEnd){
+        callback(source, target, periodStart, periodEnd);
       })
     },
   }
