@@ -4,6 +4,7 @@
 
 <script>
   import * as echarts from "echarts";
+  import DateService from "../utils/date-service";
 
   export default {
     name: 'CalendarView',
@@ -30,24 +31,104 @@
       initCalendar() {
         this.calendar = echarts.init(document.getElementById('calendar_view'));
 
-        let tooltipFormatter = function (params) {
+        // An internal function for toolbox item handling periods operation
+        let goToQuarter = function (params, offset) {
+          let originalStart = params.option.calendar[0].range[0];
+          let quarterRange = DateService.parseDateToRange(originalStart, offset);
+          params.scheduler.ecInstance.setOption({
+              calendar: [
+                // left calendar
+                {
+                  id: 'src_calendar',
+                  range: quarterRange,
+                },
+                // right calendar
+                {
+                  id: 'dst_calendar',
+                  range: quarterRange,
+                }
+              ],
+            }
+          )
+        };
+
+        // An internal function for toolbox item handling year and quarter switch
+        let switchInterval = function (params) {
+          let originalStart = params.option.calendar[0].range[0];
+          DateService.toggleQuarterMode();
+          let quarterRange = DateService.parseDateToRange(originalStart);
+          params.scheduler.ecInstance.setOption({
+              calendar: [
+                // left calendar
+                {
+                  id: 'src_calendar',
+                  range: quarterRange,
+                },
+                // right calendar
+                {
+                  id: 'dst_calendar',
+                  range: quarterRange,
+                }
+              ],
+            }
+          )
+        };
+
+        // An internal function for formatting numbers
+        let appendThousandSeparator = function (number) {
+          return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        };
+
+        // An internal function for formatting tooltip text in heatmap hovers
+        let tooltipFormatterHeatmap = function (params) {
           let date = params.value[0];
           let profit = params.value[1] >= 0? 'profit': 'loss';
-          let value = Math.abs(params.value[1]).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          let value = appendThousandSeparator(Math.abs(params.value[1]));
           return params.marker + date +
             '<br> Net ' + profit + ': ' + value;
+        };
+
+        // An internal function for formatting tooltip text in scatter plot hovers
+        let tooltipFormatterScatter = function (params) {
+          let date = params.value[0];
+          let profit = params.value[1] >= 0? 'profit': 'loss';
+          let value = appendThousandSeparator(Math.abs(params.value[1]));
+          return params.marker + date +
+            '<br> Net affiliated ' + profit + ': ' + value;
         };
 
         this.calendar.setOption({
           tooltip: {
             triggerOn: 'mousemove'
           },
+          toolbox: {
+            feature: {
+              myQuarterPrevious: {
+                show: true,
+                title: 'Previous period',
+                icon: 'image://keyboard_arrow_left-black-18dp.svg',
+                onclick: function (params) { goToQuarter(params, -1) }
+              },
+              myCalendarSwitch: {
+                show: true,
+                title: 'Switch to year view',
+                icon: 'image://date_range-black-18dp.svg',
+                onclick: function (params) { switchInterval(params) }
+              },
+              myQuarterNext: {
+                show: true,
+                title: 'Next period',
+                icon: 'image://keyboard_arrow_right-black-18dp.svg',
+                onclick: function (params) { goToQuarter(params, +1) }
+              },
+            }
+          },
           calendar: [
             // left calendar
             {
               id: 'src_calendar',
               range: ['2014-01', '2014-03-31'],
-              top: 40,
+              top: 50,
               bottom: '50%',
               left: '5%',
               right: '52.5%',
@@ -59,7 +140,7 @@
             {
               id: 'dst_calendar',
               range: ['2014-01', '2014-03-31'],
-              top: 40,
+              top: 50,
               bottom: '50%',
               left: '52.5%',
               right: '5%',
@@ -85,7 +166,7 @@
               inRange: {
                 color: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
               },
-              formatter: (value) => {return this.appendThousandSeparator(~~(value/1000)) + 'k'},
+              formatter: (value) => {return appendThousandSeparator(~~(value/1000)) + 'k'},
             },
             {
               id: 'src_vm_scatter',
@@ -119,7 +200,7 @@
               inRange: {
                 color: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
               },
-              formatter: (value) => {return this.appendThousandSeparator(~~(value/1000)) + 'k'},
+              formatter: (value) => {return appendThousandSeparator(~~(value/1000)) + 'k'},
             },
             {
               id: 'dst_vm_scatter',
@@ -147,7 +228,7 @@
                 opacity: 0.75
               },
               tooltip: {
-                formatter: tooltipFormatter
+                formatter: tooltipFormatterHeatmap
               }
             },
             {
@@ -156,7 +237,7 @@
               coordinateSystem: 'calendar',
               datasetIndex: 0,
               calendarIndex: 0,
-              dimensions: ['date', 'ap_profit'],
+              dimensions: ['date', 'ap_profit', 'rtp_profit'],
               encode: {
                 tooltip: [0,1]
               },
@@ -166,7 +247,7 @@
                 borderWidth: 1,
               },
               tooltip: {
-                formatter: tooltipFormatter
+                formatter: tooltipFormatterScatter
               }
             },
             // right calendar
@@ -184,7 +265,7 @@
                 opacity: 0.75
               },
               tooltip: {
-                formatter: tooltipFormatter
+                formatter: tooltipFormatterHeatmap
               }
             },
             {
@@ -193,7 +274,7 @@
               coordinateSystem: 'calendar',
               datasetIndex: 1,
               calendarIndex: 1,
-              dimensions: ['date', 'ap_profit'],
+              dimensions: ['date', 'ap_profit', 'rtp_profit'],
               encode: {
                 tooltip: [0, 1]
               },
@@ -203,7 +284,7 @@
                 borderWidth: 1,
               },
               tooltip: {
-                formatter: tooltipFormatter
+                formatter: tooltipFormatterScatter
               }
             },
           ]
@@ -267,6 +348,9 @@
             // left calendar
             {
               id: 'src_series_scatter',
+              symbol: function (value) {
+                return value[2]? 'diamond': 'circle';
+              },
               symbolSize: function (value) {
                 return value[1] && Math.abs(value[1]/scatter_max_src*15)+5;
               },
@@ -274,6 +358,9 @@
             // right calendar
             {
               id: 'dst_series_scatter',
+              symbol: function (value) {
+                return value[2]? 'diamond': 'circle';
+              },
               symbolSize: function (value) {
                 return value[1] && Math.abs(value[1]/scatter_max_dst*15)+5;
               },
@@ -281,9 +368,6 @@
           ]
         });
       },
-      appendThousandSeparator(number) {
-        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      }
     }
   }
 </script>
