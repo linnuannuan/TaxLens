@@ -108,6 +108,10 @@
         controlChain: 2,
         search_id: '610198671502546',
 
+        // Calendar query
+        calendarSourceID: '610198748609852',
+        calendarTargetID: '610198684755147',
+
         // Loading variable
         loadingList: true,
         loadingTopoList: true,
@@ -152,8 +156,8 @@
 
       EventService.onAffiliatedTransactionSelected((source, target)=>{
         let para = {
-          'seller_id': source,
-          'buyer_id': target,
+          'seller_id': source || this.calendarSourceID,
+          'buyer_id': target || this.calendarTargetID,
           'start_time': this.periodStart,
           'end_time': this.periodEnd,
         };
