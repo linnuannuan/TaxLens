@@ -103,7 +103,7 @@
 
         // Model settings
         periodStart: '2014-01-01',
-        periodEnd: '2014-03-31',
+        periodEnd: '2014-12-31',
         transactionChain: 3,
         controlChain: 2,
         search_id: '610198671502546',

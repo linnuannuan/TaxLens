@@ -329,6 +329,7 @@ class Model:
         tp_calendar['profit'] = tp_calendar['revenue'] - tp_calendar['expense']
         tp_calendar['profit'] = tp_calendar['profit'].cumsum()
         tp_calendar['ap_profit'] = tp_calendar['ap_revenue'] - tp_calendar['ap_expense']
+        tp_calendar['rtp_profit'] = tp_calendar['rtp_revenue'] - tp_calendar['rtp_expense']
 
         # format the DataFrame
         tp_calendar = tp_calendar.astype('int').reset_index().rename(columns={'index': 'date'}).astype({'date': 'str'})

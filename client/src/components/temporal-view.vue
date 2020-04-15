@@ -19,6 +19,9 @@
       return {
         // the DOM element
         timeSlider: null,
+
+        defaultStartDate: '2014-01-01',
+        defaultEndDate: ' 2014-12-31',
       }
     },
     watch:{
@@ -130,7 +133,7 @@
         this.timeSlider.on('click', function (params) {
           let date = this.temporalOverview.date[params.dataIndex];
           let year = date.slice(0, 5);
-          let quarter = ~~((parseInt(date.slice(5, 7)) - 1) / 3); // start month must be [1,4,7,10]; ~~ is equivalent to parseInt
+          let quarter = ~~((parseInt(date.slice(5, 7)) - 1) / 3); // start month must be [1,4,7,10]; ~~ is equivalent to parse Int
           let end = (quarter === 1 || quarter === 2)? '-30': '-31'; // day end must be either 30 for [6, 9] or 31 for [3, 12]
 
           this.timeSlider.dispatchAction({
@@ -149,7 +152,7 @@
           }
         }, this);
         this.timeSlider.on('restore', () => {
-          this.setPeriod({startValue:'2014-01-01', endValue:'2014-12-31'})
+          this.setPeriod({startValue: this.defaultStartDate, endValue: this.defaultEndDate})
         }, this);
       },
       renderTimeSlider() {
