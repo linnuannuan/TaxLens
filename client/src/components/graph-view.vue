@@ -970,7 +970,7 @@
 
                 // draw edge
                 var line = d3.line()
-                    .curve(d3.curveBasis)
+                    .curve(d3.curveMonotoneY)
                     .x(d =>d[0])
                     .y(d =>d[1]);
                 this.svg.append('g').classed('link',!0)
