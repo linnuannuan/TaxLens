@@ -28,7 +28,7 @@
     watch: {
       calendarData: function () {
         this.renderCalendar();
-      },
+      }
     },
     mounted: function () {
       this.initCalendar();
@@ -38,14 +38,28 @@
     methods: {
       initCalendar() {
         this.calendar = echarts.init(document.getElementById('calendar_view'));
+        this.calendar.showLinks = true;
+        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 720, y: 360}];
         this.calendar.showLoading(this.loadingCalendar);
 
         // An internal function for toolbox item handling periods operation
         let periodOperation = function (params, offset) {
           let originalStart = params.option.calendar[0].range[0];
           let quarterRange = DateService.parseDateToRange(originalStart, offset);
-          // params.scheduler.ecInstance.setOption()
           EventService.emitAffiliatedTransactionSelected(null, null, quarterRange[0], quarterRange[1]);
+        };
+
+        // An internal function for toggling node-link visualization
+        // Notice that the node link information is stored in the instance
+        let toggleLinks = function (params) {
+          params.scheduler.ecInstance.showLinks = !params.scheduler.ecInstance.showLinks;
+          params.scheduler.ecInstance.setOption({
+            series: {
+              id: 'graph',
+              nodes: params.scheduler.ecInstance.showLinks? params.scheduler.ecInstance.nodes: [],
+              links: params.scheduler.ecInstance.showLinks? params.scheduler.ecInstance.links: [],
+            }
+          });
         };
 
         // An internal function for formatting numbers
@@ -94,6 +108,12 @@
                   periodOperation(params);
                 }
               },
+              myToggleLinks: {
+                show: true,
+                title: 'Toggle links',
+                icon: 'image://calendar_view_day-black-18dp.svg',
+                onclick: toggleLinks
+              },
               myQuarterNext: {
                 show: true,
                 title: 'Next period',
@@ -111,8 +131,8 @@
               range: ['2014-01', '2014-03-31'],
               top: 50,
               bottom: '60',
-              left: '5%',
-              right: '52.5%',
+              left: '36',
+              right: '378',
               itemStyle: {borderWidth: 0.5},
               yearLabel: {margin: 7.5},
               dayLabel: {show: false},
@@ -123,8 +143,8 @@
               range: ['2014-01', '2014-03-31'],
               top: 50,
               bottom: '60',
-              left: '52.5%',
-              right: '5%',
+              left: '378',
+              right: '36',
               itemStyle: {borderWidth: 0.5},
               yearLabel: {margin: 7.5},
               dayLabel: {show: false},
@@ -233,7 +253,8 @@
               },
               tooltip: {
                 formatter: tooltipFormatterScatter
-              }
+              },
+              z: 10
             },
             // right calendar
             {
@@ -270,22 +291,42 @@
               },
               tooltip: {
                 formatter: tooltipFormatterScatter
-              }
+              },
+              z: 10
             },
-          ]
+            // graph
+            {
+              id: 'graph',
+              nodes: this.nodes,
+              links: this.links,
+              type: 'graph',
+              tooltip: {show: false},
+              hoverAnimation: false,
+              nodeScaleRatio: 0,
+              symbolSize: 1,
+              lineStyle: {
+                color: 'blue',
+                width: 2,
+              },
+              width: '720',
+              height: '360',
+              z: 15
+            },
+          ],
         });
 
         this.calendar.on('click', function(event){
-          this.renderDetail(~~(event.seriesIndex/2), event.dataIndex);
+          // allow only heatmap and scatter to react
+          event.seriesIndex < 4 && this.renderDetail(~~(event.seriesIndex/2), event.dataIndex);
         }, this);
       },
       renderCalendar() {
         if (this.calendarData === undefined || this.calendarData.length === 0) return;
         this.calendar.showLoading(this.loadingCalendar);
-        let src_data = this.calendarData[0]['source'];
-        let dst_data = this.calendarData[1]['source'];
 
         // date configuration
+        let src_data = this.calendarData[0]['source'];
+        let dst_data = this.calendarData[1]['source'];
         let date_start = src_data['date'][0];
         let date_end = src_data['date'][src_data['date'].length - 1];
 
@@ -342,8 +383,10 @@
             // left calendar
             {
               id: 'src_series_scatter',
+              // eslint-disable-next-line no-unused-vars
               symbol: function (value) {
-                return value[2] ? 'diamond' : 'circle';
+                // return value[2] ? 'diamond' : 'circle';
+                return 'circle';
               },
               symbolSize: function (value) {
                 return value[1] && Math.abs(value[1] / scatter_max_src * 15) + 5;
@@ -352,16 +395,57 @@
             // right calendar
             {
               id: 'dst_series_scatter',
+              // eslint-disable-next-line no-unused-vars
               symbol: function (value) {
-                return value[2] ? 'diamond' : 'circle';
+                // return value[2] ? 'diamond' : 'circle';
+                return 'circle';
               },
               symbolSize: function (value) {
                 return value[1] && Math.abs(value[1] / scatter_max_dst * 15) + 5;
               },
-            },
+            }
           ]
         });
+
+        this.processGraph();
+        this.calendar.setOption({
+          series: {
+            id: 'graph',
+            nodes: this.calendar.showLinks? this.calendar.nodes: [],
+            links: this.calendar.showLinks? this.calendar.links: [],
+          }
+        });
+
         this.calendar.hideLoading(this.loadingCalendar);
+      },
+      processGraph() {
+        // Notice that the node link information is stored in the instance
+        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 720, y: 360}];
+        this.calendar.links = [];
+
+        this.calendarData[0].source['date'].forEach((d, i) => {
+          // filter the dates where rtp is involved
+          if (!this.calendarData[0].source['rtp_profit'][i]) return;
+
+          // obtain the node coordinates in both calendars
+          let loc = this.calendar.convertToPixel({calendarIndex: 0}, d);
+          this.calendar.nodes.push({name: 'src_'+d, x: loc[0], y: loc[1]});
+          loc = this.calendar.convertToPixel({calendarIndex: 1}, d);
+          this.calendar.nodes.push({name: 'dst_'+d, x: loc[0], y: loc[1]});
+
+          // configure the edge symbols
+          this.calendar.links.push({
+            source: 'src_'+d,
+            target: 'dst_'+d,
+            symbol: [
+              this.calendarData[0].source['rtp_revenue'][i]?'arrow': 'none',
+              this.calendarData[0].source['rtp_expense'][i]?'arrow': 'none'
+            ],
+            lineStyle: {
+              curveness: this.calendarData[0].source['rtp_expense'][i]? 0.25: -0.25
+            }
+          });
+        });
       },
       initDetail() {
         this.detail = echarts.init(document.getElementById('detail_view'));
@@ -369,19 +453,18 @@
         this.detail.setOption({
           grid: {},
           xAxis: {
+            show: false,
             type: 'category',
             gridIndex: 0,
             axisTick: { alignWithLabel: true },
-            axisLabel: {
-              interval: 0,
-            }
+            axisLabel: { interval: 0 }
           },
-          yAxis: {gridIndex: 0},
+          yAxis: { show: false, gridIndex: 0 },
           legend: {},
           series: {
             type:'bar',
             seriesLayoutBy: 'row',
-            label: {show:true}
+            label: { show: true }
           },
         })
       },
@@ -391,7 +474,9 @@
         let detailData = [detailDimensions, []];
         detailDimensions.forEach(d=>detailData[1].push(source[d][dataIndex]));
         this.detail.setOption({
-          dataset: { source: detailData }
+          dataset: { source: detailData },
+          xAxis: { show: true },
+          yAxis: { show: true }
         })
       }
     }
