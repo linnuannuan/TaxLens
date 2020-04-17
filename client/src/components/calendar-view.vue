@@ -423,15 +423,19 @@
         this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 720, y: 360}];
         this.calendar.links = [];
 
+        // hotfix
+        let offsetX = 5;
+        let offsetY = 5;
+
         this.calendarData[0].source['date'].forEach((d, i) => {
           // filter the dates where rtp is involved
           if (!this.calendarData[0].source['rtp_profit'][i]) return;
 
           // obtain the node coordinates in both calendars
           let loc = this.calendar.convertToPixel({calendarIndex: 0}, d);
-          this.calendar.nodes.push({name: 'src_'+d, x: loc[0], y: loc[1]});
+          this.calendar.nodes.push({name: 'src_'+d, x: loc[0]+offsetX, y: loc[1]-offsetY});
           loc = this.calendar.convertToPixel({calendarIndex: 1}, d);
-          this.calendar.nodes.push({name: 'dst_'+d, x: loc[0], y: loc[1]});
+          this.calendar.nodes.push({name: 'dst_'+d, x: loc[0]-offsetX, y: loc[1]-offsetY});
 
           // configure the edge symbols
           this.calendar.links.push({
