@@ -23,6 +23,10 @@
         // the DOM element
         calendar: null,
         detail: null,
+        color: [
+          '#8c510a', '#bf812d', '#dfc27d', '#f6e8c3',
+          '#c7eae5', '#80cdc1', '#35978f', '#01665e'
+        ],
       }
     },
     watch: {
@@ -164,9 +168,7 @@
               itemWidth: 10,
               itemHeight: 200,
               text: ['Profit', 'Loss'],
-              inRange: {
-                color: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
-              },
+              inRange: { color: this.color },
               formatter: (value) => {
                 return appendThousandSeparator(~~(value / 1000)) + 'k'
               },
@@ -183,9 +185,7 @@
               itemHeight: 250,
               text: ['Affiliated gain', 'Affiliated loss'],
               hoverLink: false,
-              inRange: {
-                color: ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],
-              },
+              inRange: { color: this.color },
             },
             // right calendar
             {
@@ -200,9 +200,7 @@
               itemWidth: 10,
               itemHeight: 200,
               text: ['Profit', 'Loss'],
-              inRange: {
-                color: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
-              },
+              inRange: { color: this.color },
               formatter: (value) => {
                 return appendThousandSeparator(~~(value / 1000)) + 'k'
               },
@@ -212,9 +210,7 @@
               seriesIndex: 3,
               type: 'continuous',
               show: false,
-              inRange: {
-                color: ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],
-              },
+              inRange: { color: this.color },
             },
           ],
           series: [
