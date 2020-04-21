@@ -44,8 +44,10 @@
             min_r:4,
             max_r:10,
             color:{
-              tp:'#1f77b4',
-              in:'#ff7f0e'
+              tp:'#80b1d3',
+              in:'#bebada',
+              evader_stroke:"#ffffb3",
+              default_stroke:"#ccc"
             },
             rect_width: 30,
             rect_height: 30,
@@ -54,8 +56,8 @@
             min_width: 1.5,
             max_width: 1.5,
             color: {
-              txn:'#1f77b4',
-              invest:'#ff7f0e',
+              txn:'#80b1d3',
+              invest:'#bebada',
             }
           },
           invest_panel:{
@@ -170,7 +172,7 @@
                 .attr('width',node_width)
                 .attr('height',node_height)
                 .attr('fill',d=>g.node(d).label === 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
-                .attr('stroke',d=>g.node(d).tax_evader?'red':'#ccc')
+                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.defaut_stroke)
                 .on('mouseover', d=>{
                   // show its name
                   d3.select('#text-'+d).attr('fill-opacity',1)

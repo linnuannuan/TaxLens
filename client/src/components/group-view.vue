@@ -194,6 +194,7 @@
           .selectAll('circle')
           .data(data)
           .enter()
+          // .attr('id',d=>'group'+d.ap_id)
           .append('circle')
           .attr('r', d=>groupRScaler(d['profit']))
           // 设置x坐标为 该容器width 11等分（1等分留作间距），间距设置为5
@@ -220,6 +221,7 @@
           .append("path")
           .attr("fill", this.cfg.link.color)
           .attr("d", "M0,-5L10,0L0,5");
+
 
         for( let g_id in data ){
           let group_svg = group_content_svg.append('g').classed('group-'+g_id,!0);
@@ -260,7 +262,9 @@
 
               if(group_data.links.find( link=> (link.source === d.target) && (link.target === d.source) )){
                 //存在互相交易
-                let r = Math.hypot(target_x - source_x, 0);
+                let r =  this.cfg.node.individual.min_r/2
+
+                // let r = Math.hypot(target_x - source_x, 0);
                 return `M${source_x},${y} A${r},${r} 0 0,1 ${target_x},${y}`;
               }
               else{
@@ -275,6 +279,7 @@
     },
   }
 </script>
+
 
 <style scoped>
 </style>
