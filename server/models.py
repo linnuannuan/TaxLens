@@ -67,7 +67,7 @@ class Model:
         self.ap_network = nx.DiGraph()
         self.ap_txn_period = self.ap_txn.query('@_start_time <= date <= @_end_time')
         # validate edges by requiring buyer to reach seller within an arbitrary steps in the TPIIN
-        for src, tar in zip(self.ap_txn_period['seller_id'], self.ap_txn_period['buyer_id']):
+        for src, tar in zip(self.ap_txn_period['buyer_id'], self.ap_txn_period['seller_id']):
             if nx.shortest_path_length(tp_network_undirected, src, tar) <= max_txn_length:
                 self.ap_network.add_edge(src, tar)
         # remove isolated nodes
@@ -133,10 +133,10 @@ class Model:
             _tp_list = list(tp_graph.nodes())
 
             # retrieve transaction info
-            ap_invoice = self.ap_txn_period.query('seller_id in @_tp_list').query('buyer_id in @_tp_list')
+            ap_invoice = self.ap_txn_period.query('buyer_id in @_tp_list').query('seller_id in @_tp_list')
             # calculate the transaction amount of each ap_txn
             for u, v in tp_graph.edges():
-                txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn_sum']
+                txn = ap_invoice.query('buyer_id == @u').query('seller_id == @v')['txn_sum']
                 ap_txn_amount = np.sum(txn)
                 tp_graph.add_edge(u, v, ap_txn_amount=ap_txn_amount)
 
@@ -199,25 +199,25 @@ class Model:
         # retrieve investor information
         in_list = self.get_investor_detail(ap_graph)
 
-        # Calculate suspicious value
-        for in_node in in_list:
-            # 根据每个investor，求她到关联交易的距离和路径数
-            # node的嫌疑值 = 多条路径上的比例的相乘 的加和
-            # check if ap_node conducted affiliated party transactions
-            node_suspect_value = 0
-            for ap_node in tp_list:  # every taxpayer
-                if ap_node in self.ap_network:  # if taxpayer conducted related party transaction
-                    # 获取每一个path的invest ratio ,如果是多步就invest ratio相乘
-                    for path in list(nx.all_simple_paths(ap_graph, source=in_node, target=ap_node)):
-                        weight = 1
-                        for i in range(len(path)-1):
-                            e_dict = ap_graph.get_edge_data(path[i], path[i+1])
-                            weight = weight * e_dict['in_ratio'] if 'in_ratio' in e_dict else 0
-                        node_suspect_value += weight
-            ap_graph.add_node(in_node, suspect_value=node_suspect_value)
+        # # Calculate suspicious value
+        # for in_node in in_list:
+        #     # 根据每个investor，求她到关联交易的距离和路径数
+        #     # node的嫌疑值 = 多条路径上的比例的相乘 的加和
+        #     # check if ap_node conducted affiliated party transactions
+        #     node_suspect_value = 0
+        #     for ap_node in tp_list:  # every taxpayer
+        #         if ap_node in self.ap_network:  # if taxpayer conducted related party transaction
+        #             # 获取每一个path的invest ratio ,如果是多步就invest ratio相乘
+        #             for path in list(nx.all_simple_paths(ap_graph, source=in_node, target=ap_node)):
+        #                 weight = 1
+        #                 for i in range(len(path)-1):
+        #                     e_dict = ap_graph.get_edge_data(path[i], path[i+1])
+        #                     weight = weight * e_dict['in_ratio'] if 'in_ratio' in e_dict else 0
+        #                 node_suspect_value += weight
+        #     ap_graph.add_node(in_node, suspect_value=node_suspect_value)
 
         # retrieve invoice information
-        ap_invoice = self.ap_txn_period.query('seller_id in @tp_list').query('buyer_id in @tp_list')
+        ap_invoice = self.ap_txn_period.query('buyer_id in @tp_list').query('seller_id in @tp_list')
         # obtain an undirected investment network
         ap_graph_undirected = ap_graph.to_undirected()
         ap_graph_undirected.remove_edges_from(
@@ -227,7 +227,7 @@ class Model:
             if ap_txn:
                 # calculate the related strength of each ap_txn
                 related_strength = 0
-                txn = ap_invoice.query('seller_id == @u').query('buyer_id == @v')['txn_sum']
+                txn = ap_invoice.query('buyer_id == @u').query('seller_id == @v')['txn_sum']
                 # add all simple path of each ap_txn into the graph to be highlighted
                 paths = list(nx.all_simple_paths(ap_graph_undirected, source=u, target=v))
                 for path in paths:
@@ -327,7 +327,7 @@ class Model:
         # calculate the profits
         tp_calendar = tp_calendar.fillna(0)
         tp_calendar['profit'] = tp_calendar['revenue'] - tp_calendar['expense']
-        tp_calendar['profit'] = tp_calendar['profit'].cumsum()
+        tp_calendar['profit'] = tp_calendar.resample('Q')['profit'].cumsum()
         tp_calendar['ap_profit'] = tp_calendar['ap_revenue'] - tp_calendar['ap_expense']
         tp_calendar['rtp_profit'] = tp_calendar['rtp_revenue'] - tp_calendar['rtp_expense']
 
