@@ -23,10 +23,6 @@
         // the DOM element
         calendar: null,
         detail: null,
-        color: [
-          '#8c510a', '#bf812d', '#dfc27d', '#f6e8c3',
-          '#c7eae5', '#80cdc1', '#35978f', '#01665e'
-        ],
       }
     },
     watch: {
@@ -45,6 +41,13 @@
         this.calendar.showLinks = true;
         this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 720, y: 360}];
         this.calendar.showLoading(this.loadingCalendar);
+
+        let colorEncoding = [
+          '#8c510a', '#bf812d', '#dfc27d', '#f6e8c3',
+          '#c7eae5', '#80cdc1', '#35978f', '#01665e'
+        ];
+        let colorProfit = colorEncoding[0];
+        let colorLoss = colorEncoding[colorEncoding.length-1];
 
         // An internal function for toolbox item handling periods operation
         let periodOperation = function (params, offset) {
@@ -162,55 +165,23 @@
               type: 'continuous',
               orient: 'horizontal',
               bottom: '20',
-              left: 'left',
-              calculable: true,
+              left: 'center',
               padding: 10,
               itemWidth: 10,
-              itemHeight: 200,
+              itemHeight: 500,
               text: ['Profit', 'Loss'],
-              inRange: { color: this.color },
+              inRange: { color: colorEncoding },
               formatter: (value) => {
                 return appendThousandSeparator(~~(value / 1000)) + 'k'
               },
-            },
-            {
-              id: 'src_vm_scatter',
-              seriesIndex: 1,
-              type: 'continuous',
-              orient: 'horizontal',
-              bottom: 'bottom',
-              left: '20%',
-              padding: 10,
-              itemWidth: 10,
-              itemHeight: 250,
-              text: ['Affiliated gain', 'Affiliated loss'],
-              hoverLink: false,
-              inRange: { color: this.color },
             },
             // right calendar
             {
               id: 'dst_vm_heatmap',
               seriesIndex: 2,
               type: 'continuous',
-              orient: 'horizontal',
-              bottom: '20',
-              right: 'right',
-              calculable: true,
-              padding: 10,
-              itemWidth: 10,
-              itemHeight: 200,
-              text: ['Profit', 'Loss'],
-              inRange: { color: this.color },
-              formatter: (value) => {
-                return appendThousandSeparator(~~(value / 1000)) + 'k'
-              },
-            },
-            {
-              id: 'dst_vm_scatter',
-              seriesIndex: 3,
-              type: 'continuous',
               show: false,
-              inRange: { color: this.color },
+              inRange: { color: colorEncoding },
             },
           ],
           series: [
@@ -222,15 +193,8 @@
               datasetIndex: 0,
               calendarIndex: 0,
               dimensions: ['date', 'profit'],
-              encode: {
-                tooltip: [0, 1]
-              },
-              itemStyle: {
-                opacity: 0.75
-              },
-              tooltip: {
-                formatter: tooltipFormatterHeatmap
-              }
+              encode: { tooltip: [0, 1] },
+              tooltip: { formatter: tooltipFormatterHeatmap }
             },
             {
               id: 'src_series_scatter',
@@ -239,18 +203,18 @@
               datasetIndex: 0,
               calendarIndex: 0,
               dimensions: ['date', 'ap_profit', 'rtp_profit'],
-              encode: {
-                tooltip: [0, 1]
-              },
+              encode: { tooltip: [0, 1] },
               symbolOffset: [0, '-50%'],
               itemStyle: {
-                borderColor: 'black',
-                borderWidth: 1,
+                color: function (data) {
+                  return data.value[1] > 0? colorProfit: colorLoss;
+                },
+                opacity: 1,
+                borderColor: 'white',
+                borderWidth: 2,
               },
-              tooltip: {
-                formatter: tooltipFormatterScatter
-              },
-              z: 10
+              tooltip: { formatter: tooltipFormatterScatter },
+              z: 15
             },
             // right calendar
             {
@@ -260,15 +224,8 @@
               datasetIndex: 1,
               calendarIndex: 1,
               dimensions: ['date', 'profit'],
-              encode: {
-                tooltip: [0, 1]
-              },
-              itemStyle: {
-                opacity: 0.75
-              },
-              tooltip: {
-                formatter: tooltipFormatterHeatmap
-              }
+              encode: { tooltip: [0, 1] },
+              tooltip: { formatter: tooltipFormatterHeatmap }
             },
             {
               id: 'dst_series_scatter',
@@ -277,18 +234,18 @@
               datasetIndex: 1,
               calendarIndex: 1,
               dimensions: ['date', 'ap_profit', 'rtp_profit'],
-              encode: {
-                tooltip: [0, 1]
-              },
+              encode: { tooltip: [0, 1] },
               symbolOffset: [0, '-50%'],
               itemStyle: {
-                borderColor: 'black',
-                borderWidth: 1,
+                color: function (data) {
+                  return data.value[1] > 0? colorProfit: colorLoss;
+                },
+                opacity: 1,
+                borderColor: 'white',
+                borderWidth: 2,
               },
-              tooltip: {
-                formatter: tooltipFormatterScatter
-              },
-              z: 10
+              tooltip: { formatter: tooltipFormatterScatter },
+              z: 15
             },
             // graph
             {
@@ -296,17 +253,16 @@
               nodes: this.nodes,
               links: this.links,
               type: 'graph',
-              tooltip: {show: false},
+              tooltip: { show: false },
               hoverAnimation: false,
-              nodeScaleRatio: 0,
-              symbolSize: 1,
+              symbolOffset: [0, '-50%'],
               lineStyle: {
                 color: 'blue',
                 width: 2,
               },
               width: '720',
               height: '360',
-              z: 15
+              z: 10
             },
           ],
         });
@@ -358,21 +314,11 @@
               min: -heatmap_interval_src,
               max: heatmap_interval_src,
             },
-            {
-              id: 'src_vm_scatter',
-              min: -scatter_max_src,
-              max: scatter_max_src,
-            },
             // right calendar
             {
               id: 'dst_vm_heatmap',
               min: -heatmap_interval_dst,
               max: heatmap_interval_dst,
-            },
-            {
-              id: 'dst_vm_scatter',
-              min: -scatter_max_dst,
-              max: scatter_max_dst,
             },
           ],
           series: [
@@ -403,7 +349,7 @@
           ]
         });
 
-        this.processGraph();
+        this.processGraph(scatter_max_src);
         this.calendar.setOption({
           series: {
             id: 'graph',
@@ -414,35 +360,34 @@
 
         this.calendar.hideLoading(this.loadingCalendar);
       },
-      processGraph() {
+      processGraph(scatter_max_src) {
         // Notice that the node link information is stored in the instance
         this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 720, y: 360}];
         this.calendar.links = [];
 
-        // hotfix
-        let offsetX = 5;
-        let offsetY = 5;
-
-        this.calendarData[0].source['date'].forEach((d, i) => {
+        let data = this.calendarData[0].source;
+        data['date'].forEach((d, i) => {
           // filter the dates where rtp is involved
-          if (!this.calendarData[0].source['rtp_profit'][i]) return;
+          if (!data['rtp_revenue'][i] && !data['rtp_expense'][i]) return;
 
+          let loc, size;
           // obtain the node coordinates in both calendars
-          let loc = this.calendar.convertToPixel({calendarIndex: 0}, d);
-          this.calendar.nodes.push({name: 'src_'+d, x: loc[0]+offsetX, y: loc[1]-offsetY});
+          loc = this.calendar.convertToPixel({calendarIndex: 0}, d);
+          size = Math.abs(data['ap_profit'][i] / scatter_max_src * 15) + 5;
+          this.calendar.nodes.push({name: 'src_'+d, x: loc[0], y: loc[1], symbolSize: size});
           loc = this.calendar.convertToPixel({calendarIndex: 1}, d);
-          this.calendar.nodes.push({name: 'dst_'+d, x: loc[0]-offsetX, y: loc[1]-offsetY});
+          this.calendar.nodes.push({name: 'dst_'+d, x: loc[0], y: loc[1], symbolSize: size});
 
           // configure the edge symbols
           this.calendar.links.push({
             source: 'src_'+d,
             target: 'dst_'+d,
             symbol: [
-              this.calendarData[0].source['rtp_revenue'][i]?'arrow': 'none',
-              this.calendarData[0].source['rtp_expense'][i]?'arrow': 'none'
+              data['rtp_revenue'][i]?'arrow': 'none',
+              data['rtp_expense'][i]?'arrow': 'none'
             ],
             lineStyle: {
-              curveness: this.calendarData[0].source['rtp_expense'][i]? 0.25: -0.25
+              curveness: data['rtp_expense'][i]? 0.25: -0.25
             }
           });
         });
