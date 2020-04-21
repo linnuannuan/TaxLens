@@ -389,7 +389,7 @@
                 return 'circle';
               },
               symbolSize: function (value) {
-                return value[1] && Math.abs(value[1] / scatter_max_src * 15) + 5;
+                return value[1] && Math.abs(value[1] / scatter_max_src * 5) + 5;
               },
             },
             // right calendar
@@ -494,6 +494,7 @@
     }
 
     .calendar{
+        margin-top: 10%;
         width: 100%;
         height: 60%;
         /*border: 1px solid steelblue;*/

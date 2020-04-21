@@ -257,7 +257,7 @@
     .detail-view-graph{
         width: 100%;
         height: 450px;
-        border: 1px solid steelblue;
+        /*border: 1px solid steelblue;*/
     }
 
     .detail-view-calendar{
