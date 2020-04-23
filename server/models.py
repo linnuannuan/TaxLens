@@ -124,6 +124,7 @@ class Model:
         ap_finance = self.finance_period[['tp_id', 'profit']]
         ap_finance = ap_finance.merge(_ap_df).groupby('ap_id').sum().round(0).reset_index()
         ap_finance = ap_finance.sort_values('profit', ascending=False).head(20)
+        # ap_finance = ap_finance.sort_values('profit', ascending=False)
 
         ap_topo_json = []
 
@@ -243,6 +244,11 @@ class Model:
                     path=paths,
                     related_strength=related_strength
                 )
+
+                _profit = self.get_calendar_data_by_tp_id(u, v, '2014-01-01', '2014-12-31')['profit'][-1]
+                ap_graph.add_node(u, profit=_profit > 0)
+                _profit = self.get_calendar_data_by_tp_id(v, u, '2014-01-01', '2014-12-31')['profit'][-1]
+                ap_graph.add_node(v, profit=_profit > 0)
 
         return nx.node_link_data(ap_graph)
 

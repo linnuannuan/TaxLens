@@ -46,8 +46,10 @@
             color:{
               tp:'#80b1d3',
               in:'#bebada',
-              evader_stroke:"#ffffb3",
-              default_stroke:"#ccc"
+              evader_stroke:"#ff0000",
+              default_stroke:"#ccc",
+              profit:'#35978f',
+              loss:'#bf812d'
             },
             rect_width: 30,
             rect_height: 30,
@@ -101,7 +103,7 @@
         data.nodes.forEach(d=>{
           // Add nodes to the graph. The first argument is the node id. The second is metadata about the node.
           // name: d.tp ? d.tp_name:d.in_name label: "Kevin Spacey",  width: 144, height: 100
-          g.setNode( d.id, { label: d.tp ? "tp":"in", name: d.tp? d.tp_name: d.in_name, width:this.cfg.node.rect_width, height:this.cfg.node.rect_height, tax_evader:d.tax_evader });
+          g.setNode( d.id, { label: d.tp ? "tp":"in", name: d.tp? d.tp_name: d.in_name, width:this.cfg.node.rect_width, height:this.cfg.node.rect_height, tax_evader:d.tax_evader, profit:d.profit });
         });
 
         data.links.forEach(d=>{
@@ -171,8 +173,11 @@
                 .attr('y',d=>g.node(d).y )
                 .attr('width',node_width)
                 .attr('height',node_height)
-                .attr('fill',d=>g.node(d).label === 'tp'? this.cfg.node.color.tp:this.cfg.node.color.in)
-                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.defaut_stroke)
+                .attr('fill',d=>{
+                  return g.node(d).label === 'in'? this.cfg.node.color.in:
+                        g.node(d).profit === undefined? this.cfg.node.color.tp:
+                                g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
+                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
                 .on('mouseover', d=>{
                   // show its name
                   d3.select('#text-'+d).attr('fill-opacity',1)

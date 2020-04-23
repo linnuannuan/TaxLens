@@ -1,7 +1,7 @@
 <template>
     <div class="view">
         <div class="calendar" id="calendar_view"></div>
-        <div class="detail" id="detail_view"></div>
+<!--        <div class="detail" id="detail_view"></div>-->
     </div>
 </template>
 
@@ -32,14 +32,14 @@
     },
     mounted: function () {
       this.initCalendar();
-      this.initDetail();
+      // this.initDetail();
       this.renderCalendar();
     },
     methods: {
       initCalendar() {
         this.calendar = echarts.init(document.getElementById('calendar_view'));
         this.calendar.showLinks = true;
-        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 720, y: 360}];
+        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 1200, y: 450}];
         this.calendar.showLoading(this.loadingCalendar);
 
         let colorEncoding = [
@@ -136,10 +136,10 @@
             {
               id: 'src_calendar',
               range: ['2014-01', '2014-03-31'],
-              top: 50,
-              bottom: '60',
-              left: '36',
-              right: '378',
+              top: 60,
+              bottom: '10',
+              left: '40',
+              right: '620',
               itemStyle: {borderWidth: 0.5},
               yearLabel: {margin: 7.5},
               dayLabel: {show: false},
@@ -148,10 +148,10 @@
             {
               id: 'dst_calendar',
               range: ['2014-01', '2014-03-31'],
-              top: 50,
-              bottom: '60',
-              left: '378',
-              right: '36',
+              top: 60,
+              bottom: '10',
+              left: '620',
+              right: '40',
               itemStyle: {borderWidth: 0.5},
               yearLabel: {margin: 7.5},
               dayLabel: {show: false},
@@ -164,7 +164,7 @@
               seriesIndex: 0,
               type: 'continuous',
               orient: 'horizontal',
-              bottom: '20',
+              top: 'top',
               left: 'center',
               calculable: true,
               padding: 10,
@@ -206,7 +206,7 @@
               calendarIndex: 0,
               dimensions: ['date', 'ap_profit', 'rtp_profit'],
               encode: { tooltip: [0, 1] },
-              symbolOffset: [0, '-50%'],
+              // symbolOffset: [0, '-50%'],
               itemStyle: {
                 color: function (data) {
                   return data.value[1] < 0? colorLoss: colorProfit;
@@ -238,7 +238,7 @@
               calendarIndex: 1,
               dimensions: ['date', 'ap_profit', 'rtp_profit'],
               encode: { tooltip: [0, 1] },
-              symbolOffset: [0, '-50%'],
+              // symbolOffset: [0, '-50%'],
               itemStyle: {
                 color: function (data) {
                   return data.value[1] < 0? colorLoss: colorProfit;
@@ -258,23 +258,23 @@
               type: 'graph',
               tooltip: { show: false },
               hoverAnimation: false,
-              symbolOffset: [0, '-50%'],
+              // symbolOffset: [0, '-50%'],
               lineStyle: {
                 color: '#d6604d',
                 width: 2,
                 opacity: 1
               },
-              width: '720',
-              height: '360',
+              width: '1200',
+              height: '450',
               z: 10
             },
           ],
         });
 
-        this.calendar.on('click', function(event){
-          // allow only heatmap and scatter to react
-          event.seriesIndex < 4 && this.renderDetail(~~(event.seriesIndex/2), event.dataIndex);
-        }, this);
+        // this.calendar.on('click', function(event){
+        //   // allow only heatmap and scatter to react
+        //   event.seriesIndex < 4 && this.renderDetail(~~(event.seriesIndex/2), event.dataIndex);
+        // }, this);
       },
       renderCalendar() {
         if (this.calendarData === undefined || this.calendarData.length === 0) return;
@@ -294,7 +294,7 @@
         let profitSmallerMax = Math.min(Math.max(...src_profit_abs), Math.max(...dst_profit_abs));
         let profitInterval = Math.max(profitMedian, profitSmallerMax);
 
-        let maxProfitAP = Math.max(...src_data['ap_profit'].map(Math.abs),...src_data['ap_profit'].map(Math.abs));
+        let maxProfitAP = Math.max(...src_data['ap_profit'].map(Math.abs),...dst_data['ap_profit'].map(Math.abs));
 
         this.calendar.setOption({
           dataset: this.calendarData,
@@ -336,7 +336,7 @@
                 return 'circle';
               },
               symbolSize: function (value) {
-                return value[1] && Math.abs(value[1] / maxProfitAP * 15) + 5;
+                return value[1] && Math.abs(value[1] / maxProfitAP * 30) + 10;
               },
             },
             // right calendar
@@ -346,7 +346,7 @@
                 return 'circle';
               },
               symbolSize: function (value) {
-                return value[1] && Math.abs(value[1] / maxProfitAP * 15) + 5;
+                return value[1] && Math.abs(value[1] / maxProfitAP * 30) + 10;
               },
             }
           ]
@@ -367,7 +367,7 @@
         // Notice that the node link information is stored in the instance
         this.calendar.nodes = [
           {name: 'top_left', x: 0, y: 0, symbolSize: 0},
-          {name: 'bottom_right', x: 720, y: 360, symbolSize: 0}
+          {name: 'bottom_right', x: 1200, y: 450, symbolSize: 0}
         ];
         this.calendar.links = [];
 
@@ -379,7 +379,7 @@
           let loc, size;
           // obtain the node coordinates in both calendars
           loc = this.calendar.convertToPixel({calendarIndex: 0}, d);
-          size = Math.abs(data['ap_profit'][i] / maxValue * 15) + 5;
+          size = Math.abs(data['ap_profit'][i] / maxValue * 30) + 10;
           this.calendar.nodes.push({name: 'src_'+d, x: loc[0], y: loc[1], symbolSize: size});
           loc = this.calendar.convertToPixel({calendarIndex: 1}, d);
           this.calendar.nodes.push({name: 'dst_'+d, x: loc[0], y: loc[1], symbolSize: size});
@@ -393,7 +393,7 @@
               data['rtp_expense'][i]?'arrow': 'none'
             ],
             lineStyle: {
-              curveness: data['rtp_expense'][i]? 0.35: -0.35
+              curveness: data['rtp_expense'][i]? 0.2: -0.2
             }
           });
         });
@@ -442,7 +442,7 @@
 
     .calendar{
         width: 100%;
-        height: 60%;
+        height: 100%;
         /*border: 1px solid steelblue;*/
     }
 

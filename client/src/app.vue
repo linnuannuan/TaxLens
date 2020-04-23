@@ -1,57 +1,56 @@
 <template>
     <div id="app">
-        <el-row class="overview">
-            <el-col :span="19" class="overview">
-                <temporal-view
-                        class="overview-left"
-                        :temporal-overview="temporalOverview"
-                        :loading-time-slider="loadingDetailGraph"
-                        @setPeriod="setPeriod">
-                </temporal-view>
-                <group-view
-                        class="overview-left"
-                        :affiliated-party-topo-list="affiliatedPartyTopoList"
-                        :loading-topo="loadingTopoList">
-                </group-view>
-            </el-col>
-            <el-col :span="5" class="overview">
-                <el-row class="overview-right-control">
-                    <el-row>
-                        <el-col :span="10" class="overview-right-control-row">Period</el-col>
-                        <el-col :span="14" class="overview-right-control-row">{{periodStart}} to {{periodEnd}}</el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10" class="overview-right-control-row">Transaction chain</el-col>
-                        <el-col :span="11"><el-input-number size="mini" v-model="transactionChain" :min="1" :max="10"></el-input-number></el-col>
-                        <el-col :span="3"></el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10" class="overview-right-control-row">Control chain</el-col>
-                        <el-col :span="11"><el-input-number size="mini" v-model="controlChain" :min="1" :max="10"></el-input-number></el-col>
-                        <el-col :span="3"><el-button size="mini" circle icon="el-icon-setting" @click="setModelParameter"></el-button></el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="10" class="overview-right-control-row">Search ID</el-col>
-                        <el-col :span="11"><el-input size="mini" v-model="search_id"></el-input></el-col>
-                        <el-col :span="3"><el-button size="mini" circle icon="el-icon-search" @click="searchID"></el-button></el-col>
-                    </el-row>
+        <el-col :span="6" class="control-panel">
+            <el-row class="control-panel-top">
+                <el-row>
+                    <el-col :span="11" class="control-panel-top-row">Period</el-col>
+                    <el-col :span="13" class="control-panel-top-row">{{periodStart}} to {{periodEnd}}</el-col>
                 </el-row>
-                <group-list
-                        class="overview-right-list"
-                        :affiliated-party-list="affiliatedPartyList"
-                        :loading-list="loadingList">
-                </group-list>
-            </el-col>
-        </el-row>
-        <el-row class="detail-view">
-            <el-col :span="12" class="detail-view">
+                <el-row>
+                    <el-col :span="10" class="control-panel-top-row">Transaction chain</el-col>
+                    <el-col :span="12"><el-input-number size="mini" v-model="transactionChain" :min="1" :max="10"></el-input-number></el-col>
+                    <el-col :span="2"></el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="10" class="control-panel-top-row">Control chain</el-col>
+                    <el-col :span="12"><el-input-number size="mini" v-model="controlChain" :min="1" :max="10"></el-input-number></el-col>
+                    <el-col :span="2"><el-button size="mini" circle icon="el-icon-setting" @click="setModelParameter"></el-button></el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="10" class="control-panel-top-row">Search ID</el-col>
+                    <el-col :span="12"><el-input size="mini" v-model="search_id"></el-input></el-col>
+                    <el-col :span="2"><el-button size="mini" circle icon="el-icon-search" @click="searchID"></el-button></el-col>
+                </el-row>
+            </el-row>
+            <group-list
+                    class="control-panel-list"
+                    :affiliated-party-list="affiliatedPartyList"
+                    :loading-list="loadingList">
+            </group-list>
+        </el-col>
+        <el-col :span="18" class="views">
+            <temporal-view
+                    class="overview-temporal"
+                    :temporal-overview="temporalOverview"
+                    :loading-time-slider="loadingDetailGraph"
+                    @setPeriod="setPeriod">
+            </temporal-view>
+<!--            <group-view-->
+<!--                    class="overview-temporal"-->
+<!--                    :affiliated-party-topo-list="affiliatedPartyTopoList"-->
+<!--                    :loading-topo="loadingTopoList">-->
+<!--            </group-view>-->
+
+            <el-row class="detail-view-graph">
                 <graph-view
                         class="detail-view-graph"
                         :affiliated-party-detail="affiliatedPartyDetail"
                         :loading-graph="loadingGraph">
                 </graph-view>
-            </el-col>
-            <el-col :span="12" class="detail-view">
+            </el-row>
+
+
+            <el-row class="detail-view-calendar">
                 <calendar-view
                         class="detail-view-calendar"
                         :calendar-data="calendarData"
@@ -59,15 +58,15 @@
                         :calendar-target-id="calendarTargetId"
                         :loading-calendar="loadingCalendar">
                 </calendar-view>
-            </el-col>
-        </el-row>
-<!--        <el-row style="height: 100%">-->
-<!--            <di-graph-view-->
-<!--                    :affiliated-party-detail="affiliatedPartyDetail"-->
-<!--                    :loading-graph="loadingGraph"-->
-<!--                    style="width: 100%; height: 100%; ">-->
-<!--            </di-graph-view>-->
-<!--        </el-row>-->
+            </el-row>
+        </el-col>
+        <!--        <el-row style="height: 100%">-->
+        <!--            <di-graph-view-->
+        <!--                    :affiliated-party-detail="affiliatedPartyDetail"-->
+        <!--                    :loading-graph="loadingGraph"-->
+        <!--                    style="width: 100%; height: 100%; ">-->
+        <!--            </di-graph-view>-->
+        <!--        </el-row>-->
     </div>
 
 </template>
@@ -76,7 +75,7 @@
   import GroupList from './components/group-list'
   import GraphView from './components/graph-view.vue';
   // import DiGraphView from './components/digraph-view.vue';
-  import GroupView from './components/group-view.vue';
+  // import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
   import CalendarView from './components/calendar-view.vue';
 
@@ -89,7 +88,7 @@
       GroupList,
       GraphView,
       // DiGraphView,
-      GroupView,
+      // GroupView,
       TemporalView,
       CalendarView,
     },
@@ -214,28 +213,22 @@
         -moz-osx-font-smoothing: grayscale;
         text-align: center;
         color: #2c3e50;
-        width: 1440px;
+        width: 1600px;
         height: 900px;
         border: 1px solid black;
     }
 
-    .overview{
+    .control-panel{
         width: 100%;
-        height: 300px;
-        /*border: 1px solid steelblue;*/
+        height: 100%;
     }
 
-    .overview-left{
-        width: 100%;
-        height: 150px;
-    }
-
-    .overview-right-control{
+    .control-panel-top{
         width: 100%;
         height: 110px;
     }
 
-    .overview-right-control-row{
+    .control-panel-top-row{
         padding-left: 4px;
         padding-top: 4px;
         padding-bottom: 4px;
@@ -243,26 +236,32 @@
         font-size: 14px;
     }
 
-    .overview-right-list{
+    .control-panel-list{
         width: 100%;
-        height: 190px;
+        height: 790px;
         background: #e5e9f2;
     }
 
-    .detail-view {
+    .views{
         width: 100%;
-        height: 600px;
+        height: 100%;
+        /*border: 1px solid steelblue;*/
+    }
+
+    .overview-temporal{
+        width: 100%;
+        height: 150px;
     }
 
     .detail-view-graph{
         width: 100%;
-        height: 450px;
+        height: 300px;
         /*border: 1px solid steelblue;*/
     }
 
     .detail-view-calendar{
         width: 100%;
-        height: 100%;
+        height: 450px;
         /*border: 1px solid steelblue;*/
     }
 </style>
