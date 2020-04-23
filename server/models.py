@@ -123,7 +123,7 @@ class Model:
         _ap_df = _ap_df.query('tp_id in @_ap_list')
         ap_finance = self.finance_period[['tp_id', 'profit']]
         ap_finance = ap_finance.merge(_ap_df).groupby('ap_id').sum().round(0).reset_index()
-        ap_finance = ap_finance.sort_values('profit', ascending=False).head(20)
+        ap_finance = ap_finance.sort_values('profit', ascending=False).head(50)
         # ap_finance = ap_finance.sort_values('profit', ascending=False)
 
         ap_topo_json = []

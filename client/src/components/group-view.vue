@@ -5,7 +5,6 @@
 <script>
   import * as d3 from "d3";
   import EventService from "../utils/event-service";
-  import * as echarts from "echarts";
 
   export default {
     name: "GroupView",
@@ -21,124 +20,16 @@
     },
     watch: {
       affiliatedPartyTopoList: function() {
-        if (this.test) {
-          this.renderSankeyView();
-        } else {
-          this.renderGroupView();
-        }
+        this.renderGroupView();
       },
     },
     mounted:function(){
-      if (this.test) {
-        this.initSankeyView();
-      } else {
-        this.initGroupView();
-      }
+      this.initGroupView();
+      this.renderGroupView();
     },
     methods: {
       handleView(id) {
         EventService.emitSuspiciousGroupSelected(id);
-      },
-      initSankeyView(){
-        this.svg = echarts.init(document.getElementById('group_view'));
-        this.svg.showLoading();
-      },
-      renderSankeyView(){
-        // draw time slider for transaction of 2014-2015
-        let sankeyOption = {
-          // size of the chart, value is the padding to the direction
-          grid: {
-            left: '35',
-            right: '35',
-            top: '30',
-            bottom: '25',
-          },
-          xAxis: {
-            type: 'category',
-            // boundaryGap: false,
-            axisLabel: {
-              // shows only the first of month
-              interval: function (index, value) {
-                return value.slice(-2) === '01';
-              },
-              // shows the name of month
-              formatter: function (value) {
-                const MONTH = [
-                  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-                ];
-                return MONTH[parseInt(value.slice(5,7))-1] + value.slice(2,4);
-              },
-              showMinLabel: true,
-              showMaxLabel: true,
-            },
-            axisTick: {
-              alignWithLabel: true,
-              // shows only the first of month
-              interval: function (index, value) {
-                return value.slice(-2) === '01';
-              },
-            },
-            data: null,
-          },
-          yAxis: {
-            type: 'value',
-            boundaryGap: false,
-            min: 0
-          },
-          dataZoom: [
-            {
-              type: 'slider',
-              show: true,
-              xAxisIndex: 0,
-              filterMode: 'filter',
-              start: 0,
-              end: 49.9,
-              top: 'top',
-              minValueSpan: 27  // at least one month
-            },
-            {
-              type: 'slider',
-              show: true,
-              yAxisIndex: 0,
-              filterMode: 'empty',
-              left: 'right',
-              start: 0,
-              end: 100
-            }
-          ],
-          tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-              type: 'cross',
-            },
-            formatter: function (params) {
-              return params[0].value.toFixed(2) + ' million';
-            },
-          },
-          toolbox: {
-            top: 'top',
-            right: 'right',
-            feature: {
-              restore: {
-                title: ' ',
-              }
-            }
-          },
-          series: [
-            {
-              type: 'bar',
-              animation: false,  // setting to false for better performance
-              data: null
-            }
-          ]
-        };
-
-        // set the data
-        sankeyOption.xAxis.data = this.temporalOverview.date;
-        sankeyOption.series[0].data = this.temporalOverview.ap_txn_amount;
-        this.svg.setOption(sankeyOption);
-        this.svg.hideLoading();
       },
       initGroupView(){
         // init the overview of group
@@ -168,8 +59,8 @@
             max_width: 3,
             color:'#1f77b4'
           },
-          'row_num':2,
-          'col_num':10,
+          'row_num':10,
+          'col_num':5,
           'row_margin':0.5,
           'col_margin':1,
         };
@@ -198,9 +89,9 @@
           .append('circle')
           .attr('r', d=>groupRScaler(d['profit']))
           // 设置x坐标为 该容器width 11等分（1等分留作间距），间距设置为5
-          .attr('cx',d=>this.cfg.node.group.margin.left + (data.indexOf(d)%this.cfg.col_num) * (this.cfg.width-2*this.cfg.node.group.margin.left) / (this.cfg.col_num-1))
+          .attr('cx',d=>this.cfg.node.group.margin.left + (data.indexOf(d)%this.cfg.col_num) / (this.cfg.col_num-1) * (this.cfg.width-2*this.cfg.node.group.margin.left) )
           // 设置默认20个组, 10上10下, 该容器height 3等分（1等分留作间距），间距设置为5
-          .attr('cy',d=>this.cfg.node.group.margin.top + (Math.floor(data.indexOf(d)/this.cfg.col_num)) * (this.cfg.height-2*this.cfg.node.group.margin.top) / (this.cfg.row_num-1))
+          .attr('cy',d=>this.cfg.node.group.margin.top + (~~(data.indexOf(d)/this.cfg.col_num)) / (this.cfg.row_num-1) * (this.cfg.height-2*this.cfg.node.group.margin.top) )
           .attr('fill',this.cfg.node.group.color)
           .attr('fill-opacity',0.5)
           .attr('stroke',this.cfg.node.group.color)
