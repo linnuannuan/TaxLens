@@ -61,13 +61,13 @@
                 </calendar-view>
             </el-col>
         </el-row>
-        <el-row style="height: 100%">
-            <di-graph-view
-                    :affiliated-party-detail="affiliatedPartyDetail"
-                    :loading-graph="loadingGraph"
-                    style="width: 100%; height: 100%; ">
-            </di-graph-view>
-        </el-row>
+<!--        <el-row style="height: 100%">-->
+<!--            <di-graph-view-->
+<!--                    :affiliated-party-detail="affiliatedPartyDetail"-->
+<!--                    :loading-graph="loadingGraph"-->
+<!--                    style="width: 100%; height: 100%; ">-->
+<!--            </di-graph-view>-->
+<!--        </el-row>-->
     </div>
 
 </template>
@@ -75,7 +75,7 @@
 <script>
   import GroupList from './components/group-list'
   import GraphView from './components/graph-view.vue';
-  import DiGraphView from './components/digraph-view.vue';
+  // import DiGraphView from './components/digraph-view.vue';
   import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
   import CalendarView from './components/calendar-view.vue';
@@ -88,7 +88,7 @@
     components: {
       GroupList,
       GraphView,
-      DiGraphView,
+      // DiGraphView,
       GroupView,
       TemporalView,
       CalendarView,

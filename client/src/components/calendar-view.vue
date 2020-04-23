@@ -43,11 +43,11 @@
         this.calendar.showLoading(this.loadingCalendar);
 
         let colorEncoding = [
-          '#8c510a', '#bf812d', '#dfc27d', '#f6e8c3',
-          '#c7eae5', '#80cdc1', '#35978f', '#01665e'
-        ];
-        let colorProfit = colorEncoding[0];
-        let colorLoss = colorEncoding[colorEncoding.length-1];
+          '#8c510a','#bf812d','#dfc27d','#f6e8c3',
+          '#f5f5f5',
+          '#c7eae5','#80cdc1','#35978f','#01665e'];
+        let colorLoss = colorEncoding[0];
+        let colorProfit = colorEncoding[colorEncoding.length-1];
 
         // An internal function for toolbox item handling periods operation
         let periodOperation = function (params, offset) {
@@ -166,6 +166,7 @@
               orient: 'horizontal',
               bottom: '20',
               left: 'center',
+              calculable: true,
               padding: 10,
               itemWidth: 10,
               itemHeight: 500,
@@ -194,6 +195,7 @@
               calendarIndex: 0,
               dimensions: ['date', 'profit'],
               encode: { tooltip: [0, 1] },
+              itemStyle: { opacity: 0.8 },
               tooltip: { formatter: tooltipFormatterHeatmap }
             },
             {
@@ -207,7 +209,7 @@
               symbolOffset: [0, '-50%'],
               itemStyle: {
                 color: function (data) {
-                  return data.value[1] > 0? colorProfit: colorLoss;
+                  return data.value[1] < 0? colorLoss: colorProfit;
                 },
                 opacity: 1,
                 borderColor: 'white',
@@ -225,6 +227,7 @@
               calendarIndex: 1,
               dimensions: ['date', 'profit'],
               encode: { tooltip: [0, 1] },
+              itemStyle: { opacity: 0.8 },
               tooltip: { formatter: tooltipFormatterHeatmap }
             },
             {
@@ -238,7 +241,7 @@
               symbolOffset: [0, '-50%'],
               itemStyle: {
                 color: function (data) {
-                  return data.value[1] > 0? colorProfit: colorLoss;
+                  return data.value[1] < 0? colorLoss: colorProfit;
                 },
                 opacity: 1,
                 borderColor: 'white',
@@ -257,8 +260,9 @@
               hoverAnimation: false,
               symbolOffset: [0, '-50%'],
               lineStyle: {
-                color: 'blue',
+                color: '#d6604d',
                 width: 2,
+                opacity: 1
               },
               width: '720',
               height: '360',
@@ -283,11 +287,14 @@
         let date_end = src_data['date'][src_data['date'].length - 1];
 
         // min-max configuration for heatmap
-        let heatmap_interval_src = (Math.max(...src_data['profit']) + Math.abs(Math.min(...src_data['profit'], 0))) / 2;
-        let heatmap_interval_dst = (Math.max(...dst_data['profit']) + Math.abs(Math.min(...dst_data['profit'], 0))) / 2;
-        // min-max configuration for scatter plots
-        let scatter_max_src = Math.max.apply(null, src_data['ap_profit'].map(Math.abs));
-        let scatter_max_dst = Math.max.apply(null, dst_data['ap_profit'].map(Math.abs));
+        let src_profit_abs = src_data['profit'].map(Math.abs);
+        let dst_profit_abs = dst_data['profit'].map(Math.abs);
+        let profitMedian = [...src_profit_abs, ...dst_profit_abs].sort((a,b) => a-b);
+        profitMedian = profitMedian.length !== 0 && profitMedian[~~(profitMedian.length*0.5)];
+        let profitSmallerMax = Math.min(Math.max(...src_profit_abs), Math.max(...dst_profit_abs));
+        let profitInterval = Math.max(profitMedian, profitSmallerMax);
+
+        let maxProfitAP = Math.max(...src_data['ap_profit'].map(Math.abs),...src_data['ap_profit'].map(Math.abs));
 
         this.calendar.setOption({
           dataset: this.calendarData,
@@ -311,45 +318,41 @@
             // left calendar
             {
               id: 'src_vm_heatmap',
-              min: -heatmap_interval_src,
-              max: heatmap_interval_src,
+              min: -profitInterval,
+              max: profitInterval,
             },
             // right calendar
             {
               id: 'dst_vm_heatmap',
-              min: -heatmap_interval_dst,
-              max: heatmap_interval_dst,
+              min: -profitInterval,
+              max: profitInterval,
             },
           ],
           series: [
             // left calendar
             {
               id: 'src_series_scatter',
-              // eslint-disable-next-line no-unused-vars
-              symbol: function (value) {
-                // return value[2] ? 'diamond' : 'circle';
+              symbol: function () {
                 return 'circle';
               },
               symbolSize: function (value) {
-                return value[1] && Math.abs(value[1] / scatter_max_src * 5) + 5;
+                return value[1] && Math.abs(value[1] / maxProfitAP * 15) + 5;
               },
             },
             // right calendar
             {
               id: 'dst_series_scatter',
-              // eslint-disable-next-line no-unused-vars
-              symbol: function (value) {
-                // return value[2] ? 'diamond' : 'circle';
+              symbol: function () {
                 return 'circle';
               },
               symbolSize: function (value) {
-                return value[1] && Math.abs(value[1] / scatter_max_dst * 15) + 5;
+                return value[1] && Math.abs(value[1] / maxProfitAP * 15) + 5;
               },
             }
           ]
         });
 
-        this.processGraph(scatter_max_src);
+        this.processGraph(maxProfitAP);
         this.calendar.setOption({
           series: {
             id: 'graph',
@@ -360,9 +363,12 @@
 
         this.calendar.hideLoading(this.loadingCalendar);
       },
-      processGraph(scatter_max_src) {
+      processGraph(maxValue) {
         // Notice that the node link information is stored in the instance
-        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 720, y: 360}];
+        this.calendar.nodes = [
+          {name: 'top_left', x: 0, y: 0, symbolSize: 0},
+          {name: 'bottom_right', x: 720, y: 360, symbolSize: 0}
+        ];
         this.calendar.links = [];
 
         let data = this.calendarData[0].source;
@@ -373,7 +379,7 @@
           let loc, size;
           // obtain the node coordinates in both calendars
           loc = this.calendar.convertToPixel({calendarIndex: 0}, d);
-          size = Math.abs(data['ap_profit'][i] / scatter_max_src * 15) + 5;
+          size = Math.abs(data['ap_profit'][i] / maxValue * 15) + 5;
           this.calendar.nodes.push({name: 'src_'+d, x: loc[0], y: loc[1], symbolSize: size});
           loc = this.calendar.convertToPixel({calendarIndex: 1}, d);
           this.calendar.nodes.push({name: 'dst_'+d, x: loc[0], y: loc[1], symbolSize: size});
@@ -387,7 +393,7 @@
               data['rtp_expense'][i]?'arrow': 'none'
             ],
             lineStyle: {
-              curveness: data['rtp_expense'][i]? 0.25: -0.25
+              curveness: data['rtp_expense'][i]? 0.35: -0.35
             }
           });
         });
@@ -435,7 +441,6 @@
     }
 
     .calendar{
-        margin-top: 10%;
         width: 100%;
         height: 60%;
         /*border: 1px solid steelblue;*/
