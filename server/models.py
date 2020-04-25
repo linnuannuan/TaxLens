@@ -174,6 +174,7 @@ class Model:
                 'num_nodes': len(_ap['nodes']),
                 'num_ap_txn': _ap['num_ap_txn'],
                 'num_evader': int(_ap['num_evader']),
+                'num_deducted': int(_ap['num_deducted']),
                 'affiliatedPartyTopoData': {
                     'ap_txn_amount': _ap['ap_txn_amount'],
                     'nodes': [{'id': node} for node in _ap['nodes']],
