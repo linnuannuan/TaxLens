@@ -121,34 +121,33 @@ class Model:
         _ap_list = list(self.ap_network.nodes())
         _ap_df = pd.DataFrame([(i, _ap) for i, ap in enumerate(self.ap_list) for _ap in ap], columns=['ap_id', 'tp_id'])
         _ap_df = _ap_df.query('tp_id in @_ap_list')
-        ap_finance = self.finance_period[['tp_id', 'profit']]
-        ap_finance = ap_finance.merge(_ap_df).groupby('ap_id').sum().round(0).reset_index()
-        ap_finance = ap_finance.sort_values('profit', ascending=False).head(50)
-        # ap_finance = ap_finance.sort_values('profit', ascending=False)
+        _ap_df_seller = _ap_df.merge(self.ap_txn_period, left_on='tp_id', right_on='seller_id')[
+            ['ap_id', 'seller_id', 'buyer_id', 'txn_sum']]
+        _ap_df = _ap_df_seller.merge(_ap_df, left_on='buyer_id', right_on='tp_id', suffixes=('', '_b'))
+        _ap_df = _ap_df.query('ap_id == ap_id_b')[['ap_id', 'seller_id', 'buyer_id', 'txn_sum']]
+        _ap_df = _ap_df.groupby(['ap_id', 'seller_id', 'buyer_id']).sum().round(0).reset_index()
+        _ap_df['links'] = list(zip(_ap_df['buyer_id'], _ap_df['seller_id'], _ap_df['txn_sum']))
+        _ap_df = _ap_df.groupby('ap_id').agg({'txn_sum': np.sum, 'links': list, 'seller_id': set, 'buyer_id': set})
+        _ap_df['nodes'] = _ap_df.apply(lambda x: list(x.seller_id.union(x.buyer_id)), axis=1)
+        _ap_df = _ap_df[['txn_sum', 'nodes', 'links']].reset_index().rename(columns={'txn_sum': 'ap_txn_amount'})
 
-        ap_topo_json = []
-
-        for ap_id, profit in ap_finance.itertuples(index=False):
-            # Find only the nodes involved the the related party transactions
-            tp_graph = self.ap_network.subgraph(self.ap_list[ap_id]).copy()
-            _tp_list = list(tp_graph.nodes())
-
-            # retrieve transaction info
-            ap_invoice = self.ap_txn_period.query('buyer_id in @_tp_list').query('seller_id in @_tp_list')
-            # calculate the transaction amount of each ap_txn
-            for u, v in tp_graph.edges():
-                txn = ap_invoice.query('buyer_id == @u').query('seller_id == @v')['txn_sum']
-                ap_txn_amount = np.sum(txn)
-                tp_graph.add_edge(u, v, ap_txn_amount=ap_txn_amount)
-
-            ap_topo_json.append({
-                'ap_id': ap_id,
-                'profit': profit,
-                'nodes': nx.node_link_data(tp_graph)['nodes'],
-                'links': nx.node_link_data(tp_graph)['links']
+        _ap_max = np.max(_ap_df['ap_txn_amount'])
+        _ap_df = _ap_df.tail(15).to_dict("records")
+        ap_json = []
+        for _ap in _ap_df:
+            ap_json.append({
+                'num_nodes': len(_ap['nodes']),
+                'num_ap_txn': len(_ap['links']),
+                'affiliatedPartyTopoData': {
+                    'ap_txn_amount': _ap['ap_txn_amount'],
+                    'nodes': [{'id': node} for node in _ap['nodes']],
+                    'links': [{'source': buyer_id, 'target': seller_id, 'ap_txn_amount': txn_sum} for
+                              buyer_id, seller_id, txn_sum in _ap['links']],
+                    'max_amount': _ap_max
+                }
             })
 
-        return sorted(ap_topo_json, key=lambda _ap: _ap['profit'], reverse=True)
+        return sorted(ap_json, key=lambda _ap: _ap['affiliatedPartyTopoData']['ap_txn_amount'], reverse=True)
 
     def get_ap_id(self, tp_id):
         """
