@@ -18,6 +18,11 @@ def get_temporal_overview():
 
 @app.route('/ap_list', methods=['POST'])
 def get_ap_list():
+    return json_dump(TPIIN.get_affiliated_party_list())
+
+
+@app.route('/ap_topo_list', methods=['POST'])
+def get_topo_list():
     post_data = request.data.decode()
     if post_data != "":
         post_data = simplejson.loads(post_data)
@@ -29,11 +34,6 @@ def get_ap_list():
         )
     else:
         TPIIN.get_tp_network()
-    return json_dump(TPIIN.get_affiliated_party_list())
-
-
-@app.route('/ap_topo_list')
-def get_topo_list():
     return json_dump(TPIIN.get_affiliated_party_topo_list())
 
 
@@ -45,7 +45,6 @@ def get_ap_by_ap_id():
         ap_data = TPIIN.get_detail_by_ap_id(post_data['ap_id'])
     else:
         ap_data = TPIIN.get_detail_by_tp_id('610198671502546')  # default case
-        # ap_data = TPIIN.get_detail_by_tp_id('610402196912020326')
     return json_dump(ap_data)
 
 
@@ -57,7 +56,6 @@ def get_ap_by_tp_id():
         ap_data = TPIIN.get_detail_by_tp_id(post_data['tp_id'])
     else:
         ap_data = TPIIN.get_detail_by_tp_id('610198671502546')  # default case
-        # ap_data = TPIIN.get_detail_by_tp_id('610402196912020326')
     return json_dump(ap_data)
 
 

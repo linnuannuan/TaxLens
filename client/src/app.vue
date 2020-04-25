@@ -22,11 +22,6 @@
                     <el-col :span="2"><el-button size="mini" circle icon="el-icon-search" @click="searchID"></el-button></el-col>
                 </el-row>
             </el-row>
-            <!--            <group-list-->
-            <!--                    class="control-panel-list"-->
-            <!--                    :affiliated-party-list="affiliatedPartyList"-->
-            <!--                    :loading-list="loadingList">-->
-            <!--            </group-list>-->
             <group-view
                     class="overview-spatial"
                     :affiliated-party-topo-list="affiliatedPartyTopoList"
@@ -49,7 +44,6 @@
                 </graph-view>
             </el-row>
 
-
             <el-row class="detail-view-calendar">
                 <calendar-view
                         class="detail-view-calendar"
@@ -60,21 +54,12 @@
                 </calendar-view>
             </el-row>
         </el-col>
-        <!--        <el-row style="height: 100%">-->
-        <!--            <di-graph-view-->
-        <!--                    :affiliated-party-detail="affiliatedPartyDetail"-->
-        <!--                    :loading-graph="loadingGraph"-->
-        <!--                    style="width: 100%; height: 100%; ">-->
-        <!--            </di-graph-view>-->
-        <!--        </el-row>-->
     </div>
 
 </template>
 
 <script>
-  // import GroupList from './components/group-list'
   import GraphView from './components/graph-view.vue';
-  // import DiGraphView from './components/digraph-view.vue';
   import GroupView from './components/group-view.vue';
   import TemporalView from './components/temporal-view.vue';
   import CalendarView from './components/calendar-view.vue';
@@ -85,9 +70,7 @@
   export default {
     name: 'app',
     components: {
-      // GroupList,
       GraphView,
-      // DiGraphView,
       GroupView,
       TemporalView,
       CalendarView,
@@ -184,15 +167,10 @@
           'max_txn_length': this.transactionChain,
           'max_control_length': this.controlChain
         };
-        DataService.loadAffiliatedPartyList(para, data=>{
-          this.affiliatedPartyList = data;
-          this.loadingList = false;
-
-          DataService.loadAffiliatedPartyTopoList((data)=>{
-            this.affiliatedPartyTopoList = data;
-            this.loadingTopoList = false;
-          });
-        })
+        DataService.loadAffiliatedPartyTopoList(para, (data)=>{
+          this.affiliatedPartyTopoList = data;
+          this.loadingTopoList = false;
+        });
       },
       searchID: function() {
         this.loadingGraph = true;

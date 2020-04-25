@@ -1,29 +1,26 @@
 <template>
-  <el-table
-      :data="affiliatedPartyTopoList"
-      :default-sort = "{prop: 'num_ap_txn', order: 'descending'}"
-      v-loading="loadingTopoList"
-      size="mini"
-      max-height="790">
-    <el-table-column label="Topology" prop="affiliatedPartyTopoData">
-        <template slot-scope="scope">
-            <GroupGlyph :affiliated-party-topo-data="scope.row.affiliatedPartyTopoData"></GroupGlyph>
-        </template>
-    </el-table-column>
-    <el-table-column label="Nodes" prop="num_nodes" sortable></el-table-column>
-    <el-table-column label="AP txns" prop="num_ap_txn" sortable></el-table-column>
-    <el-table-column :label="affiliatedPartyNum" align="right">
-      <template slot-scope="scope">
-        <el-button size="mini" @click="handleView(scope.$index, scope.row)">View</el-button>
-      </template>
-    </el-table-column>
-  </el-table>
+    <el-table
+            ref="groupView"
+            :data="affiliatedPartyTopoList"
+            :default-sort = "{prop: 'num_ap_txn', order: 'descending'}"
+            v-loading="loadingTopoList"
+            @current-change="handleClick"
+            size="mini"
+            max-height="790">
+        <el-table-column prop="affiliatedPartyTopoData" :label="affiliatedPartyNum" width="250px">
+            <template slot-scope="scope">
+                <GroupGlyph :affiliated-party-topo-data="scope.row.affiliatedPartyTopoData"></GroupGlyph>
+            </template>
+        </el-table-column>
+        <el-table-column prop="affiliatedPartyTopoData.ap_txn_amount" sortable width="60px"></el-table-column>
+        <el-table-column prop="num_nodes" sortable width="45px"></el-table-column>
+        <el-table-column prop="num_ap_txn" sortable width="45px"></el-table-column>
+    </el-table>
 </template>
 
 <script>
   import EventService from "../utils/event-service";
   import GroupGlyph from "./group-glyph";
-
 
   export default {
     name: "GroupView",
@@ -41,13 +38,10 @@
       }
     },
     watch: {
-      // affiliatedPartyTopoList: function() {
+      affiliatedPartyTopoList: function() {
         // this.renderGroupView();
-      // },
-    },
-    mounted:function(){
-      // this.initGroupView();
-      // this.renderGroupView();
+        this.$refs.groupView.clearSelection();
+      },
     },
     computed: {
       affiliatedPartyNum: function () {
@@ -55,8 +49,8 @@
       },
     },
     methods: {
-      handleView(id) {
-        EventService.emitSuspiciousGroupSelected(this.affiliatedPartyTopoList[id].ap_id);
+      handleClick(row) {
+        row && EventService.emitSuspiciousGroupSelected(row['ap_id']);
       },
     },
   }

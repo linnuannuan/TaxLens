@@ -22,8 +22,8 @@ let DataService = new Vue({
           console.log(errResponse)
         })
     },
-    loadAffiliatedPartyTopoList(callback){
-      this.axios.get(`${this.dataServerUrl}/ap_topo_list`)
+    loadAffiliatedPartyTopoList(param, callback){
+      this.axios.post(`${this.dataServerUrl}/ap_topo_list`, param)
         .then(response => {
           callback(response.data)
         }, errResponse => {
