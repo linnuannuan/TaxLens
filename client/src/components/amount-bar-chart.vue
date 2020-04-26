@@ -65,7 +65,7 @@
 
 <style scoped>
 .amount-bar{
-    width: 80px;
+    width: 100px;
     height:30px
 }
 </style>

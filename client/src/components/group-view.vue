@@ -2,7 +2,7 @@
     <el-table
             ref="groupView"
             :data="affiliatedPartyTopoList"
-            :default-sort = "{prop: 'affiliatedPartyTopoData.ap_txn_amount', order: 'descending'}"
+            :default-sort = "{prop: 'affiliatedPartyAmountData.ap_txn_amount', order: 'descending'}"
             v-loading="loadingTopoList"
             @current-change="handleClick"
             size="mini"
@@ -12,13 +12,14 @@
                 <GroupGlyph :affiliated-party-topo-data="scope.row.affiliatedPartyTopoData"></GroupGlyph>
             </template>
         </el-table-column>
-        <el-table-column prop="affiliatedPartyNumData"  label="nodes" width="80px">
+        <el-table-column prop="affiliatedPartyNumData"  label="nodes" width="100px">
             <template slot-scope="scope">
                 <BarChart :affiliated-party-num-data="scope.row.affiliatedPartyNumData"></BarChart>
             </template>
         </el-table-column>
-
-        <el-table-column prop="affiliatedPartyAmountData" label="links" width="80px" sortable>
+        <el-table-column prop="affiliatedPartyAmountData" label="links" width="100px"
+                         sort-by="affiliatedPartyAmountData.ap_txn_amount"
+                         sortable>
             <template slot-scope="scope">
                 <AmountBarChart :affiliated-party-amount-data="scope.row.affiliatedPartyAmountData"></AmountBarChart>
             </template>

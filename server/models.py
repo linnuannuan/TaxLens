@@ -160,6 +160,9 @@ class Model:
         _ap_df = _ap_df.rename(columns={'txn_sum': 'ap_txn_amount'}).fillna(0)
         # filter noisy data
         _ap_df = _ap_df.query('ap_txn_amount > 0')
+        _ap_df['num_nodes'] = _ap_df.apply(lambda x: len(x.nodes), axis=1)
+        _ap_df = _ap_df.query('num_nodes < 10')
+
         # provide maximum information
         _ap_max = np.max(_ap_df['ap_txn_amount'])
         # _nodes_max = np.max()
@@ -174,7 +177,7 @@ class Model:
             ap_json.append({
                 'ap_id': _ap['ap_id'],
                 'affiliatedPartyNumData': {
-                    'num_nodes': len(_ap['nodes']),
+                    'num_nodes': int(_ap['num_nodes']),
                     'num_ap_nodes': len([{'id': node} for node in _ap['nodes']]),
                     'num_evader': int(_ap['num_evader']),
                     'num_deducted': int(_ap['num_deducted']),
