@@ -162,6 +162,8 @@ class Model:
         _ap_df = _ap_df.query('ap_txn_amount > 0')
         # provide maximum information
         _ap_max = np.max(_ap_df['ap_txn_amount'])
+        # _nodes_max = np.max()
+
 
         # sort the array in descending order
         _ap_df = _ap_df.sort_values('ap_txn_amount').tail(50).to_dict("records")
@@ -171,16 +173,22 @@ class Model:
         for _ap in _ap_df:
             ap_json.append({
                 'ap_id': _ap['ap_id'],
-                'num_nodes': len(_ap['nodes']),
-                'num_ap_txn': _ap['num_ap_txn'],
-                'num_evader': int(_ap['num_evader']),
-                'num_deducted': int(_ap['num_deducted']),
-                'affiliatedPartyTopoData': {
+                'affiliatedPartyNumData': {
+                    'num_nodes': len(_ap['nodes']),
+                    'num_ap_nodes': len([{'id': node} for node in _ap['nodes']]),
+                    'num_evader': int(_ap['num_evader']),
+                    'num_deducted': int(_ap['num_deducted']),
+                    # 'max_num_nodes': _nodes_max,
+                },
+                'affiliatedPartyAmountData': {
+                    'num_ap_txn': _ap['num_ap_txn'],
                     'ap_txn_amount': _ap['ap_txn_amount'],
+                    'max_amount': _ap_max
+                },
+                'affiliatedPartyTopoData': {
                     'nodes': [{'id': node} for node in _ap['nodes']],
                     'links': [{'source': buyer_id, 'target': seller_id, 'ap_txn_amount': txn_sum} for
                               buyer_id, seller_id, txn_sum in _ap['links']],
-                    'max_amount': _ap_max
                 }
             })
 
