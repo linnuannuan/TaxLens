@@ -39,7 +39,7 @@
           width:width,
           height:height,
           node:{
-            strokeWidth:1.5,
+            strokeWidth:4,
             invest_r:15,
             min_r:4,
             max_r:10,
@@ -192,7 +192,7 @@
                                 g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
                 // .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
                 .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
-                .attr('stroke-width',5)
+                .attr('stroke-width',this.cfg.node.strokWidth)
                 .on('mouseover', d=>{
                   // show its name
                   d3.select('#text-'+d).attr('fill-opacity',1)
