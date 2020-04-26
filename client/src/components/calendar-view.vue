@@ -42,10 +42,11 @@
         this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 1200, y: 450}];
         this.calendar.showLoading(this.loadingCalendar);
 
-        let colorEncoding = [
-          '#8c510a','#bf812d','#dfc27d','#f6e8c3',
-          '#f5f5f5',
-          '#c7eae5','#80cdc1','#35978f','#01665e'];
+        // let colorEncoding = [
+        //   '#8c510a','#bf812d','#dfc27d','#f6e8c3',
+        //   '#f5f5f5',
+        //   '#c7eae5','#80cdc1','#35978f','#01665e'];
+        let colorEncoding = ['#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850'];
         let colorLoss = colorEncoding[0];
         let colorProfit = colorEncoding[colorEncoding.length-1];
 
@@ -137,7 +138,7 @@
               id: 'src_calendar',
               range: ['2014-01', '2014-03-31'],
               top: 60,
-              bottom: '10',
+              bottom: '40',
               left: '40',
               right: '620',
               itemStyle: {borderWidth: 0.5},
@@ -149,7 +150,7 @@
               id: 'dst_calendar',
               range: ['2014-01', '2014-03-31'],
               top: 60,
-              bottom: '10',
+              bottom: '40',
               left: '620',
               right: '40',
               itemStyle: {borderWidth: 0.5},

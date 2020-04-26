@@ -4,9 +4,10 @@
             :data="affiliatedPartyTopoList"
             :default-sort = "{prop: 'affiliatedPartyAmountData.ap_txn_amount', order: 'descending'}"
             v-loading="loadingTopoList"
+            highlight-current-row
             @current-change="handleClick"
             size="mini"
-            max-height="790"
+            max-height="789"
             :row-class-name="rowStyle"
         >
         <el-table-column prop="affiliatedPartyTopoData" :label="affiliatedPartyNum" width="100px" >
@@ -68,7 +69,7 @@
     computed: {
       affiliatedPartyNum: function () {
         return "Count: " + this.affiliatedPartyTopoList.length;
-      }
+      },
     },
     methods: {
       handleClick(row) {

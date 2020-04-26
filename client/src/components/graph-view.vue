@@ -122,8 +122,8 @@
         });
 
         g.graph().align = 'UL';
-        g.graph().acyclicer = 'greedy';
-        // g.graph().ranker = 'longest-path';
+        // g.graph().acyclicer = 'greedy';
+        g.graph().ranker = 'longest-path';
         dagre.layout(g);
 
         let node_width = g.graph().width > this.cfg.trade_panel.max_width? this.cfg.trade_panel.max_width/g.graph().width*this.cfg.node.rect_width: this.cfg.node.rect_width;
