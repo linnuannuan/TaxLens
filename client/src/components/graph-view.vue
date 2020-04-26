@@ -47,12 +47,12 @@
 
               // tp:'white',
               // in:'white',
-              tp:'#80b1d3',
-              in:'#bebada',
-              evader_stroke:"#fb8072",
+              tp:'#1f78b4',
+              in:'#ff7f00',
+              evader_stroke:"#6a3d9a",
               default_stroke:"#ccc",
-              profit:'#35978f',
-              loss:'#bf812d'
+              profit:'#66bd63',
+              loss:'#f46d43'
             },
             rect_width: 30,
             rect_height: 30,
@@ -169,39 +169,6 @@
                 .attr("fill", d=> this.cfg.link.color[d])
                 .attr("d", "M0,-5L10,0L0,5");
 
-        // draw node
-        this.svg.append('g').classed('node',!0)
-                .selectAll('g')
-                .data(g.nodes())
-                .enter()
-                .append('circle')
-                .attr('r',node_width/2)
-                .attr('cx',d=>g.node(d).x + node_width/2)
-                .attr('cy',d=>g.node(d).y + node_width/2)
-                // .append('rect')
-                // .attr('x',d=>g.node(d).x )
-                // .attr('y',d=>g.node(d).y )
-                // .attr('width',node_width)
-                // .attr('height',node_height)
-                // .attr('fill',d=>{
-                //   return g.node(d).label === 'in'? this.cfg.node.color.in:
-                //         g.node(d).profit === undefined? this.cfg.node.color.tp:
-                //                 g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
-                .attr('fill',d=>{
-                  return g.node(d).profit === undefined? 'white':
-                                g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
-                // .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
-                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
-                .attr('stroke-width',5)
-                .on('mouseover', d=>{
-                  // show its name
-                  d3.select('#text-'+d).attr('fill-opacity',1)
-                })
-                .on('mouseout', d=>{
-                  // unhighlight other node text
-                  d3.select('#text-'+d).attr('fill-opacity',0)
-                });
-
         // add text to node
         this.svg.append('g').classed('text',!0)
                 .selectAll('g')
@@ -240,7 +207,8 @@
                 .attr('id', d=> g.edge(d).label + "-" + d.v + "-" + d.w)
                 .attr('d',d=> {
                   let offset_x = node_width/2;
-                  let offset_y = node_height;
+                  let offset_y = node_height/2;
+                  // let offset_y = 0;
                   let link_data = [[g.node(d.v).x, + g.node(d.v).y]].concat(g.edge(d).points.map(p=>[p.x,p.y])).concat([[g.node(d.w).x,g.node(d.w).y]]);
 
                   let position_linear = d3.scaleLinear()
@@ -303,6 +271,39 @@
                 })
                 .on('click', d=>{
                   EventService.emitAffiliatedTransactionSelected(d.v, d.w);
+                });
+
+        // draw node
+        this.svg.append('g').classed('node',!0)
+                .selectAll('g')
+                .data(g.nodes())
+                .enter()
+                .append('circle')
+                .attr('r',node_width/2)
+                .attr('cx',d=>g.node(d).x + node_width/2)
+                .attr('cy',d=>g.node(d).y + node_width/2)
+                // .append('rect')
+                // .attr('x',d=>g.node(d).x )
+                // .attr('y',d=>g.node(d).y )
+                // .attr('width',node_width)
+                // .attr('height',node_height)
+                // .attr('fill',d=>{
+                //   return g.node(d).label === 'in'? this.cfg.node.color.in:
+                //         g.node(d).profit === undefined? this.cfg.node.color.tp:
+                //                 g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
+                .attr('fill',d=>{
+                  return g.node(d).profit === undefined? 'white':
+                          g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
+                // .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
+                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
+                .attr('stroke-width',5)
+                .on('mouseover', d=>{
+                  // show its name
+                  d3.select('#text-'+d).attr('fill-opacity',1)
+                })
+                .on('mouseout', d=>{
+                  // unhighlight other node text
+                  d3.select('#text-'+d).attr('fill-opacity',0)
                 });
       }
     }
