@@ -6,9 +6,12 @@
             v-loading="loadingTopoList"
             @current-change="handleClick"
             size="mini"
-            max-height="790">
-        <el-table-column prop="affiliatedPartyTopoData" :label="affiliatedPartyNum" width="100px">
+            max-height="790"
+            :row-class-name="rowStyle"
+        >
+        <el-table-column prop="affiliatedPartyTopoData" :label="affiliatedPartyNum" width="100px" >
             <template slot-scope="scope">
+
                 <GroupGlyph :affiliated-party-topo-data="scope.row.affiliatedPartyTopoData"></GroupGlyph>
             </template>
         </el-table-column>
@@ -17,9 +20,10 @@
                 <BarChart :affiliated-party-num-data="scope.row.affiliatedPartyNumData"></BarChart>
             </template>
         </el-table-column>
-        <el-table-column prop="affiliatedPartyAmountData" label="links" width="100px"
-                         sort-by="affiliatedPartyAmountData.ap_txn_amount"
-                         sortable>
+        <el-table-column prop="affiliatedPartyAmountData" label="links" width="100px">
+<!--                         sort-by="affiliatedPartyAmountData.ap_txn_amount"-->
+<!--                         sortable-->
+
             <template slot-scope="scope">
                 <AmountBarChart :affiliated-party-amount-data="scope.row.affiliatedPartyAmountData"></AmountBarChart>
             </template>
@@ -70,10 +74,17 @@
       handleClick(row) {
         row && EventService.emitSuspiciousGroupSelected(row['ap_id']);
       },
+      rowStyle() {
+        return 'row';
+      }
+
     },
   }
 </script>
 
 
-<style scoped>
+<style>
+    .el-table .row{
+        height:100px
+    }
 </style>

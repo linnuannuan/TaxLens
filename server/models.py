@@ -165,7 +165,7 @@ class Model:
 
         # provide maximum information
         _ap_max = np.max(_ap_df['ap_txn_amount'])
-        # _nodes_max = np.max()
+        _nodes_max = np.max(_ap_df['num_nodes'])
 
 
         # sort the array in descending order
@@ -181,7 +181,7 @@ class Model:
                     'num_ap_nodes': len([{'id': node} for node in _ap['nodes']]),
                     'num_evader': int(_ap['num_evader']),
                     'num_deducted': int(_ap['num_deducted']),
-                    # 'max_num_nodes': _nodes_max,
+                    'max_num_nodes': int(_nodes_max),
                 },
                 'affiliatedPartyAmountData': {
                     'num_ap_txn': _ap['num_ap_txn'],

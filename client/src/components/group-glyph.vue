@@ -136,7 +136,7 @@
                       //存在互相交易
                       // let r = Math.hypot(target_x - source_x, 0)>this.cfg.height/2? Math.hypot(target_x - source_x, 0):this.cfg.height/2
                        let r = 1
-                      // let r = Math.hypot(target_x - source_x, 0) + 10
+                      // let r = Math.hypot(target_x - source_x, 0)
 
                       console.log(this.cfg.node.individual.min_r / 2, this.cfg.height / 2, Math.hypot(target_x - source_x, 0))
                       // let r = Math.hypot(target_x - source_x, 0);
@@ -173,7 +173,7 @@
 
 <style scoped>
     .group-glyph{
-        width: 80px;
-        height:30px
+        width: 90px;
+        height:100px
     }
 </style>

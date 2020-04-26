@@ -40,13 +40,16 @@
           height:height,
           node:{
             strokeWidth:1.5,
-            invest_r:20,
+            invest_r:15,
             min_r:4,
             max_r:10,
             color:{
+
+              // tp:'white',
+              // in:'white',
               tp:'#80b1d3',
               in:'#bebada',
-              evader_stroke:"#ff0000",
+              evader_stroke:"#fb8072",
               default_stroke:"#ccc",
               profit:'#35978f',
               loss:'#bf812d'
@@ -63,12 +66,15 @@
             }
           },
           invest_panel:{
-            highlight_stroke_width:4
+            highlight_stroke_width:4,
+            highlight_stroke_color:'#984ea3'
           },
           trade_panel:{
             unimportant_opacity:0.2,
             default_opacity:0.5,
             highlight_opacity:1,
+
+            highlight_stroke_color:'#377eb8',
 
             // current config (dagre)
             margin_width: margin_width,
@@ -168,16 +174,25 @@
                 .selectAll('g')
                 .data(g.nodes())
                 .enter()
-                .append('rect')
-                .attr('x',d=>g.node(d).x )
-                .attr('y',d=>g.node(d).y )
-                .attr('width',node_width)
-                .attr('height',node_height)
+                .append('circle')
+                .attr('r',node_width/2)
+                .attr('cx',d=>g.node(d).x + node_width/2)
+                .attr('cy',d=>g.node(d).y + node_width/2)
+                // .append('rect')
+                // .attr('x',d=>g.node(d).x )
+                // .attr('y',d=>g.node(d).y )
+                // .attr('width',node_width)
+                // .attr('height',node_height)
+                // .attr('fill',d=>{
+                //   return g.node(d).label === 'in'? this.cfg.node.color.in:
+                //         g.node(d).profit === undefined? this.cfg.node.color.tp:
+                //                 g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
                 .attr('fill',d=>{
-                  return g.node(d).label === 'in'? this.cfg.node.color.in:
-                        g.node(d).profit === undefined? this.cfg.node.color.tp:
+                  return g.node(d).profit === undefined? 'white':
                                 g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
-                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
+                // .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
+                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
+                .attr('stroke-width',5)
                 .on('mouseover', d=>{
                   // show its name
                   d3.select('#text-'+d).attr('fill-opacity',1)
@@ -248,13 +263,16 @@
                     for(let path_id in g.edge(d).path){
                       for( let node_id in g.edge(d).path[path_id]){
                         if( node_id < (g.edge(d).path[path_id].length-1) ){
-                          // highlight correspond invest link (undirect link)
+                          // d3.select('#txn-'+d.v+"-"+d.w)
+                          //         .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width);
+                          // d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
+                          //         .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width);
                           d3.select('#txn-'+d.v+"-"+d.w)
-                                  .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width);
+                                  .attr('stroke', this.cfg.trade_panel.highlight_stroke_color);
                           d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
-                                  .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width);
+                                  .attr('stroke', this.cfg.invest_panel.highlight_stroke_color);
                           d3.select('#invest'+ '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)] + '-' + g.edge(d).path[path_id][parseInt(node_id)])
-                                  .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width)
+                                  .attr('stroke', this.cfg.invest_panel.highlight_stroke_color)
                         }
                       }
                     }
@@ -266,12 +284,18 @@
                       for (let node_id in g.edge(d).path[path_id]) {
                         if (node_id < (g.edge(d).path[path_id].length - 1)) {
                           // unhighlight correspond invest link (undirect link)
+                          // d3.select('#txn-' + d.v + "-" + d.w)
+                          //         .attr('stroke-width', 2);
+                          // d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
+                          //         .attr('stroke-width', 2);
+                          // d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)] + '-' + g.edge(d).path[path_id][parseInt(node_id)])
+                          //         .attr('stroke-width', 2)
                           d3.select('#txn-' + d.v + "-" + d.w)
-                                  .attr('stroke-width', 2);
+                                  .attr('stroke', this.cfg.link.color.txn);
                           d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
-                                  .attr('stroke-width', 2);
+                                  .attr('stroke', this.cfg.link.color.invest);
                           d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)] + '-' + g.edge(d).path[path_id][parseInt(node_id)])
-                                  .attr('stroke-width', 2)
+                                  .attr('stroke', this.cfg.link.color.invest)
                         }
                       }
                     }

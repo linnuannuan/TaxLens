@@ -43,23 +43,23 @@
                 this.svg.selectAll("g").remove();
 
                 let data = this.affiliatedPartyNumData;
-                data['max_num_nodes'] = 34
+                // data['max_num_nodes'] = 34
 
                 console.log('bar-chart-data:', this.affiliatedPartyNumData)
 
 
                 /* draw each group with circle (size encode tax gap) and node_link graph represent inner ap_transaction */
                 // draw node num
-                this.svg.append('g')
-                      .append('rect')
-                      .attr('x', 0)
-                      .attr('y', 0)
-                      .attr('width', data['num_nodes']/data['max_num_nodes']*this.cfg.width)
-                      .attr('height', this.cfg.height)
-                      .attr('fill', this.cfg.color.node)
-                      // .attr('fill-opacity', 0.5)
-                      .attr('stroke', this.cfg.color.node)
-                      .attr('stroke-width', 4)
+                // this.svg.append('g')
+                //       .append('rect')
+                //       .attr('x', 0)
+                //       .attr('y', 0)
+                //       .attr('width', data['num_nodes']/data['max_num_nodes']*this.cfg.width)
+                //       .attr('height', this.cfg.height)
+                //       .attr('fill', this.cfg.color.node)
+                //       // .attr('fill-opacity', 0.5)
+                //       .attr('stroke', this.cfg.color.node)
+                //       .attr('stroke-width', 4)
 
                 // draw ap_node num
                 this.svg.append('g')
