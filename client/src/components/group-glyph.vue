@@ -80,18 +80,18 @@
 
           /* draw each group with circle (size encode tax gap) and node_link graph represent inner ap_transaction */
           // draw group circle
-          this.svg.append('g')
-              .append('rect')
-              .attr('x', this.cfg.node.group.margin.left)
-              .attr('y', this.cfg.node.group.margin.top)
-              .attr('width', data['ap_txn_amount'] / data['max_amount'])
-              // .attr('width',d=>groupRScaler(d['profit']))
-              .attr('height', this.cfg.height)
-              .attr('fill', this.cfg.node.group.color)
-              .attr('fill-opacity', 0.5)
-              .attr('stroke', this.cfg.node.group.color)
-              .attr('stroke-width', 2)
-              .on('click', d => this.handleView(d.ap_id));
+          // this.svg.append('g')
+          //     .append('rect')
+          //     .attr('x', this.cfg.node.group.margin.left)
+          //     .attr('y', this.cfg.node.group.margin.top)
+          //     .attr('width', data['ap_txn_amount'] / data['max_amount'])
+          //     // .attr('width',d=>groupRScaler(d['profit']))
+          //     .attr('height', this.cfg.height)
+          //     .attr('fill', this.cfg.node.group.color)
+          //     .attr('fill-opacity', 0.5)
+          //     .attr('stroke', this.cfg.node.group.color)
+          //     .attr('stroke-width', 2)
+          //     .on('click', d => this.handleView(d.ap_id));
 
           let group_content_svg = this.svg.append('g')
               .classed('group_content', !0);
@@ -138,9 +138,6 @@
                        let r = 1
                       // let r = Math.hypot(target_x - source_x, 0)
 
-                      console.log(this.cfg.node.individual.min_r / 2, this.cfg.height / 2, Math.hypot(target_x - source_x, 0))
-                      // let r = Math.hypot(target_x - source_x, 0);
-
                       return `M${source_x},${y} A${r},${r} 0 0,1 ${target_x},${y}`;
                   } else {
                       return 'M' + source_x + ',' + y + 'L' + target_x + ',' + y
@@ -161,9 +158,6 @@
               .attr('cx', d => xPositionLinear(group_data.nodes.indexOf(d)))
               .attr('cy', this.cfg.height / 2)
               .attr('fill', this.cfg.node.individual.color);
-          // console.log(group_data.links)
-
-          console.log(group_data.links)
 
       }
       }
@@ -173,7 +167,7 @@
 
 <style scoped>
     .group-glyph{
-        width: 90px;
+        width: 100px;
         height:100px
     }
 </style>

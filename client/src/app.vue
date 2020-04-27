@@ -90,7 +90,8 @@
         periodEnd: '2014-12-31',
         transactionChain: 3,
         controlChain: 2,
-        search_id: '610198671502546',
+        search_id: '',
+        // search_id: '610198671502546',
 
         // Calendar query
         calendarSourceId: '610198748609852',
@@ -213,10 +214,12 @@
         text-align: left;
         font-size: 14px;
     }
-
-    .overview-spatial{
+    .el-row{
+        padding:3px;
+    }
+   .overview-spatial{
         width: 100%;
-        height: 790px;
+        height: 764px;
     }
 
     .views{

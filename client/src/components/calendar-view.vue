@@ -258,7 +258,7 @@
               hoverAnimation: false,
               // symbolOffset: [0, '-50%'],
               lineStyle: {
-                color: '#d6604d',
+                color: '#1f78b4',
                 width: 2,
                 opacity: 1
               },

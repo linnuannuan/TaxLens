@@ -163,29 +163,51 @@ class Model:
         _ap_df['num_nodes'] = _ap_df.apply(lambda x: len(x.nodes), axis=1)
         _ap_df = _ap_df.query('ap_txn_amount > 0 & num_nodes < 10 & num_ap_txn < 100')
         # provide maximum information
-        _ap_max = np.max(_ap_df['ap_txn_amount'])
-        _nodes_max = np.max(_ap_df['num_nodes'])
+        _nodes_max = np.max(_ap_df.sort_values('num_effective').tail(50)['num_nodes'])
+        # _ap_max = np.max(_ap_df.sort_values('num_effective').tail(50)['ap_txn_amount'])
+        # _effective_max = _ap_df.sort_values('num_effective').tail(1)['num_effective']
+        # _evader_max = np.max(_ap_df.sort_values('num_effective').tail(50)['num_evader'])
+
+        _ap_avg = np.average(_ap_df.sort_values('num_effective').tail(50)['ap_txn_amount'])
+        _effective_avg = np.average(_ap_df.sort_values('num_effective').tail(50)['num_effective'])
+        _evader_avg = np.average(_ap_df.sort_values('num_effective').tail(50)['num_evader'])
+        _ap_std = np.std(_ap_df.sort_values('num_effective').tail(50)['ap_txn_amount'])
+        _effective_std = np.std(_ap_df.sort_values('num_effective').tail(50)['num_effective'])
+        _evader_std = np.std(_ap_df.sort_values('num_effective').tail(50)['num_evader'])
+
+
         # sort the array in descending order
         _ap_df = _ap_df.sort_values('num_effective').tail(50).to_dict("records")
+
+
 
         # prepare the json file
         ap_json = []
         for _ap in _ap_df:
             ap_json.append({
                 'ap_id': _ap['ap_id'],
-                'affiliatedPartyNumData': {
-                    'num_nodes': int(_ap['num_nodes']),
-                    'num_ap_nodes': len([{'id': node} for node in _ap['nodes']]),
-                    'num_evader': int(_ap['num_evader']),  # Sort 3
-                    'num_deducted': int(_ap['num_deducted']),
-                    'num_effective': int(_ap['num_effective']),  # Sort 2
-                    'max_num_nodes': int(_nodes_max),
-                },
-                'affiliatedPartyAmountData': {
-                    'num_ap_txn': _ap['num_ap_txn'],
-                    'ap_txn_amount': _ap['ap_txn_amount'],  # Sort 1
-                    'max_amount': _ap_max
-                },
+                # 'affiliatedPartyNumData': {
+                #     'num_nodes': int(_ap['num_nodes']),
+                #     'num_ap_nodes': len([{'id': node} for node in _ap['nodes']]),
+                #     'num_evader': int(_ap['num_evader']),  # Sort 3
+                #     'num_deducted': int(_ap['num_deducted']),
+                #     'num_effective': int(_ap['num_effective']),  # Sort 2
+                #     'max_num_nodes': int(_nodes_max),
+                # },
+                # 'affiliatedPartyAmountData': {
+                #     'num_ap_txn': _ap['num_ap_txn'],
+                #     'ap_txn_amount': _ap['ap_txn_amount'],  # Sort 1
+                #     'max_amount': _ap_max
+                # },
+                # x = (x - mu) / sigma
+                'ap_txn_amount': int(_ap['ap_txn_amount']),  # Sort 1
+                'num_effective': int(_ap['num_effective']),  # Sort 2
+                'num_evader': int(_ap['num_evader']),  # Sort 3
+
+                'ap_txn_amount_height': int(((_ap['ap_txn_amount']-_ap_avg)/_ap_std + 1) * 40),  # Height 1
+                'num_effective_height': int(((_ap['num_effective']-_effective_avg)/_effective_std + 1) * 40),  # Height 2
+                'num_evader_height': int(((_ap['num_evader']-_evader_avg)/_evader_std + 1) * 40),  # Height 3
+
                 'affiliatedPartyTopoData': {
                     'nodes': [{'id': node} for node in _ap['nodes']],
                     'links': [{'source': buyer_id, 'target': seller_id, 'ap_txn_amount': txn_sum} for

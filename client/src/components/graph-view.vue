@@ -47,8 +47,11 @@
               // tp:'white',
               // in:'white',
               tp:'#1f78b4',
-              in:'#ff7f00',
-              evader_stroke:"#6a3d9a",
+              // in:'#6a3d9a',    //紫色
+              // in:'#f781bf', //粉色
+              in:'#ff7f00', //橙色
+              evader_stroke:"#a65628",
+              // evader_stroke:"#6a3d9a",
               default_stroke:"#ccc",
               profit:'#66bd63',
               loss:'#f46d43'
@@ -60,13 +63,17 @@
             min_width: 1.5,
             max_width: 1.5,
             color: {
+              // txn:'#1f78b4',
               txn:'#80b1d3',
-              invest:'#bebada',
+              // invest:"#fccde5", // 粉色
+              invest:"#fdb462", // 橙色
+              // invest:'#bebada', // 紫色
             }
           },
           invest_panel:{
             highlight_stroke_width:4,
-            highlight_stroke_color:'#984ea3'
+            highlight_stroke_color:'#ff7f00'
+            // highlight_stroke_color:'#984ea3'
           },
           trade_panel:{
             unimportant_opacity:0.2,
@@ -94,6 +101,8 @@
       renderGraph() {
         if (this.affiliatedPartyDetail === undefined || this.affiliatedPartyDetail.nodes === undefined ) return;
         this.svg.selectAll("g").remove();
+        this.svg.selectAll("defs").remove();
+        this.svg.selectAll("use").remove();
         let data = this.affiliatedPartyDetail;
 
         // Create a new directed graph
@@ -167,6 +176,21 @@
                 .append("path")
                 .attr("fill", d=> this.cfg.link.color[d])
                 .attr("d", "M0,-5L10,0L0,5");
+
+        this.svg.append('defs')
+            .append('symbol')
+            .attr('id','icon-1')
+            .append('svg')
+            .attr('width',30)
+            .attr('height',30)
+            .attr('viewBox',"0 0 1024 1024")
+            .append('g')
+            .attr('xmlns',"http://www.w3.org/2000/svg")
+            .append('path')
+            .attr('d',"M560.64 867.328c-13.824 12.288-29.696 18.432-48.128 18.432s-34.816-6.144-48.64-17.92c-13.824-12.288-20.992-28.672-20.992-50.688 0-18.944 6.656-34.816 19.968-48.128 13.312-13.312 29.696-19.968 48.64-19.968 19.456 0 35.84 6.656 49.152 19.968 13.824 13.312 20.48 29.184 20.48 48.128 0 20.992-6.656 37.888-20.48 50.176zM445.44 605.696l-34.304-269.312c0-51.2 44.032-93.184 97.28-93.184 53.76 0 97.28 41.984 97.28 93.184l-34.304 269.312c-17.408 138.752-113.152 132.096-125.952 0z")
+            .attr('fill',this.cfg.node.color.evader_stroke)
+
+
 
         // add text to node
         this.svg.append('g').classed('text',!0)
@@ -269,20 +293,10 @@
                 .attr('r',node_width/2)
                 .attr('cx',d=>g.node(d).x + node_width/2)
                 .attr('cy',d=>g.node(d).y + node_width/2)
-                // .append('rect')
-                // .attr('x',d=>g.node(d).x )
-                // .attr('y',d=>g.node(d).y )
-                // .attr('width',node_width)
-                // .attr('height',node_height)
-                // .attr('fill',d=>{
-                //   return g.node(d).label === 'in'? this.cfg.node.color.in:
-                //         g.node(d).profit === undefined? this.cfg.node.color.tp:
-                //                 g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
                 .attr('fill',d=>{
                   return g.node(d).profit === undefined? 'white':
                           g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
-                // .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
-                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
+                .attr('stroke',d=>g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
                 .attr('stroke-width',this.cfg.node.strokeWidth)
                 .on('mouseover', d=>{
                   // show its name
@@ -292,16 +306,21 @@
                   // unhighlight other node text
                   d3.select('#text-'+d).attr('fill-opacity',0)
                 });
-            this.svg.append('use')
-                .attr('xlink:href',"http://www.w3school.com.cn/svg/a_1.svg#Fill-1")
-                // .append('symbol')
-                // .attr("viewBox", [0, 0, 24, 24])
-                // .append('path')
-                // .
-                // .attr('fill', "#a50026")
-      //  <svg t="1587923030360" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="23039" data-spm-anchor-id="a313x.7781069.0.i15" width="200" height="200">
-          //
-          //  </svg>
+
+
+        this.svg.append('g')
+                .selectAll('g')
+                .data(g.nodes().filter(d=>g.node(d).tax_evader))
+                .enter()
+                .append('use')
+                    .attr('class',"female")
+                    .attr('x',d=>g.node(d).x )
+                    .attr('y',d=>g.node(d).y-2)
+                    .attr('width',30)
+                    .attr('height',30)
+                    .attr('xmlns:xlink',"http://www.w3.org/1999/xlink")
+                    .attr('xlink:href',"#icon-1")
+
 
       }
     }
