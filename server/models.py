@@ -134,15 +134,15 @@ class Model:
 
         # filter nodes that are not performing related party transactions
         _ap_df = _ap_df.query('tp_id in @_ap_list')
-
         # match seller_id with ap_id
         _ap_df_seller = _ap_df.merge(self.ap_txn_period, left_on='tp_id', right_on='seller_id')[
-            ['ap_id', 'seller_id', 'buyer_id', 'txn_sum']
+            ['ap_id', 'seller_id', 'buyer_id', 'txn_sum', 'date', 'effective']
         ]
         # match buyer_id with ap_id
         _ap_df = _ap_df_seller.merge(_ap_df, left_on='buyer_id', right_on='tp_id', suffixes=('', '_b'))
         # matching ap_id of both buyer and seller to confirm related party transaction
-        _ap_df = _ap_df.query('ap_id == ap_id_b')[['ap_id', 'seller_id', 'buyer_id', 'txn_sum']]
+        _ap_df = _ap_df.query('ap_id == ap_id_b')[['ap_id', 'seller_id', 'buyer_id', 'txn_sum', 'date', 'effective']]
+        _ap_df = _ap_df.rename(columns={'effective': 'num_effective'})
         # prepare for count
         _ap_df['num_ap_txn'] = 1
         # sum the total transaction amount and count
@@ -150,26 +150,23 @@ class Model:
         # prepare links data
         _ap_df['links'] = list(zip(_ap_df['buyer_id'], _ap_df['seller_id'], _ap_df['txn_sum']))
         _ap_df = _ap_df.groupby('ap_id').agg(
-            {'txn_sum': np.sum, 'num_ap_txn': np.sum, 'links': list, 'seller_id': set, 'buyer_id': set}
+            {'txn_sum': np.sum, 'num_ap_txn': np.sum, 'num_effective': np.sum,
+             'links': list, 'seller_id': set, 'buyer_id': set}
         )
         # prepare nodes data
         _ap_df['nodes'] = _ap_df.apply(lambda x: list(x.seller_id.union(x.buyer_id)), axis=1)
         # prepare tax evaders data
-        _ap_df = _ap_df[['txn_sum', 'num_ap_txn', 'nodes', 'links']].reset_index()
+        _ap_df = _ap_df[['txn_sum', 'num_ap_txn', 'num_effective', 'nodes', 'links']].reset_index()
         _ap_df = _ap_df.merge(_tax_evader, how='left').merge(_tax_deducted, how='left')
         _ap_df = _ap_df.rename(columns={'txn_sum': 'ap_txn_amount'}).fillna(0)
         # filter noisy data
-        _ap_df = _ap_df.query('ap_txn_amount > 0')
         _ap_df['num_nodes'] = _ap_df.apply(lambda x: len(x.nodes), axis=1)
-        _ap_df = _ap_df.query('num_nodes < 10')
-
+        _ap_df = _ap_df.query('ap_txn_amount > 0 & num_nodes < 10 & num_ap_txn < 100')
         # provide maximum information
         _ap_max = np.max(_ap_df['ap_txn_amount'])
         _nodes_max = np.max(_ap_df['num_nodes'])
-
-
         # sort the array in descending order
-        _ap_df = _ap_df.sort_values('ap_txn_amount').tail(50).to_dict("records")
+        _ap_df = _ap_df.sort_values('num_effective').tail(50).to_dict("records")
 
         # prepare the json file
         ap_json = []
@@ -179,13 +176,14 @@ class Model:
                 'affiliatedPartyNumData': {
                     'num_nodes': int(_ap['num_nodes']),
                     'num_ap_nodes': len([{'id': node} for node in _ap['nodes']]),
-                    'num_evader': int(_ap['num_evader']),
+                    'num_evader': int(_ap['num_evader']),  # Sort 3
                     'num_deducted': int(_ap['num_deducted']),
+                    'num_effective': int(_ap['num_effective']),  # Sort 2
                     'max_num_nodes': int(_nodes_max),
                 },
                 'affiliatedPartyAmountData': {
                     'num_ap_txn': _ap['num_ap_txn'],
-                    'ap_txn_amount': _ap['ap_txn_amount'],
+                    'ap_txn_amount': _ap['ap_txn_amount'],  # Sort 1
                     'max_amount': _ap_max
                 },
                 'affiliatedPartyTopoData': {

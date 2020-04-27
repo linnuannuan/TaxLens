@@ -32,8 +32,8 @@
                     height:height,
                     color: {
                         'node': '#d9d9d9',
-                        'ap_node': '#80b1d3',
-                        'evader': '#fb8072'
+                        'ap_node': '#1f78b4',
+                        'evader': '#ff7f00'
                     }
 
                 };

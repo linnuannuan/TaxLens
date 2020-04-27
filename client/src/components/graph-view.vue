@@ -31,28 +31,27 @@
       initGraph() {
         let width = this.$el.clientWidth;
         let height = this.$el.clientHeight;
-        let margin_width = 30;
-        let margin_height = 30;
+        let margin_width = 40;
+        let margin_height = 20;
 
         //config the node width and link width
         this.cfg={
           width:width,
           height:height,
           node:{
-            strokeWidth:4,
+            strokeWidth:5,
             invest_r:15,
             min_r:4,
             max_r:10,
             color:{
-
               // tp:'white',
               // in:'white',
-              tp:'#80b1d3',
-              in:'#bebada',
-              evader_stroke:"#fb8072",
+              tp:'#1f78b4',
+              in:'#ff7f00',
+              evader_stroke:"#6a3d9a",
               default_stroke:"#ccc",
-              profit:'#35978f',
-              loss:'#bf812d'
+              profit:'#66bd63',
+              loss:'#f46d43'
             },
             rect_width: 30,
             rect_height: 30,
@@ -122,8 +121,8 @@
         });
 
         g.graph().align = 'UL';
-        g.graph().acyclicer = 'greedy';
-        // g.graph().ranker = 'longest-path';
+        // g.graph().acyclicer = 'greedy';
+        g.graph().ranker = 'longest-path';
         dagre.layout(g);
 
         let node_width = g.graph().width > this.cfg.trade_panel.max_width? this.cfg.trade_panel.max_width/g.graph().width*this.cfg.node.rect_width: this.cfg.node.rect_width;
@@ -169,39 +168,6 @@
                 .attr("fill", d=> this.cfg.link.color[d])
                 .attr("d", "M0,-5L10,0L0,5");
 
-        // draw node
-        this.svg.append('g').classed('node',!0)
-                .selectAll('g')
-                .data(g.nodes())
-                .enter()
-                .append('circle')
-                .attr('r',node_width/2)
-                .attr('cx',d=>g.node(d).x + node_width/2)
-                .attr('cy',d=>g.node(d).y + node_width/2)
-                // .append('rect')
-                // .attr('x',d=>g.node(d).x )
-                // .attr('y',d=>g.node(d).y )
-                // .attr('width',node_width)
-                // .attr('height',node_height)
-                // .attr('fill',d=>{
-                //   return g.node(d).label === 'in'? this.cfg.node.color.in:
-                //         g.node(d).profit === undefined? this.cfg.node.color.tp:
-                //                 g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
-                .attr('fill',d=>{
-                  return g.node(d).profit === undefined? 'white':
-                                g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
-                // .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
-                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
-                .attr('stroke-width',this.cfg.node.strokWidth)
-                .on('mouseover', d=>{
-                  // show its name
-                  d3.select('#text-'+d).attr('fill-opacity',1)
-                })
-                .on('mouseout', d=>{
-                  // unhighlight other node text
-                  d3.select('#text-'+d).attr('fill-opacity',0)
-                });
-
         // add text to node
         this.svg.append('g').classed('text',!0)
                 .selectAll('g')
@@ -245,7 +211,7 @@
 
                   let position_linear = d3.scaleLinear()
                           .domain([link_data[0][1], link_data[link_data.length-1][1]])
-                          .range([link_data[0][1]+offset_y, link_data[link_data.length-1][1]]);
+                          .range([link_data[0][1]+offset_y, link_data[link_data.length-1][1]-this.cfg.node.strokeWidth/2]);
 
                   // link_data.map(d=> { d[0] += offset_x ; d[1] += 2*offset_y; return d})
 
@@ -263,10 +229,6 @@
                     for(let path_id in g.edge(d).path){
                       for( let node_id in g.edge(d).path[path_id]){
                         if( node_id < (g.edge(d).path[path_id].length-1) ){
-                          // d3.select('#txn-'+d.v+"-"+d.w)
-                          //         .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width);
-                          // d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
-                          //         .attr('stroke-width', this.cfg.invest_panel.highlight_stroke_width);
                           d3.select('#txn-'+d.v+"-"+d.w)
                                   .attr('stroke', this.cfg.trade_panel.highlight_stroke_color);
                           d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
@@ -283,13 +245,6 @@
                     for (let path_id in g.edge(d).path) {
                       for (let node_id in g.edge(d).path[path_id]) {
                         if (node_id < (g.edge(d).path[path_id].length - 1)) {
-                          // unhighlight correspond invest link (undirect link)
-                          // d3.select('#txn-' + d.v + "-" + d.w)
-                          //         .attr('stroke-width', 2);
-                          // d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
-                          //         .attr('stroke-width', 2);
-                          // d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)] + '-' + g.edge(d).path[path_id][parseInt(node_id)])
-                          //         .attr('stroke-width', 2)
                           d3.select('#txn-' + d.v + "-" + d.w)
                                   .attr('stroke', this.cfg.link.color.txn);
                           d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
@@ -304,6 +259,50 @@
                 .on('click', d=>{
                   EventService.emitAffiliatedTransactionSelected(d.v, d.w);
                 });
+
+        // draw node
+        this.svg.append('g').classed('node',!0)
+                .selectAll('g')
+                .data(g.nodes())
+                .enter()
+                .append('circle')
+                .attr('r',node_width/2)
+                .attr('cx',d=>g.node(d).x + node_width/2)
+                .attr('cy',d=>g.node(d).y + node_width/2)
+                // .append('rect')
+                // .attr('x',d=>g.node(d).x )
+                // .attr('y',d=>g.node(d).y )
+                // .attr('width',node_width)
+                // .attr('height',node_height)
+                // .attr('fill',d=>{
+                //   return g.node(d).label === 'in'? this.cfg.node.color.in:
+                //         g.node(d).profit === undefined? this.cfg.node.color.tp:
+                //                 g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
+                .attr('fill',d=>{
+                  return g.node(d).profit === undefined? 'white':
+                          g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
+                // .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:this.cfg.node.color.default_stroke)
+                .attr('stroke',d=>g.node(d).tax_evader? this.cfg.node.color.evader_stroke:g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
+                .attr('stroke-width',this.cfg.node.strokeWidth)
+                .on('mouseover', d=>{
+                  // show its name
+                  d3.select('#text-'+d).attr('fill-opacity',1)
+                })
+                .on('mouseout', d=>{
+                  // unhighlight other node text
+                  d3.select('#text-'+d).attr('fill-opacity',0)
+                });
+            this.svg.append('use')
+                .attr('xlink:href',"http://www.w3school.com.cn/svg/a_1.svg#Fill-1")
+                // .append('symbol')
+                // .attr("viewBox", [0, 0, 24, 24])
+                // .append('path')
+                // .
+                // .attr('fill', "#a50026")
+      //  <svg t="1587923030360" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="23039" data-spm-anchor-id="a313x.7781069.0.i15" width="200" height="200">
+          //
+          //  </svg>
+
       }
     }
   };
