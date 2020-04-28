@@ -39,7 +39,7 @@
       initCalendar() {
         this.calendar = echarts.init(document.getElementById('calendar_view'));
         this.calendar.showLinks = true;
-        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 1200, y: 470}];
+        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 1200, y: 450}];
         this.calendar.showLoading(this.loadingCalendar);
 
         // let colorEncoding = ['#8c510a','#bf812d','#dfc27d','#f6e8c3','#f5f5f5','#c7eae5','#80cdc1','#35978f','#01665e'];
@@ -135,7 +135,7 @@
               id: 'src_calendar',
               range: ['2014-01', '2014-03-31'],
               top: 60,
-              bottom: '20',
+              bottom: 20,
               left: '40',
               right: '620',
               itemStyle: {borderWidth: 0.5},
@@ -147,7 +147,7 @@
               id: 'dst_calendar',
               range: ['2014-01', '2014-03-31'],
               top: 60,
-              bottom: '20',
+              bottom: 20,
               left: '620',
               right: '40',
               itemStyle: {borderWidth: 0.5},
@@ -262,8 +262,10 @@
                 width: 2,
                 opacity: 1
               },
+              top:1,
+              left:1,
               width: '1200',
-              height: '470',
+              height: '450',
               z: 10
             },
           ],
@@ -297,8 +299,8 @@
         this.calendar.setOption({
           dataset: this.calendarData,
           title: [
-            {left: '100', text: this.calendarSourceId},
-            {right: '100', text: this.calendarTargetId},
+            {left: '100', text: this.calendarSourceId.slice(this.calendarSourceId.length-4)},
+            {right: '100', text: this.calendarTargetId.slice(this.calendarTargetId.length-4)},
           ],
           calendar: [
             // left calendar
@@ -365,7 +367,7 @@
         // Notice that the node link information is stored in the instance
         this.calendar.nodes = [
           {name: 'top_left', x: 0, y: 0, symbolSize: 0},
-          {name: 'bottom_right', x: 1200, y: 470, symbolSize: 0}
+          {name: 'bottom_right', x: 1200, y: 450, symbolSize: 0}
         ];
         this.calendar.links = [];
 
