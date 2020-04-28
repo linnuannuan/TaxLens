@@ -39,7 +39,7 @@
       initCalendar() {
         this.calendar = echarts.init(document.getElementById('calendar_view'));
         this.calendar.showLinks = true;
-        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 1200, y: 450}];
+        this.calendar.nodes = [{name: 'top_left', x: 0, y: 0}, {name: 'bottom_right', x: 1200, y: 470}];
         this.calendar.showLoading(this.loadingCalendar);
 
         // let colorEncoding = ['#8c510a','#bf812d','#dfc27d','#f6e8c3','#f5f5f5','#c7eae5','#80cdc1','#35978f','#01665e'];
@@ -263,7 +263,7 @@
                 opacity: 1
               },
               width: '1200',
-              height: '450',
+              height: '470',
               z: 10
             },
           ],
@@ -365,7 +365,7 @@
         // Notice that the node link information is stored in the instance
         this.calendar.nodes = [
           {name: 'top_left', x: 0, y: 0, symbolSize: 0},
-          {name: 'bottom_right', x: 1200, y: 450, symbolSize: 0}
+          {name: 'bottom_right', x: 1200, y: 470, symbolSize: 0}
         ];
         this.calendar.links = [];
 

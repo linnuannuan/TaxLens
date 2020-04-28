@@ -26,24 +26,24 @@
 <!--            </template>-->
 <!--        </el-table-column>-->
 <!--        <el-table-column prop="num" label="links" width="100px"></el-table-column>-->
-        <el-table-column prop="num_evader" sortable width="70px">
+        <el-table-column prop="num_evader" sortable width="75x">
             <template slot-scope="scope">
-                <svg width="70" height="120"  transform="rotate(180)">
-                    <rect x="10" y="0" width="50" :height="scope.row.num_evader_height" fill="#a65628" fill-opacity="0.85"></rect>
+                <svg width="75" height="120"  transform="rotate(180)">
+                    <rect x="12" y="0" width="50" :height="scope.row.num_evader_height" fill="#a65628" fill-opacity="0.65"></rect>
                 </svg>
              </template>
         </el-table-column>
-        <el-table-column prop="ap_txn_amount" sortable width="70px">
+        <el-table-column prop="ap_txn_amount" sortable width="75px">
              <template slot-scope="scope">
-                 <svg width="70" height="120"  transform="rotate(180)">
-                     <rect x="10" y="0" width="50" :height="scope.row.ap_txn_amount_height" fill="#377eb8" fill-opacity="0.8">></rect>
+                 <svg width="75" height="120"  transform="rotate(180)">
+                     <rect x="15" y="0" width="50" :height="scope.row.ap_txn_amount_height" fill="#377eb8" fill-opacity="0.65">></rect>
                  </svg>
              </template>
         </el-table-column>
-        <el-table-column prop="num_effective" sortable width="70px">
+        <el-table-column prop="num_effective" sortable width="75px">
              <template slot-scope="scope">
-                <svg width="70" height="120"  transform="rotate(180)">
-                    <rect x="10" y="0" width="50" :height="scope.row.num_effective_height" fill="#984ea3" fill-opacity="0.7">></rect>
+                <svg width="75" height="120"  transform="rotate(180)">
+                    <rect x="22" y="0" width="50" :height="scope.row.num_effective_height" fill="#984ea3" fill-opacity="0.7">></rect>
                 </svg>
              </template>
         </el-table-column>

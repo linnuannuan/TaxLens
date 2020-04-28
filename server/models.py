@@ -204,9 +204,9 @@ class Model:
                 'num_effective': int(_ap['num_effective']),  # Sort 2
                 'num_evader': int(_ap['num_evader']),  # Sort 3
 
-                'ap_txn_amount_height': int(((_ap['ap_txn_amount']-_ap_avg)/_ap_std + 1) * 40),  # Height 1
-                'num_effective_height': int(((_ap['num_effective']-_effective_avg)/_effective_std + 1) * 40),  # Height 2
-                'num_evader_height': int(((_ap['num_evader']-_evader_avg)/_evader_std + 1) * 40),  # Height 3
+                'ap_txn_amount_height': int(((_ap['ap_txn_amount']-_ap_avg)/_ap_std + 1) * 25),  # Height 1
+                'num_effective_height': int(((_ap['num_effective']-_effective_avg)/_effective_std + 1) * 25),  # Height 2
+                'num_evader_height': int(((_ap['num_evader']-_evader_avg)/_evader_std + 1) * 25),  # Height 3
 
                 'affiliatedPartyTopoData': {
                     'nodes': [{'id': node} for node in _ap['nodes']],
