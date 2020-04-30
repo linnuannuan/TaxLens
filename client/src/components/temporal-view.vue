@@ -163,7 +163,7 @@
           series: {
             type: 'bar',
             animation: false,  // setting to false for better performance
-            data: this.temporalOverview['ap_txn_amount']
+            data: this.temporalOverview['ap_txn_amount'], color: ['#80b1d3'],
           }
         });
         this.timeSlider.hideLoading();

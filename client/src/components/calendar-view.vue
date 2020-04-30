@@ -43,7 +43,10 @@
         this.calendar.showLoading(this.loadingCalendar);
 
         // let colorEncoding = ['#8c510a','#bf812d','#dfc27d','#f6e8c3','#f5f5f5','#c7eae5','#80cdc1','#35978f','#01665e'];
-        let colorEncoding = ['#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850'];
+        // let colorEncoding = ['#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850'];
+        let colorEncoding = ['#fb8072','#fdae61','#fee08b','#ffffbf','#d9ef8b','#b3de69'];
+
+        // let colorEncoding = ['#fc8d59','#fee08b','#ffffbf','#d9ef8b','#91cf60'];
         let colorLoss = colorEncoding[0];
         let colorProfit = colorEncoding[colorEncoding.length-1];
 
@@ -258,7 +261,8 @@
               hoverAnimation: false,
               // symbolOffset: [0, '-50%'],
               lineStyle: {
-                color: '#1f78b4',
+                color:'#4292c6',
+                // color: '#1f78b4',
                 width: 2,
                 opacity: 1
               },
@@ -299,8 +303,19 @@
         this.calendar.setOption({
           dataset: this.calendarData,
           title: [
-            {left: '100', text: this.calendarSourceId.slice(this.calendarSourceId.length-4)},
-            {right: '100', text: this.calendarTargetId.slice(this.calendarTargetId.length-4)},
+            {
+                left: '180',
+                text: this.calendarSourceId.slice(this.calendarSourceId.length-4),
+                textStyle:{
+                    color : '#777'
+                }
+            },
+            {   right: '180',
+                text: this.calendarTargetId.slice(this.calendarTargetId.length-4),
+                textStyle:{
+                    color : '#777'
+                }
+            },
           ],
           calendar: [
             // left calendar
@@ -320,12 +335,22 @@
               id: 'src_vm_heatmap',
               min: -profitInterval,
               max: profitInterval,
+              itemStyle: {
+                    color: '#777',
+                    borderWidth: 1,
+                    borderColor: '#333'
+              }
             },
             // right calendar
             {
               id: 'dst_vm_heatmap',
               min: -profitInterval,
               max: profitInterval,
+              itemStyle: {
+                    color: '#777',
+                    borderWidth: 1,
+                    borderColor: '#333'
+              }
             },
           ],
           series: [

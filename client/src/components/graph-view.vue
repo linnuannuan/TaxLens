@@ -32,7 +32,7 @@
         let width = this.$el.clientWidth;
         let height = this.$el.clientHeight;
         let margin_width = 40;
-        let margin_height = 20;
+        let margin_height = 30;
 
         //config the node width and link width
         this.cfg={
@@ -46,15 +46,20 @@
             color:{
               // tp:'white',
               // in:'white',
-              tp:'#1f78b4',
+              tp:'#4292c6',
+              // tp:'#1f78b4',
               // in:'#6a3d9a',    //紫色
               // in:'#f781bf', //粉色
-              in:'#ff7f00', //橙色
-              evader_stroke:"#a65628",
+              // in:'#ff7f00', //橙色
+              in:'#fe9929',
+              evader_stroke:'#fa9fb5',
+              // evader_stroke:"#a65628",
               // evader_stroke:"#6a3d9a",
               default_stroke:"#ccc",
-              profit:'#66bd63',
-              loss:'#f46d43'
+              profit:'#8dd3c7',
+              loss:'#fb8072'
+              // profit:'#66bd63',
+              // loss:'#f46d43'
             },
             rect_width: 30,
             rect_height: 30,
@@ -66,7 +71,8 @@
               // txn:'#1f78b4',
               txn:'#80b1d3',
               // invest:"#fccde5", // 粉色
-              invest:"#fdb462", // 橙色
+              // invest:"#fdb462", // 橙色
+                invest:'#fdb462',
               // invest:'#bebada', // 紫色
             }
           },
@@ -123,15 +129,16 @@
         data.links.forEach(d=>{
           // Add edges to the graph.
           if ( d.source.id === undefined ){
-            g.setEdge( d.source, d.target, { label: d.ap_txn? 'txn':'invest', path: d.ap_txn? d.path: [] });
+            g.setEdge( d.source, d.target, { label: d.ap_txn? 'txn':'invest', path: d.ap_txn? d.path: [] ,labeloffset:5});
           } else {
-            g.setEdge( d.source.id, d.target.id, { label: d.ap_txn? 'txn':'invest', path: d.ap_txn? d.path: [] });
+            g.setEdge( d.source.id, d.target.id, { label: d.ap_txn? 'txn':'invest', path: d.ap_txn? d.path: [],labeloffset:5});
           }
         });
 
         g.graph().align = 'UL';
         // g.graph().acyclicer = 'greedy';
         g.graph().ranker = 'longest-path';
+        // g.edge.labeloffset = 5
         dagre.layout(g);
 
         let node_width = g.graph().width > this.cfg.trade_panel.max_width? this.cfg.trade_panel.max_width/g.graph().width*this.cfg.node.rect_width: this.cfg.node.rect_width;
@@ -181,15 +188,14 @@
             .append('symbol')
             .attr('id','icon-1')
             .append('svg')
-            .attr('width',30)
-            .attr('height',30)
+            .attr('width',node_width)
+            .attr('height',node_width)
             .attr('viewBox',"0 0 1024 1024")
             .append('g')
             .attr('xmlns',"http://www.w3.org/2000/svg")
             .append('path')
             .attr('d',"M560.64 867.328c-13.824 12.288-29.696 18.432-48.128 18.432s-34.816-6.144-48.64-17.92c-13.824-12.288-20.992-28.672-20.992-50.688 0-18.944 6.656-34.816 19.968-48.128 13.312-13.312 29.696-19.968 48.64-19.968 19.456 0 35.84 6.656 49.152 19.968 13.824 13.312 20.48 29.184 20.48 48.128 0 20.992-6.656 37.888-20.48 50.176zM445.44 605.696l-34.304-269.312c0-51.2 44.032-93.184 97.28-93.184 53.76 0 97.28 41.984 97.28 93.184l-34.304 269.312c-17.408 138.752-113.152 132.096-125.952 0z")
             .attr('fill',this.cfg.node.color.evader_stroke)
-
 
 
         // add text to node
@@ -222,6 +228,7 @@
                 .curve(d3.curveBasis)
                 .x(d =>d[0])
                 .y(d =>d[1]);
+
         this.svg.append('g').classed('link',!0)
                 .selectAll('g')
                 .data(g.edges())
@@ -230,7 +237,7 @@
                 .attr('id', d=> g.edge(d).label + "-" + d.v + "-" + d.w)
                 .attr('d',d=> {
                   let offset_x = node_width/2;
-                  let offset_y = node_height;
+                  let offset_y = node_width;
                   let link_data = [[g.node(d.v).x, + g.node(d.v).y]].concat(g.edge(d).points.map(p=>[p.x,p.y])).concat([[g.node(d.w).x,g.node(d.w).y]]);
 
                   let position_linear = d3.scaleLinear()
@@ -239,7 +246,15 @@
 
                   // link_data.map(d=> { d[0] += offset_x ; d[1] += 2*offset_y; return d})
 
-                  link_data.map(d=> { d[0] += offset_x ; d[1]= position_linear(d[1]); return d});
+                  link_data.map(d=> {
+                      d[0] += offset_x ;
+                      // 当控制点坐标超出尾结点的x
+                      // if(d>d[link_data.length-1]){
+                      //     d[0] = [link_data.length-1]
+                      // }
+                      d[1] = position_linear(d[1]);
+                      return d
+                  });
                   return line(link_data)
                 })
                 .attr("stroke", d=>g.edge(d).label==='invest' ? this.cfg.link.color.invest:this.cfg.link.color.txn)
@@ -263,6 +278,10 @@
                       }
                     }
                   }
+                  console.log('-----Position:')
+                  console.log('The line data: ', g.edge(d).points)
+                  console.log('source:', g.node(d.v))
+                  console.log('target:',g.node(d.w))
                 })
                 .on('mouseout',d=>{
                   if(g.edge(d).label === 'txn') {
@@ -316,8 +335,8 @@
                     .attr('class',"female")
                     .attr('x',d=>g.node(d).x )
                     .attr('y',d=>g.node(d).y-2)
-                    .attr('width',30)
-                    .attr('height',30)
+                    .attr('width',node_width)
+                    .attr('height',node_width)
                     .attr('xmlns:xlink',"http://www.w3.org/1999/xlink")
                     .attr('xlink:href',"#icon-1")
 

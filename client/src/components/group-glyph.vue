@@ -51,13 +51,13 @@
             'individual':{
               min_r: 3,
               max_r: 6,
-              color:'#1F497D'
+              color:'#4292c6'
             }
           },
           'link':{
             min_width: 1,
             max_width: 3,
-            color:'#1f77b4'
+            color:'#b3cde3'
           },
           'row_num':10,
           'col_num':5,
@@ -132,7 +132,8 @@
                   let y = this.cfg.height / 2;
                   let target_x = xPositionLinear(group_data.nodes.findIndex(n => n.id === d.target));
 
-                  if (group_data.links.find(link => (link.source === d.target) && (link.target === d.source))) {
+                  if (Math.abs(group_data.nodes.findIndex(n => n.id === d.source)- group_data.nodes.findIndex(n => n.id === d.target))>1) {
+                  // if (group_data.links.find(link => (link.source === d.target) && (link.target === d.source))) {
                       //存在互相交易
                       // let r = Math.hypot(target_x - source_x, 0)>this.cfg.height/2? Math.hypot(target_x - source_x, 0):this.cfg.height/2
                        let r = 1
@@ -146,6 +147,7 @@
               .attr('stroke-width', d => lineWidthScalar(d['ap_txn_amount']))
               .attr('stroke', this.cfg.link.color)
               .attr('fill', 'none')
+                .on('click',d=>{console.log('data:',d)})
 
           // draw the involved trader and their transaction amount in each group
           // draw nodes
@@ -157,7 +159,9 @@
               // .attr('r', d => tpRScalar(d.capital) )
               .attr('cx', d => xPositionLinear(group_data.nodes.indexOf(d)))
               .attr('cy', this.cfg.height / 2)
-              .attr('fill', this.cfg.node.individual.color);
+              .attr('fill','white')
+              .attr('stroke-width', 2)
+              .attr('stroke',this.cfg.node.individual.color)
 
       }
       }

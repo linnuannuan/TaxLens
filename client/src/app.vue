@@ -191,7 +191,8 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-align: center;
-        color: #2c3e50;
+        color:#444;
+        /*color: #2c3e50;*/
         width: 1600px;
         height: 900px;
         border: 1px solid black;
