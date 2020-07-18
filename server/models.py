@@ -124,8 +124,9 @@ class Model:
         _ap_df = pd.DataFrame([(i, _ap) for i, ap in enumerate(self.ap_list) for _ap in ap], columns=['ap_id', 'tp_id'])
 
         # retrieve tax evader records
-        _tax_evader = [n for n, evader in self.tp_network.nodes(data='tax_evader') if evader]
-        _tax_evader = _ap_df.query('tp_id in @_tax_evader').groupby('ap_id').count().reset_index().rename(
+        tax_evader = [n for n, evader in self.tp_network.nodes(data='tax_evader') if evader]
+        
+        _tax_evader = _ap_df.query('tp_id in @tax_evader').groupby('ap_id').count().reset_index().rename(
             columns={'tp_id': 'num_evader'})
         # retrieve tax deductible records
         _tax_deducted = self.finance.query('tax_deductible > 0')['tp_id'].drop_duplicates()
@@ -155,6 +156,8 @@ class Model:
         )
         # prepare nodes data
         _ap_df['nodes'] = _ap_df.apply(lambda x: list(x.seller_id.union(x.buyer_id)), axis=1)
+
+
         # prepare tax evaders data
         _ap_df = _ap_df[['txn_sum', 'num_ap_txn', 'num_effective', 'nodes', 'links']].reset_index()
         _ap_df = _ap_df.merge(_tax_evader, how='left').merge(_tax_deducted, how='left')
@@ -184,6 +187,13 @@ class Model:
         # prepare the json file
         ap_json = []
         for _ap in _ap_df:
+            # # print(_ap['nodes'])\
+            # print('s', list(filter(lambda link: link[1] == _ap['nodes'][0], _ap['links'])))
+            # print('tin_amount',  reduce(lambda ac,cur: ac+cur[2], list(filter(lambda link: link[1] == _ap['nodes'][0], _ap['links'])),0))
+            
+            # print('tout_amount', reduce(lambda ac,cur: ac+cur[2], list(filter(lambda link: link[0] == _ap['nodes'][0], _ap['links'])),0))
+            
+
             ap_json.append({
                 'ap_id': _ap['ap_id'],
                 # 'affiliatedPartyNumData': {
@@ -209,7 +219,12 @@ class Model:
                 'num_evader_height': int(((_ap['num_evader']-_evader_avg)/_evader_std + 1) * 25),  # Height 3
 
                 'affiliatedPartyTopoData': {
-                    'nodes': [{'id': node} for node in _ap['nodes']],
+                    'nodes': [
+                                {
+                                    'id': node, 
+                                    'is_evader': node in tax_evader,
+                                    'profit_amount': reduce(lambda ac,cur: ac+cur[2], list(filter(lambda link: link[1] == node, _ap['links'])),0) - reduce(lambda ac,cur: ac+cur[2], list(filter(lambda link: link[0] == node, _ap['links'])),0)
+                                } for node in _ap['nodes']],
                     'links': [{'source': buyer_id, 'target': seller_id, 'ap_txn_amount': txn_sum} for
                               buyer_id, seller_id, txn_sum in _ap['links']],
                 }
