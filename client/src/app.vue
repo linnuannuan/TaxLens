@@ -42,6 +42,7 @@
                         :affiliated-party-detail="affiliatedPartyDetail"
                         :loading-graph="loadingGraph"
                         :highlight-node="highlightNode"
+                        :unhighlight-node="unhighlightNode"
                         >
                 </graph-view>
             </el-row>
@@ -94,6 +95,8 @@
         controlChain: 2,
         search_id: '',
         highlightNode:null,
+        unhighlightNode:null,
+
         // search_id: '610198671502546',
 
         // Calendar query
@@ -158,11 +161,14 @@
       });
 
       EventService.onSuspiciousNodeSelected(tp_id=>{
-        this.loadingGraph = true;
+        this.loadingGraph = false;
         this.highlightNode = tp_id;
       });
 
-
+      EventService.onSuspiciousNodeUnSelected(tp_id=>{
+        this.loadingGraph = false;
+        this.unhighlightNode = tp_id;
+      });
 
     },
     methods: {

@@ -35,6 +35,10 @@
         // while hover on a data
         EventService.emitSuspiciousNodeSelected(id);
       },
+      handleUnHighlight(id){
+        // while hover on a data
+        EventService.emitSuspiciousNodeUnSelected(id);
+      },
       initGroupView(){
         // init the overview of group
         let width = this.$el.clientWidth;
@@ -171,6 +175,7 @@
               .attr('stroke-width', 2)
               .attr('stroke',this.cfg.node.individual.color)
               .on('mouseover',d=>this.handleHighlight(d['id']))
+              .on('mouseout',d=>this.handleUnHighlight(d['id']))
 
       }
     }

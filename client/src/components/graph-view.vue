@@ -13,6 +13,7 @@
       affiliatedPartyDetail: Object,
       loadingGraph: Boolean,
       highlightNode:String,
+      unhighlightNode:String
     },
     data() {
       return {
@@ -23,6 +24,14 @@
       affiliatedPartyDetail: function() {
         this.renderGraph();
       },
+      highlightNode: function(){
+        console.log(this.highlightNode)
+        this.highlightNodeEle(this.highlightNode)
+      },
+      unhighlightNode: function(){
+        console.log(this.unhighlightNode)
+        this.unhighlightNodeEle(this.unhighlightNode)
+      }
     },
     mounted:function(){
       this.initGraph();
@@ -57,8 +66,8 @@
               // evader_stroke:"#a65628",
               // evader_stroke:"#6a3d9a",
               default_stroke:"#ccc",
-              profit:'#8dd3c7',
-              loss:'#fb8072'
+              profit:'#80cdc1',
+              loss:'#dfc27d'
               // profit:'#66bd63',
               // loss:'#f46d43'
             },
@@ -310,12 +319,13 @@
                 .data(g.nodes())
                 .enter()
                 .append('circle')
-                .attr('r',d=> ((!!this.highlightNode) && d==this.highlightNode)? node_width/3 : node_width/2)
+                .attr('id',d=>'node-'+d)
+                .attr('r',node_width/2)
                 .attr('cx',d=>g.node(d).x + node_width/2)
                 .attr('cy',d=>g.node(d).y + node_width/2)
                 .attr('fill',d=>{
                   return g.node(d).profit === undefined? 'white':
-                          g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
+                         g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
                 .attr('stroke',d=>g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
                 .attr('stroke-width',this.cfg.node.strokeWidth)
                 .on('mouseover', d=>{
@@ -341,8 +351,12 @@
                     .attr('height',node_width)
                     .attr('xmlns:xlink',"http://www.w3.org/1999/xlink")
                     .attr('xlink:href',"#icon-1")
-
-
+      },
+      highlightNodeEle(id){
+        d3.select('#node-'+id).attr('r',20)
+      },
+      unhighlightNodeEle(id){
+        d3.select('#node-'+id).attr('r',15)
       }
     }
   };

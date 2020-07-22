@@ -5,6 +5,7 @@ let EventService = new Vue({
     SuspiciousGroupSelected: 'suspicious_group_selected',
     AffiliatedTransactionSelected: 'affiliated_transaction_selected',
     SuspiciousNodeSelected:'suspicious_node_selected',
+    SuspiciousNodeUnSelected:'suspicious_node_un_selected',
 
     CalendarPeriodPrevious: 'calendar_period_previous',
     CalendarPeriodNext: 'calendar_period_next',
@@ -36,6 +37,15 @@ let EventService = new Vue({
     },
     onSuspiciousNodeSelected: function (callback) {
       this.$on(this.SuspiciousNodeSelected, function(msg){
+        callback(msg);
+      })
+    },
+
+    emitSuspiciousNodeUnSelected: function (msg) {
+      this.$emit(this.SuspiciousNodeUnSelected, msg);
+    },
+    onSuspiciousNodeUnSelected: function (callback) {
+      this.$on(this.SuspiciousNodeUnSelected, function(msg){
         callback(msg);
       })
     },
