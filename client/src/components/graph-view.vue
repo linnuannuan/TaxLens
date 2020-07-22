@@ -11,7 +11,8 @@
     name: 'GraphView',
     props:{
       affiliatedPartyDetail: Object,
-      loadingGraph: Boolean
+      loadingGraph: Boolean,
+      highlightNode:String,
     },
     data() {
       return {
@@ -52,7 +53,7 @@
               // in:'#f781bf', //粉色
               // in:'#ff7f00', //橙色
               in:'#fe9929',
-              evader_stroke:'#fa9fb5',
+              evader_stroke:'#222',
               // evader_stroke:"#a65628",
               // evader_stroke:"#6a3d9a",
               default_stroke:"#ccc",
@@ -309,7 +310,7 @@
                 .data(g.nodes())
                 .enter()
                 .append('circle')
-                .attr('r',node_width/2)
+                .attr('r',d=> ((!!this.highlightNode) && d==this.highlightNode)? node_width/3 : node_width/2)
                 .attr('cx',d=>g.node(d).x + node_width/2)
                 .attr('cy',d=>g.node(d).y + node_width/2)
                 .attr('fill',d=>{
@@ -319,6 +320,7 @@
                 .attr('stroke-width',this.cfg.node.strokeWidth)
                 .on('mouseover', d=>{
                   // show its name
+                  console.log('node data:',d)
                   d3.select('#text-'+d).attr('fill-opacity',1)
                 })
                 .on('mouseout', d=>{

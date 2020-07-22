@@ -31,6 +31,10 @@
       handleView(id) {
         EventService.emitSuspiciousGroupSelected(id);
       },
+      handleHighlight(id){
+        // while hover on a data
+        EventService.emitSuspiciousNodeSelected(id);
+      },
       initGroupView(){
         // init the overview of group
         let width = this.$el.clientWidth;
@@ -120,6 +124,10 @@
               .domain([d3.min(group_data.links, d => d['ap_txn_amount']), d3.max(group_data.links, d => d['ap_txn_amount'])])
               .range([this.cfg.link.min_width, this.cfg.link.max_width]);
 
+          let tpRScalar = d3.scaleLinear()
+              .domain([d3.min(group_data.nodes, d=>d['profit_amount']), d3.max(group_data.nodes, d=>d['profit_amount'])])
+              .range([this.cfg.node.individual.min_r, this.cfg.node.individual.max_r])
+
           // draw link
           group_content_svg.selectAll('path')
               //  奇怪的bug，绑定data的时候少了第一个link,所以暂时添加一个空的后期再解决
@@ -132,7 +140,7 @@
                   let y = this.cfg.height / 2;
                   let target_x = xPositionLinear(group_data.nodes.findIndex(n => n.id === d.target));
 
-                  if (Math.abs(group_data.nodes.findIndex(n => n.id === d.source)- group_data.nodes.findIndex(n => n.id === d.target))>1) {
+                  // if (Math.abs(group_data.nodes.findIndex(n => n.id === d.source)- group_data.nodes.findIndex(n => n.id === d.target))>1) {
                   // if (group_data.links.find(link => (link.source === d.target) && (link.target === d.source))) {
                       //存在互相交易
                       // let r = Math.hypot(target_x - source_x, 0)>this.cfg.height/2? Math.hypot(target_x - source_x, 0):this.cfg.height/2
@@ -140,9 +148,9 @@
                       // let r = Math.hypot(target_x - source_x, 0)
 
                       return `M${source_x},${y} A${r},${r} 0 0,1 ${target_x},${y}`;
-                  } else {
-                      return 'M' + source_x + ',' + y + 'L' + target_x + ',' + y
-                  }
+                  // } else {
+                      // return 'M' + source_x + ',' + y + 'L' + target_x + ',' + y
+                  // }
               })
               .attr('stroke-width', d => lineWidthScalar(d['ap_txn_amount']))
               .attr('stroke', this.cfg.link.color)
@@ -155,16 +163,17 @@
               .data(group_data.nodes)
               .enter()
               .append('circle')
-              .attr('r', this.cfg.node.individual.min_r)
-              // .attr('r', d => tpRScalar(d.capital) )
+              //.attr('r', this.cfg.node.individual.min_r)
+              .attr('r',d=>tpRScalar(d['profit_amount']))
               .attr('cx', d => xPositionLinear(group_data.nodes.indexOf(d)))
               .attr('cy', this.cfg.height / 2)
               .attr('fill','white')
               .attr('stroke-width', 2)
               .attr('stroke',this.cfg.node.individual.color)
+              .on('mouseover',d=>this.handleHighlight(d['id']))
 
       }
-      }
+    }
   }
 </script>
 

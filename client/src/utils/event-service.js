@@ -4,6 +4,7 @@ let EventService = new Vue({
   data:{
     SuspiciousGroupSelected: 'suspicious_group_selected',
     AffiliatedTransactionSelected: 'affiliated_transaction_selected',
+    SuspiciousNodeSelected:'suspicious_node_selected',
 
     CalendarPeriodPrevious: 'calendar_period_previous',
     CalendarPeriodNext: 'calendar_period_next',
@@ -28,6 +29,17 @@ let EventService = new Vue({
         callback(source, target, periodStart, periodEnd);
       })
     },
+
+    // when user click on a suspicious node
+    emitSuspiciousNodeSelected: function (msg) {
+      this.$emit(this.SuspiciousNodeSelected, msg);
+    },
+    onSuspiciousNodeSelected: function (callback) {
+      this.$on(this.SuspiciousNodeSelected, function(msg){
+        callback(msg);
+      })
+    },
+
   }
 });
 

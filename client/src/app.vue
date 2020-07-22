@@ -40,7 +40,9 @@
                 <graph-view
                         class="detail-view-graph"
                         :affiliated-party-detail="affiliatedPartyDetail"
-                        :loading-graph="loadingGraph">
+                        :loading-graph="loadingGraph"
+                        :highlight-node="highlightNode"
+                        >
                 </graph-view>
             </el-row>
 
@@ -91,6 +93,7 @@
         transactionChain: 3,
         controlChain: 2,
         search_id: '',
+        highlightNode:null,
         // search_id: '610198671502546',
 
         // Calendar query
@@ -153,6 +156,14 @@
           this.loadingCalendar = false;
         })
       });
+
+      EventService.onSuspiciousNodeSelected(tp_id=>{
+        this.loadingGraph = true;
+        this.highlightNode = tp_id;
+      });
+
+
+
     },
     methods: {
       setPeriod: function (params) {
