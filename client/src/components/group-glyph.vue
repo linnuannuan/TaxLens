@@ -118,6 +118,9 @@
 
 
           let group_data = data;
+          group_data.nodes = group_data.nodes.sort((x,y)=>x['profit_amount']-y['profit_amount'])
+
+
           let group_min_x = this.cfg.node.group.margin.left
           let group_max_x = this.cfg.width - this.cfg.node.group.margin.left
           let xPositionLinear = d3.scaleLinear()
@@ -128,9 +131,9 @@
               .domain([d3.min(group_data.links, d => d['ap_txn_amount']), d3.max(group_data.links, d => d['ap_txn_amount'])])
               .range([this.cfg.link.min_width, this.cfg.link.max_width]);
 
-          let tpRScalar = d3.scaleLinear()
-              .domain([d3.min(group_data.nodes, d=>d['profit_amount']), d3.max(group_data.nodes, d=>d['profit_amount'])])
-              .range([this.cfg.node.individual.min_r, this.cfg.node.individual.max_r])
+          // let tpRScalar = d3.scaleLinear()
+          //     .domain([d3.min(group_data.nodes, d=>d['profit_amount']), d3.max(group_data.nodes, d=>d['profit_amount'])])
+          //     .range([this.cfg.node.individual.min_r, this.cfg.node.individual.max_r])
 
           // draw link
           group_content_svg.selectAll('path')
@@ -167,8 +170,8 @@
               .data(group_data.nodes)
               .enter()
               .append('circle')
-              //.attr('r', this.cfg.node.individual.min_r)
-              .attr('r',d=>tpRScalar(d['profit_amount']))
+              .attr('r', this.cfg.node.individual.min_r)
+              // .attr('r',d=>tpRScalar(d['profit_amount']))
               .attr('cx', d => xPositionLinear(group_data.nodes.indexOf(d)))
               .attr('cy', this.cfg.height / 2)
               .attr('fill','white')
