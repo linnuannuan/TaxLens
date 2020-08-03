@@ -279,11 +279,14 @@
                       for( let node_id in g.edge(d).path[path_id]){
                         if( node_id < (g.edge(d).path[path_id].length-1) ){
                           d3.select('#txn-'+d.v+"-"+d.w)
-                                  .attr('stroke', this.cfg.trade_panel.highlight_stroke_color);
+                                  .attr('stroke', this.cfg.trade_panel.highlight_stroke_color)
+                                  .attr("stroke-width", 5);
                           d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
-                                  .attr('stroke', this.cfg.invest_panel.highlight_stroke_color);
+                                  .attr('stroke', this.cfg.invest_panel.highlight_stroke_color)
+                                  .attr("stroke-width", 5);
                           d3.select('#invest'+ '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)] + '-' + g.edge(d).path[path_id][parseInt(node_id)])
                                   .attr('stroke', this.cfg.invest_panel.highlight_stroke_color)
+                                  .attr("stroke-width", 5);
                         }
                       }
                     }
@@ -299,11 +302,14 @@
                       for (let node_id in g.edge(d).path[path_id]) {
                         if (node_id < (g.edge(d).path[path_id].length - 1)) {
                           d3.select('#txn-' + d.v + "-" + d.w)
-                                  .attr('stroke', this.cfg.link.color.txn);
+                                  .attr('stroke', this.cfg.link.color.txn)
+                                  .attr("stroke-width", 2);
                           d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id)] + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)])
-                                  .attr('stroke', this.cfg.link.color.invest);
+                                  .attr('stroke', this.cfg.link.color.invest)
+                                  .attr("stroke-width", 2);
                           d3.select('#invest' + '-' + g.edge(d).path[path_id][parseInt(node_id) + parseInt(1)] + '-' + g.edge(d).path[path_id][parseInt(node_id)])
                                   .attr('stroke', this.cfg.link.color.invest)
+                                  .attr("stroke-width", 2);
                         }
                       }
                     }
@@ -328,15 +334,15 @@
                          g.node(d).profit? this.cfg.node.color.profit: this.cfg.node.color.loss})
                 .attr('stroke',d=>g.node(d).label === 'in'? this.cfg.node.color.in:this.cfg.node.color.tp)
                 .attr('stroke-width',this.cfg.node.strokeWidth)
-                .on('mouseover', d=>{
-                  // show its name
-                  console.log('node data:',d)
-                  d3.select('#text-'+d).attr('fill-opacity',1)
-                })
-                .on('mouseout', d=>{
-                  // unhighlight other node text
-                  d3.select('#text-'+d).attr('fill-opacity',0)
-                });
+                // .on('mouseover', d=>{
+                //   // show its name
+                //   console.log('node data:',d)
+                //   d3.select('#text-'+d).attr('fill-opacity',1)
+                // })
+                // .on('mouseout', d=>{
+                //   // unhighlight other node text
+                //   d3.select('#text-'+d).attr('fill-opacity',0)
+                // });
 
 
         this.svg.append('g')

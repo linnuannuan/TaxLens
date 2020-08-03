@@ -44,7 +44,7 @@
 
         // let colorEncoding = ['#8c510a','#bf812d','#dfc27d','#f6e8c3','#f5f5f5','#c7eae5','#80cdc1','#35978f','#01665e'];
         // let colorEncoding = ['#d73027','#f46d43','#fdae61','#fee08b','#ffffbf','#d9ef8b','#a6d96a','#66bd63','#1a9850'];
-        let colorEncoding = ['#8c510a','#d8b365','#f6e8c3','#f5f5f5','#c7eae5','#5ab4ac','#01665e'];
+        let colorEncoding = ['#bf812d','#dfc27d','#f6e8c3','#f5f5f5','#c7eae5','#80cdc1','#35978f'];
 
         // let colorEncoding = ['#fc8d59','#fee08b','#ffffbf','#d9ef8b','#91cf60'];
         let colorLoss = colorEncoding[0];
@@ -418,7 +418,7 @@
               data['rtp_expense'][i]?'arrow': 'none'
             ],
             lineStyle: {
-              curveness: data['rtp_expense'][i]? 0.2: -0.2
+              curveness: data['rtp_expense'][i]? 0.1: -0.1
             }
           });
         });
